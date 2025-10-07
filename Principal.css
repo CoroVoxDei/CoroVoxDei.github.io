@@ -235,11 +235,15 @@ body {
 }
 
 .song-header h2 {
-  flex: 1; /* ocupa todo el espacio central */
+  flex: 1;
   margin: 0;
   font-size: 1.6rem;
-  color: #ff4c4c;
+  color: #ff4c4c; /* rojo para el título */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 
 .autor {
   color: #bbb;
@@ -257,6 +261,8 @@ body {
 }
 
 .song-header h2:hover::after { width: 100%; }
+
+
 
 /* Botón añadir repertorio */
 .add-repertorio {
@@ -574,6 +580,11 @@ body {
     display: none;
   }
   .lyrics.show, .lyrics1.show { display: block; }
+
+  .autor {
+  font-size: 0.5rem;
+}
+
 
   /* Sidebar */
   .sidebar { width: 180px; }
