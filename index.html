@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Coro Juvenil Vox Dei</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Principal.css">
+</head>
+<body>
+
+<!-- 1. ENCABEZADO SUPERIOR -->
+<header class="topbar">
+  <div class="logo-left">
+    <img src="Principal/VoxDeiBlanco.png" alt="Logo Vox Dei">
+  </div>
+
+  <div class="top-icons">
+    <!-- Botón inicio -->
+    <button id="homeBtn" class="icon-btn" aria-label="Inicio">
+      <img src="Principal/Inicio.png" alt="Inicio" class="icon">
+    </button>
+
+    <!-- Botón menú con icono hamburguesa ☰ -->
+    <button id="menuBtn" class="icon-btn" aria-label="Menú">☰</button>
+
+    <!-- Logo derecho -->
+    <img src="Principal/LogoBlanco.png" alt="Logo Música" class="logo-right">
+  </div>
+</header>
+
+
+  <!-- 2. IMAGEN + TEXTO -->
+  <section class="hero">
+    <img src="Principal/Santuario.png" alt="Imagen principal">
+    <div class="hero-text">
+      <h1 id="pageTitle">CANCIONERO DIGITAL</h1>
+    </div>
+  </section>
+
+  <!-- 3. BARRA DE BÚSQUEDA -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Buscar canción...">
+    <button class="search-icon" aria-label="Buscar">
+      <img src="Principal/Buscar.png" alt="Buscar" class="icon">
+    </button>
+  </div>
+
+  <!-- 4. MENÚ LATERAL -->
+  <aside id="sidebar" class="sidebar" aria-hidden="true">
+    <button id="sidebarClose" class="sidebar-close" aria-label="Cerrar menú">✕</button>
+    <nav>
+      <ul>
+        <li><a href="Repertorio.html">Mi repertorio</a></li>
+        <li class="has-submenu">
+          <a href="#" id="toggleSubmenu">Canciones ▼</a>
+          <ul id="submenu" class="submenu">
+            <li><a href="#" data-file="Entrada.html">Entrada</a></li>
+            <li><a href="#" data-file="Penitencial.html">Penitencial</a></li>
+            <li><a href="#" data-filter="Gloria">Gloria</a></li>
+            <li><a href="#" data-filter="Aclamación">Aclamación</a></li>
+            <li><a href="#" data-filter="Ofertorio">Ofertorio</a></li>
+            <li><a href="#" data-filter="Santo">Santo</a></li>
+            <li><a href="#" data-filter="Cordero">Cordero</a></li>
+            <li><a href="#" data-file="Comunion.html">Comunión</a></li>
+            <li><a href="#" data-file="Eucaristicos.html">Eucaristicos</a></li>
+            <li><a href="#" data-filter="Marianos">Marianos</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- 5. CONTENIDO -->
+
+  <main class="content" id="songsContainer">
+   <!-- Aquí se cargan las canciones dinámicamente -->
+  </main>
+
+
+
+<!-- PAGINACIÓN -->
+<div id="pagination" class="pagination"></div>
+
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay" tabindex="-1" aria-hidden="true"></div>
+
+  <!-- PIE DE PAGINA -->
+<footer class="footer">
+  <div class="footer-content">
+    
+    <!-- Sección Coro -->
+    <div class="footer-section">
+      <h3>Coro Juvenil Vox Dei</h3>
+      <div class="social-links">
+        <a href="https://www.facebook.com/people/Vox-Dei/61573329863399/"><img src="Principal/facebook-new.png" class="icon"> Facebook</a>
+        <a href="https://www.instagram.com/voxdei_corojuvenil?igsh=MTNpenFjYml2NW80dw=="><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+      </div>
+    </div>
+    
+    <!-- Sección MJS -->
+    <div class="footer-section">
+      <h3>Movimiento Juvenil Salesiano</h3>
+      <div class="social-links">
+        <a href="https://www.facebook.com/MJSChosica"><img src="Principal/facebook-new.png" class="icon"> Facebook</a>
+        <a href="https://www.instagram.com/mjschosica?igsh=MThyMzh0MmI0cjBiNg=="><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+      </div>
+    </div>
+    
+    <!-- Sección Sedes -->
+    <div class="footer-section">
+      <h3>Ubicanos</h3>
+      <a href="https://maps.app.goo.gl/9pRLaTpgSZsEbyni6"><img src="Principal/Ubicacion.png" class="icon"> Parroquia San Juan Bosco</a>
+      <a href="https://maps.app.goo.gl/uaJVAUvCpM1ivJog6"><img src="Principal/Ubicacion.png" class="icon"> Santuario María Auxiliadora</a>
+    </div>
+
+  </div>
+
+  <!-- Separador inferior -->
+  <div class="footer-bottom">
+    <p>&copy; 2025 Coro Juvenil Vox Dei. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+
+  <script src="Principal.js"></script>
+</body>
+</html>

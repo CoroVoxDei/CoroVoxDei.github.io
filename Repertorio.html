@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Mi Repertorio</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Repertorio.css">
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <a href="index.html" class="inicio">
+      <img src="Principal/Inicio.png" alt="Inicio" class="top-icon1">Inicio
+    </a>
+    <button id="clearBtn" class="limpiar">
+      <img src="Principal/Limpiar-01.png" alt="Limpiar" class="top-icon"> Limpiar
+    </button>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <img src="Principal/Santisimo.png" alt="Imagen repertorio">
+    <div class="hero-text">
+      <h1>Mi Repertorio</h1>
+    </div>
+  </section>
+
+  <!-- Barra búsqueda -->
+  <div class="search-bar">
+    <input type="text" id="searchRepertorio" placeholder="Buscar...">
+    <button><img src="Principal/Buscar.png" alt="Buscar"></button>
+  </div>
+
+  <!-- Contenido -->
+  <main class="content">
+    <div id="repertorio-list"></div>
+    <p id="empty-message">Aún no has añadido ninguna canción.</p>
+  </main>
+
+  <script>
+  let repertorio = JSON.parse(localStorage.getItem("repertorio")) || [];
+  const list = document.getElementById("repertorio-list");
+  const empty = document.getElementById("empty-message");
+  const clearBtn = document.getElementById("clearBtn");
+  const searchInput = document.getElementById("searchRepertorio");
+
+  // Estado de letras abiertas
+  let letrasAbiertas = JSON.parse(localStorage.getItem("letrasAbiertas")) || [];
+
+  // Renderizar repertorio
+  function renderRepertorio(filter = "") {
+    list.innerHTML = "";
+    let filtered = repertorio.filter(song =>
+      song.title.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (filtered.length > 0) {
+      empty.style.display = "none";
+      filtered.forEach((song, index) => {
+        const section = document.createElement("section");
+        section.className = "song";
+        section.dataset.index = index;
+
+        section.innerHTML = `
+          <div class="song-header">
+            <h2>${song.title}</h2>
+            <div class="song-actions">
+              <button class="toggle-lyrics">
+                <span class="icon">▼</span>
+                <span class="text">Ver letra</span>
+              </button>
+              <button class="remove-btn">
+                <span class="icon">🗑</span>
+                <span class="text">Quitar</span>
+              </button>
+            </div>
+          </div>
+          <div class="lyrics">${song.lyrics}</div>
+        `;
+
+        list.appendChild(section);
+      });
+
+      initButtons();
+
+      // Restaurar letras abiertas
+      document.querySelectorAll(".song").forEach((song, i) => {
+        if (letrasAbiertas.includes(repertorio[i].title)) {
+          const lyrics = song.querySelector(".lyrics");
+          const iconSpan = song.querySelector(".toggle-lyrics .icon");
+          const textSpan = song.querySelector(".toggle-lyrics .text");
+          lyrics.classList.add("show");
+          iconSpan.textContent = "▲";
+          textSpan.textContent = "Ocultar letra";
+        }
+      });
+    } else {
+      empty.style.display = "block";
+    }
+  }
+
+  // Inicializar botones
+  function initButtons() {
+    document.querySelectorAll(".toggle-lyrics").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const song = btn.closest(".song");
+        const lyrics = song.querySelector(".lyrics");
+        const iconSpan = btn.querySelector(".icon");
+        const textSpan = btn.querySelector(".text");
+        const title = song.querySelector("h2").textContent;
+
+        lyrics.classList.toggle("show");
+        const isOpen = lyrics.classList.contains("show");
+
+        iconSpan.textContent = isOpen ? "▲" : "▼";
+        textSpan.textContent = isOpen ? "Ocultar letra" : "Ver letra";
+
+        // Actualizar estado en localStorage
+        if (isOpen) {
+          if (!letrasAbiertas.includes(title)) letrasAbiertas.push(title);
+        } else {
+          letrasAbiertas = letrasAbiertas.filter(t => t !== title);
+        }
+        localStorage.setItem("letrasAbiertas", JSON.stringify(letrasAbiertas));
+      });
+    });
+
+    // Botón quitar canción
+    document.querySelectorAll(".remove-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = btn.closest(".song").dataset.index;
+        const title = repertorio[idx].title;
+
+        // Eliminar también de letrasAbiertas
+        letrasAbiertas = letrasAbiertas.filter(t => t !== title);
+
+        repertorio.splice(idx, 1);
+        localStorage.setItem("repertorio", JSON.stringify(repertorio));
+        localStorage.setItem("letrasAbiertas", JSON.stringify(letrasAbiertas));
+
+        renderRepertorio(searchInput.value);
+      });
+    });
+  }
+
+  renderRepertorio();
+
+  // Búsqueda
+  searchInput.addEventListener("keyup", e => renderRepertorio(e.target.value));
+
+  // Limpiar todo
+  clearBtn.addEventListener("click", () => {
+    if (confirm("¿Seguro que quieres limpiar todo tu repertorio?")) {
+      localStorage.removeItem("repertorio");
+      localStorage.removeItem("letrasAbiertas");
+      repertorio = [];
+      letrasAbiertas = [];
+      renderRepertorio();
+    }
+  });
+
+  // Acordeón móvil
+  function enableMobileAccordion() {
+    document.querySelectorAll(".song-header").forEach(header => {
+      if (header._mobileHandler) {
+        header.removeEventListener("click", header._mobileHandler);
+        delete header._mobileHandler;
+      }
+      if (window.innerWidth <= 768) {
+        header._mobileHandler = function(e) {
+          if (e.target.closest(".add-repertorio") || e.target.closest(".toggle-lyrics")) return;
+          const lyrics = header.closest(".song").querySelector(".lyrics");
+          const iconSpan = header.querySelector(".toggle-lyrics .icon");
+          const textSpan = header.querySelector(".toggle-lyrics .text");
+
+          lyrics.classList.toggle("show");
+          if (iconSpan) iconSpan.textContent = lyrics.classList.contains("show") ? "▲" : "▼";
+          if (textSpan) textSpan.textContent = lyrics.classList.contains("show") ? "Ocultar letra" : "Ver letra";
+        };
+        header.addEventListener("click", header._mobileHandler);
+      }
+    });
+  }
+  window.addEventListener("load", enableMobileAccordion);
+  window.addEventListener("resize", enableMobileAccordion);
+</script>
+
+</body>
+</html>
