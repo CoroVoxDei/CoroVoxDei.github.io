@@ -241,6 +241,12 @@ body {
   color: #ff4c4c;
 }
 
+.autor {
+  color: #bbb;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
 .song-header h2::after {
   content: "";
   position: absolute;
@@ -317,7 +323,6 @@ body {
 .chord {
   color: #ffb347;   /* dorado suave */
 }
-
 
 
 
