@@ -139,7 +139,7 @@ document.querySelectorAll('#submenu a').forEach(link => {
 
 // Botón inicio → vuelve al general
 homeBtn?.addEventListener("click", () => {
-  loadSongs(["Comunion.html", "Eucaristicos.html", "Penitencial.html"]);
+  loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
   updateTitle("CANCIONERO DIGITAL");
 });
 
@@ -189,11 +189,10 @@ document.querySelectorAll('.add-repertorio').forEach(btn => {
 
 }
 
-
 /* ========================
    7. INICIO
 ======================== */
-loadSongs(["Entrada.html", "Penitencial.html", "Comunion.html", "Eucaristicos.html" ]);
+loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html" ]);
 
 
 /* ========================
@@ -231,3 +230,4 @@ function enableMobileAccordion() {
 // Detectar cambio de tamaño o carga inicial
 window.addEventListener("load", enableMobileAccordion);
 window.addEventListener("resize", enableMobileAccordion);
+
