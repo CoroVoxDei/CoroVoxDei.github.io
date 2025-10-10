@@ -10,7 +10,6 @@ body {
   padding-top: 80px; /* compensa la altura del header fijo */
 }
 
-
 /* ========================
    1. ENCABEZADO (TOPBAR)
 ======================== */
@@ -20,31 +19,54 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1b1f24 !important; /* 👈 fuerza el color */
+
+  /* 🎵 Efecto vidrio estilo Spotify */
+  background: rgba(27, 31, 36, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
   padding: 8px 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   z-index: 2000;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .topbar.hidden {
-  transform: translateY(-100%); /* se oculta hacia arriba */
+  transform: translateY(-100%);
 }
 
-.logo-left img { height: 80px; margin-left: 50px; }
-.logo-right { height: 60px; margin-right: 50px; }
+/* Logos */
+.logo-left img { 
+  height: 80px; 
+  margin-left: 50px; 
+  transition: opacity 0.3s ease; 
+}
+.logo-right { 
+  height: 60px; 
+  margin-right: 50px; 
+  opacity: 0.9; 
+}
 
+/* Iconos superiores */
 .top-icons {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 24px;
 }
 
 /* Iconos de imagen */
 .top-icons .icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.top-icons .icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 /* Botones */
@@ -52,42 +74,49 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 35px;   /* tamaño para ☰ */
-  color: white;      /* hamburguesa en blanco */
+  font-size: 28px;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
+.icon-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
+}
 
 /* ========================
-   2. IMAGEN + TÍTULO
+   2. IMAGEN + TÍTULO (ajustado)
 ======================== */
 .hero {
   position: relative;
   width: 100%;
-  height: 55vh;
+  height: 70vh; /* 🔹 antes 55vh → ahora más alto */
   overflow: hidden;
+  margin-top: -60px; /* mantiene alineado con el header */
 }
 
 .hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 70%;   /* 👈 muestra la parte inferior */
-   filter: brightness(0.6);
+  object-position: 50% 70%;
+  filter: brightness(0.45);
 }
 
 .hero-text {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 58%; /* 🔹 antes 50% → lo baja ligeramente */
+  left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 2; /* sobre la imagen */
+  z-index: 2;
 }
 
 .hero-text h1 {
-  font-size: 4.5rem;
+  font-size: 5rem; /* 🔹 un poco más grande para llenar mejor el espacio */
   color: #A51E17;
   font-weight: 700;
   text-shadow: 0 2px 6px rgba(0,0,0,0.9);
@@ -102,104 +131,289 @@ body {
 
 
 /* ========================
-   3. BARRA DE BÚSQUEDA
+   3. BARRA DE BÚSQUEDA ELEGANTE
 ======================== */
 .search-bar {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: #1e1e1e;
-  color: #ff4c4c;
-  border: 2px solid  ;
-  border-radius: 30px;
-  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 16px;
   width: 90%;
-  max-width: 1050px;
+  max-width: 800px;
   margin: 50px auto;
+  transition: all 0.3s ease;
+}
+
+.search-bar:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.search-bar:focus-within {
+  border-color: #A51E17;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-bar .icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
 }
 
 .search-bar input {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 16px;
-  padding: 6px;
+  font-size: 1rem;
+  padding: 8px 0;
   background: transparent;
-  color: #e5e5e5;
+  color: #f2f2f2;
 }
 
-.search-bar button {
-  background: none;   /* elimina fondo del botón */
-  border: none;       /* elimina borde */
-  padding: 0;         /* quita espacio alrededor */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.search-bar input::placeholder {
+  color: #aaa;
 }
 
-.search-bar .icon {
-  width: 28px;
-  height: 28px;
+/* ======== SUGERENCIAS ======== */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  margin-top: 2px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+  z-index: 1000;
+}
+
+.search-suggestions.active {
   display: block;
-  background: transparent; /* asegura transparencia */
+  animation: fadeIn 0.2s ease;
 }
+
+.search-suggestions li {
+  list-style: none;
+  padding: 10px 16px;
+  color: #ccc;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.search-suggestions li:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff4c4c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================
+   3.1 BOTONES DE CATEGORÍAS (scroll limpio sin barra visible)
+======================== */
+.search-categories {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 20px;
+  margin: 20px auto 40px;
+  max-width: 1070px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* mejora el desplazamiento en móviles */
+}
+
+/* 👇 Ocultar barra de scroll visualmente */
+.search-categories::-webkit-scrollbar {
+  display: none;
+}
+.search-categories {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.category-btn {
+  background: rgba(40, 40, 40, 0.9);
+  color: #e5e5e5;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  font-weight: 500;
+}
+
+.category-btn:hover {
+  background: rgba(165, 30, 23, 0.85);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(165, 30, 23, 0.4);
+}
+
+.category-btn.active {
+  background: #A51E17;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(165, 30, 23, 0.5);
+}
+
+/* Adaptación móvil */
+@media (max-width: 768px) {
+  .search-categories {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .category-btn {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    border-radius: 16px;
+  }
+}
+
 
 /* ========================
    4. MENÚ LATERAL
 ======================== */
 .sidebar {
   position: fixed;
-  top: 0; left: -240px;
-  width: 220px; height: 100%;
-  background: #1b1f24;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100%;
+  background: rgba(25, 25, 25, 0.55); /* menos opaco */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   color: #fff;
-  padding: 18px;
-  transition: left 0.3s ease;
+  padding: 22px 18px;
+  transition: left 0.35s ease, background 0.4s ease;
   z-index: 1200;
   overflow-y: auto;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.sidebar nav ul { list-style: none; margin-top: 14px; }
 
-.sidebar nav a {
-  display: block;
-  padding: 10px 12px;
-  color: #ddd;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: background 0.3s, color 0.3s;
+.sidebar.active {
+  left: 0;
 }
-
-.sidebar nav a:hover { background: rgba(255,255,255,0.1); color: #ff4c4c; }
-
-.sidebar.active { left: 0; }
 
 .sidebar-close {
   background: none;
   border: none;
-  color: #fff;
-  font-size: 20px;
+  color: #ff4c4c;
+  font-size: 22px;
   cursor: pointer;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.submenu { 
-  max-height: 0; 
-  overflow: hidden; 
-  transition: max-height 0.3s ease; 
-  margin-left: 15px; 
+.sidebar-close:hover {
+  color: #ff6c6c;
+  transform: rotate(90deg);
 }
-.submenu.open { max-height: 400px; }
 
+/* ---------- Navegación ---------- */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav li {
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #ddd;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255, 76, 76, 0.1);
+  color: #ff4c4c;
+  transform: translateX(4px);
+}
+
+.sidebar nav a.active {
+  background: rgba(255, 76, 76, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- Submenús ---------- */
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  margin-left: 15px;
+  opacity: 0;
+}
+
+.submenu.open {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.submenu a {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.submenu a:hover {
+  color: #ffb347;
+}
+
+/* ---------- Overlay ---------- */
 .overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  opacity: 0; visibility: hidden;
-  transition: opacity .2s ease;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
   z-index: 1150;
 }
-.overlay.active { opacity: 1; visibility: visible; }
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---------- Scroll personalizado ---------- */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
 
 /* ========================
    5. CONTENIDO (CANCIONES)
@@ -210,180 +424,165 @@ body {
   padding: 0 16px 40px;
 }
 
-/* Tarjeta de cada canción */
+/* --- Tarjeta de cada canción --- */
 .song {
-  background: #1e1e1e;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   margin-bottom: 30px;
   padding: 20px;
   border-left: 5px solid #A51E17;
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
 }
 
 .song:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  background: rgba(40, 40, 40, 0.75);
 }
 
-/* Header de la canción */
+/* --- Encabezado de la canción --- */
 .song-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px; /* espacio entre elementos */
+  gap: 15px;
 }
 
 .song-header h2 {
   flex: 1;
   margin: 0;
   font-size: 1.6rem;
-  color: #ff4c4c; /* rojo para el título */
+  color: #ff4c4c;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-
-.autor {
-  color: #bbb;
-  font-size: 0.9rem;
-  font-style: italic;
+  position: relative;
 }
 
 .song-header h2::after {
   content: "";
   position: absolute;
-  left: 0; bottom: -5px;
-  width: 0%; height: 3px;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 3px;
   background: #ff4c4c;
   transition: width 0.3s ease;
 }
 
-.song-header h2:hover::after { width: 100%; }
+.song-header h2:hover::after {
+  width: 100%;
+}
 
+/* --- Autor (debajo o junto al título) --- */
+.autor {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #9fa3b0;
+  margin-left: 10px;
+  opacity: 0.8;
+  transition: color 0.3s ease;
+}
 
+.song-header:hover .autor {
+  color: #ff7878;
+}
 
-/* Botón añadir repertorio */
+/* --- Botones --- */
+.add-repertorio,
+.toggle-lyrics {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
 .add-repertorio {
   background: linear-gradient(135deg, #A51E17, #ff4c4c);
   color: #fff;
-  border: none;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border-radius: 25px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 0 10px rgba(255, 76, 76, 0.2);
 }
 
 .add-repertorio:hover {
   transform: scale(1.08);
-  box-shadow: 0 4px 10px rgba(255, 76, 76, 0.4);
-}
-
-.icon {
-  color: white;
-  font-weight: 900;  /* lo engorda */
-  font-size: 0.9rem; /* ajusta tamaño */
-}
-
-
-/* Letras */
-.lyrics {
-  column-count: 2;
-  column-gap: 40px;
-  text-align: justify;
-  margin-top: 25px;
-}
-
-.lyrics1 {
-  column-count: 1;
-  column-gap: 40px;
-  text-align: justify;
-  margin-top: 25px;
-}
-
-.lyrics pre, .lyrics p,
-.lyrics1 pre, .lyrics1 p {
-  break-inside: avoid;
-  margin-bottom: 16px;
-  white-space: pre-wrap;
-  font-family:'Fira Code', monospace;
-  line-height: 1.9;
-  background: #2a2a2a;
-  color: #ddd;
-  padding: 16px;
-  border-radius: 6px;
-  /* font-weight: bold; negrita */
-}
-/* Ocultas por defecto */
-.lyrics, .lyrics1 {
-  display: none;
-}
-
-/* Se muestran cuando tienen la clase "show" */
-.lyrics.show, .lyrics1.show {
-  display: block;
-}
-
-.chord {
-  color: #ffb347;   /* dorado suave */
-}
-
-
-
-/* Responsive */
-@media (max-width: 768px) {
-  .lyrics { column-count: 1; }
-}
-
-/* Toggle letras */
-.hidden { display: none; }
-
-.toggle-lyrics {
-  background: #444;
-  color: #fff;
-  border: none;
-  padding: 6px 10px;
-  font-size: 0.85rem;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 10px;
-  transition: background 0.3s;
-}
-
-.toggle-lyrics,
-.add-repertorio {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 120px;   /* 👈 todos tendrán al menos este ancho */
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  text-align: center;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  
+  box-shadow: 0 0 14px rgba(255, 76, 76, 0.5);
 }
 
 .toggle-lyrics {
-  background: #444;
+  background: #333;
   color: #fff;
-  border: none;
 }
 
 .toggle-lyrics:hover {
   background: #A51E17;
 }
 
-.toggle-lyrics:hover { background: #A51E17; }
+/* --- Letras (letra y acordes) --- */
+.lyrics,
+.lyrics1 {
+  column-count: 2;
+  column-gap: 40px;
+  text-align: justify;
+  margin-top: 25px;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.4s ease;
+}
 
-.lyrics, .lyrics1 { display: none; }
-.lyrics.show, .lyrics1.show { display: block; }
+.lyrics.show,
+.lyrics1.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  animation: fadeSlideIn 0.6s ease forwards;
+}
+
+/* Animación de aparición */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lyrics pre,
+.lyrics1 pre {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+  font-family: 'Fira Code', monospace;
+  line-height: 1.9;
+  background: rgba(40, 40, 40, 0.6);
+  color: #ddd;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.chord {
+  color: #ff7878; /* rojo coral suave */
+}
 
 
-
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .lyrics {
+    column-count: 1;
+  }
+}
 
 
 /* ========================
@@ -411,72 +610,121 @@ body {
   font-weight: bold;
 }
 
+/* ========================
+   Transición entre páginas (estilo minimalista)
+======================== */
+#songsContainer {
+  transition: opacity 0.3s ease;
+}
 
 /* ========================
-   7. PIE DE PAGINA
+   7. PIE DE PÁGINA (PROFESIONAL)
 ======================== */
 .footer {
-  background: #1b1f24;
-  color: #fff;
-  padding: 50px 20px 20px;
-  margin-top: 40px;
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #e5e5e5;
+  padding: 60px 40px 30px;
+  margin-top: 60px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* --- Contenedor principal --- */
 .footer-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 30px;
-  max-width: 1100px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  max-width: 1150px;
   margin: auto;
+  align-items: start;
 }
 
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 👈 espacio entre líneas */
+}
+/* --- Secciones individuales --- */
 .footer-section h3 {
-  margin-bottom: 14px;
-  font-size: 1.2rem;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #ff4c4c;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .footer-section p {
-  font-size: 0.9rem;
-  color: #ccc;
-  margin: 6px 0;
+  font-size: 0.92rem;
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 10px;
 }
 
+/* --- Enlaces de redes sociales --- */
 .footer-section a {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 6px 0;
-  font-size: 0.95rem;
-  color: #fff;
+  gap: 10px;
+  color: #e5e5e5;
   text-decoration: none;
-  transition: color 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  opacity: 0.85;
 }
 
-.footer-section a:hover { color: #ff4c4c; }
+.footer-section a:hover {
+  color: #ff4c4c;
+  opacity: 1;
+  transform: translateX(4px);
+}
 
+/* --- Íconos de redes --- */
 .footer-section .icon {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+  width: 22px;
+  height: 22px;
   filter: brightness(0) invert(1);
-  transition: transform 0.3s, filter 0.3s;
+  opacity: 0.9;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .footer-section a:hover .icon {
   transform: scale(1.2);
-  filter: brightness(0) invert(1) drop-shadow(0 0 6px #ff4c4c);
+  filter: brightness(1.5) drop-shadow(0 0 6px #ff4c4c);
 }
 
+/* --- Parte inferior --- */
 .footer-bottom {
-  margin-top: 30px;
+  margin-top: 40px;
   text-align: center;
   font-size: 0.85rem;
   color: #aaa;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
 }
+
+.footer-bottom span {
+  color: #ff4c4c;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 20px 25px;
+  }
+
+  .footer-content {
+    gap: 25px;
+    text-align: center;
+  }
+
+  .footer-section a {
+    justify-content: center;
+  }
+}
+
 
 
 
@@ -532,6 +780,12 @@ body {
   }
   .search-bar input { font-size: 14px; }
   .search-bar .icon { width: 22px; height: 22px; }
+
+  /* CATEGORIAS */
+
+  .category-btn {
+    border-radius: 7px;
+  }
 
   /* Canciones */
   .song {
