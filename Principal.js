@@ -182,6 +182,71 @@ function showPage(page) {
 }
 
 
+/* ========================
+   MOSTRAR / OCULTAR ACORDES (desde el menú lateral)
+======================== */
+const toggleChordsBtn = document.getElementById("toggleChordsBtn");
+
+// Leer preferencia guardada
+let showChords = localStorage.getItem("showChords");
+showChords = showChords === null ? true : showChords === "true"; // Por defecto visibles
+
+function updateChordsVisibility() {
+  if (showChords) {
+    document.body.classList.remove("hide-chords");
+  } else {
+    document.body.classList.add("hide-chords");
+  }
+
+  // Cambiar texto del botón
+  if (toggleChordsBtn) {
+    toggleChordsBtn.textContent = showChords ? "Ocultar acordes" : "Mostrar acordes";
+  }
+
+  // Guardar preferencia
+  localStorage.setItem("showChords", showChords);
+}
+
+function cleanEmptyChordLines() {
+  document.querySelectorAll("pre").forEach(pre => {
+    // Si el <pre> solo contiene acordes (o queda vacío tras ocultarlos)
+    const text = pre.textContent.trim();
+    const hasOnlyChords = pre.querySelectorAll(".chord").length > 0 && text === "";
+    if (hasOnlyChords || text === "") pre.style.display = "none";
+    else pre.style.display = "";
+  });
+}
+
+// Llama a la limpieza cada vez que cambie el modo de acordes
+function updateChordsVisibility() {
+  if (showChords) {
+    document.body.classList.remove("hide-chords");
+  } else {
+    document.body.classList.add("hide-chords");
+  }
+
+  // Cambiar texto del botón
+  if (toggleChordsBtn) {
+    toggleChordsBtn.textContent = showChords ? "Ocultar acordes" : "Mostrar acordes";
+  }
+
+  // Guardar preferencia
+  localStorage.setItem("showChords", showChords);
+
+  // 🧹 Limpia líneas vacías o contenedores vacíos
+  cleanEmptyChordLines();
+}
+
+
+// Evento click
+toggleChordsBtn?.addEventListener("click", e => {
+  e.preventDefault();
+  showChords = !showChords;
+  updateChordsVisibility();
+});
+
+// Aplicar visibilidad inicial al cargar la página
+document.addEventListener("DOMContentLoaded", updateChordsVisibility);
 
 /* ========================
    5. CARGA DE CANCIONES
@@ -248,7 +313,8 @@ function initSongButtons() {
 document.querySelectorAll('.add-repertorio').forEach(btn => {
   btn.addEventListener('click', () => {
     const songSection = btn.closest('.song');
-    const title = songSection.querySelector("h2")?.textContent.trim();
+    const title = songSection.querySelector("h2")?.childNodes[0]?.textContent.trim() || "";
+    const author = songSection.querySelector(".autor")?.textContent.trim() || "";
     const lyrics = songSection.querySelector(".lyrics, .lyrics1")?.innerHTML.trim();
     const category = songSection.dataset.category || "Sin categoría";
 
@@ -261,14 +327,15 @@ document.querySelectorAll('.add-repertorio').forEach(btn => {
 
     // Evita duplicados
     if (!repertorio.some(song => song.title === title)) {
-      repertorio.push({ title, lyrics, category });
+      repertorio.push({ title, author, lyrics, category }); // 👈 Agregamos el autor
       localStorage.setItem("repertorio", JSON.stringify(repertorio));
-      alert(`✅ "${title}" se añadió al repertorio`);
+      alert(`✅ "${title}" de ${author} se añadió al repertorio`);
     } else {
       alert(`⚠️ "${title}" ya está en tu repertorio`);
     }
   });
 });
+
 
 }
 
