@@ -1,316 +1,888 @@
 /* ========================
-   1. ENCABEZADO
+   0. RESETEO GLOBAL
 ======================== */
-const homeBtn = document.getElementById("homeBtn");
-const pageTitle = document.getElementById("pageTitle");
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.getElementById("sidebar");
-const sidebarClose = document.getElementById("sidebarClose");
-const overlay = document.getElementById("overlay");
-const topbar = document.querySelector(".topbar");
-
-function closeSidebar() {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-  sidebar.setAttribute("aria-hidden", "true");
-  topbar.classList.remove("hidden");
-}
-
-menuBtn?.addEventListener("click", () => {
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-  sidebar.setAttribute("aria-hidden", "false");
-  topbar.classList.add("hidden");
-});
-
-sidebarClose?.addEventListener("click", closeSidebar);
-overlay?.addEventListener("click", closeSidebar);
-
-// --- Submenú ---
-const toggleSubmenu = document.getElementById("toggleSubmenu");
-const submenu = document.getElementById("submenu");
-
-toggleSubmenu?.addEventListener("click", (e) => {
-  e.preventDefault();
-  submenu.classList.toggle("open");
-});
-
-/* ========================
-   2. TITULO DINAMICO
-======================== */
-function updateTitle(newTitle) {
-  pageTitle.textContent = newTitle;
-  pageTitle.style.animation = "none";
-  pageTitle.offsetHeight; // reinicia animación
-  pageTitle.style.animation = "fadeIn 2s ease forwards";
+body { 
+  font-family: 'Poppins', sans-serif; 
+  background: #121212; 
+  color: #e5e5e5; 
+  padding-top: 80px; /* compensa la altura del header fijo */
 }
 
 /* ========================
-   3. BARRA DE BÚSQUEDA
+   1. ENCABEZADO (TOPBAR)
 ======================== */
-const searchInput = document.getElementById("searchInput");
+.topbar {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-function initSearch() {
-  searchInput?.addEventListener("keyup", () => {
-    const filter = searchInput.value.toLowerCase();
-    allSongs.forEach(song => {
-      const title = song.querySelector("h2")?.textContent.toLowerCase() || "";
-      const text = (song.querySelector(".lyrics, .lyrics1")?.textContent || "").toLowerCase();
-      song.style.display = (title.includes(filter) || text.includes(filter)) ? "block" : "none";
-    });
-  });
+  /* 🎵 Efecto vidrio estilo Spotify */
+  background: rgba(27, 31, 36, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  padding: 8px 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 2000;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.topbar.hidden {
+  transform: translateY(-100%);
+}
+
+/* Logos */
+.logo-left img { 
+  height: 80px; 
+  margin-left: 50px; 
+  transition: opacity 0.3s ease; 
+}
+.logo-right { 
+  height: 60px; 
+  margin-right: 50px; 
+  opacity: 0.9; 
+}
+
+/* Iconos superiores */
+.top-icons {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Iconos de imagen */
+.top-icons .icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.top-icons .icon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Botones */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 28px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+  opacity: 0.9;
 }
 
 /* ========================
-   FILTRO POR CATEGORÍAS
+   2. IMAGEN + TÍTULO (ajustado)
 ======================== */
-const categoryButtons = document.querySelectorAll('.category-btn');
-let allSongsList = document.querySelectorAll('.song');
+.hero {
+  position: relative;
+  width: 100%;
+  height: 70vh; /* 🔹 antes 55vh → ahora más alto */
+  overflow: hidden;
+  margin-top: -60px; /* mantiene alineado con el header */
+}
 
-categoryButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    // Quitar clase activa de todos
-    categoryButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 70%;
+  filter: brightness(0.45);
+}
 
-    const selectedCategory = button.dataset.category?.toLowerCase();
+.hero-text {
+  position: absolute;
+  top: 58%; /* 🔹 antes 50% → lo baja ligeramente */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 2;
+}
 
-    allSongsList.forEach(song => {
-      const songCategory = song.dataset.category?.toLowerCase();
+.hero-text h1 {
+  font-size: 5rem; /* 🔹 un poco más grande para llenar mejor el espacio */
+  color: #A51E17;
+  font-weight: 700;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  -webkit-text-stroke: 1.5px #fff;
+  animation: fadeIn 2s ease forwards;
+}
 
-      // Mostrar solo canciones que coinciden o todas si es "todos"
-      song.style.display =
-        selectedCategory === 'todos' || songCategory === selectedCategory
-          ? 'block'
-          : 'none';
-    });
-  });
-});
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-// Reactivar después de cargar nuevas canciones dinámicamente
-document.addEventListener("DOMContentLoaded", () => {
-  const observer = new MutationObserver(() => {
-    allSongsList = document.querySelectorAll('.song');
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-});
 
 /* ========================
-   SCROLL HORIZONTAL CON ARRASTRE (para PC)
+   3. BARRA DE BÚSQUEDA ELEGANTE
 ======================== */
-const scrollContainer = document.querySelector('.search-categories');
-let isDown = false;
-let startX, scrollLeft;
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 16px;
+  width: 90%;
+  max-width: 800px;
+  margin: 50px auto;
+  transition: all 0.3s ease;
+}
 
-if (scrollContainer) {
-  scrollContainer.addEventListener('mousedown', e => {
-    isDown = true;
-    scrollContainer.classList.add('grabbing');
-    startX = e.pageX - scrollContainer.offsetLeft;
-    scrollLeft = scrollContainer.scrollLeft;
-  });
+.search-bar:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
 
-  scrollContainer.addEventListener('mouseleave', () => {
-    isDown = false;
-    scrollContainer.classList.remove('grabbing');
-  });
+.search-bar:focus-within {
+  border-color: #A51E17;
+  background: rgba(255, 255, 255, 0.1);
+}
 
-  scrollContainer.addEventListener('mouseup', () => {
-    isDown = false;
-    scrollContainer.classList.remove('grabbing');
-  });
+.search-bar .icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
 
-  scrollContainer.addEventListener('mousemove', e => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - scrollContainer.offsetLeft;
-    const walk = (x - startX) * 1.5; // velocidad de desplazamiento
-    scrollContainer.scrollLeft = scrollLeft - walk;
-  });
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  padding: 8px 0;
+  background: transparent;
+  color: #f2f2f2;
+}
+
+.search-bar input::placeholder {
+  color: #aaa;
+}
+
+/* ======== SUGERENCIAS ======== */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  border-radius: 0 0 14px 14px;
+  margin-top: 2px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+  z-index: 1000;
+}
+
+.search-suggestions.active {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+.search-suggestions li {
+  list-style: none;
+  padding: 10px 16px;
+  color: #ccc;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.search-suggestions li:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff4c4c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================
-   4. PAGINACIÓN
+   3.1 BOTONES DE CATEGORÍAS (scroll limpio sin barra visible)
 ======================== */
-const songsPerPage = 5;
-let currentPage = 1;
-let allSongs = [];
+.search-categories {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 20px;
+  margin: 20px auto 40px;
+  max-width: 1070px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch; /* mejora el desplazamiento en móviles */
+}
 
-function renderPagination() {
-  const paginationContainer = document.getElementById("pagination");
-  paginationContainer.innerHTML = "";
+/* 👇 Ocultar barra de scroll visualmente */
+.search-categories::-webkit-scrollbar {
+  display: none;
+}
+.search-categories {
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 
-  const totalPages = Math.ceil(allSongs.length / songsPerPage);
+.category-btn {
+  background: rgba(40, 40, 40, 0.9);
+  color: #e5e5e5;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  font-weight: 500;
+}
 
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    if (i === currentPage) btn.classList.add("active");
+.category-btn:hover {
+  background: rgba(165, 30, 23, 0.85);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(165, 30, 23, 0.4);
+}
 
-    btn.addEventListener("click", () => {
-      if (i !== currentPage) {
-        currentPage = i;
-        showPage(currentPage);
-      }
-    });
+.category-btn.active {
+  background: #A51E17;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(165, 30, 23, 0.5);
+}
 
-    paginationContainer.appendChild(btn);
+/* Adaptación móvil */
+@media (max-width: 768px) {
+  .search-categories {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .category-btn {
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    border-radius: 16px;
   }
 }
 
-function showPage(page) {
-  const container = document.getElementById("songsContainer");
 
-  // 🔹 Animación de fundido sutil
-  container.style.opacity = "0";
+/* ========================
+   4. MENÚ LATERAL
+======================== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100%;
+  background: rgba(25, 25, 25, 0.55); /* menos opaco */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #fff;
+  padding: 22px 18px;
+  transition: left 0.35s ease, background 0.4s ease;
+  z-index: 1200;
+  overflow-y: auto;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  setTimeout(() => {
-    const start = (page - 1) * songsPerPage;
-    const end = start + songsPerPage;
 
-    allSongs.forEach((song, index) => {
-      song.style.display = (index >= start && index < end) ? "block" : "none";
-    });
+.sidebar.active {
+  left: 0;
+}
 
-    renderPagination();
+.sidebar-close {
+  background: none;
+  border: none;
+  color: #ff4c4c;
+  font-size: 22px;
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
 
-    // 🔹 Aparece suavemente
-    container.style.opacity = "1";
-  }, 150); // Duración de fundido corta y elegante
+.sidebar-close:hover {
+  color: #ff6c6c;
+  transform: rotate(90deg);
+}
+
+/* ---------- Navegación ---------- */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav li {
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #ddd;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255, 76, 76, 0.1);
+  color: #ff4c4c;
+  transform: translateX(4px);
+}
+
+.sidebar nav a.active {
+  background: rgba(255, 76, 76, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------- Submenús ---------- */
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  margin-left: 15px;
+  opacity: 0;
+}
+
+.submenu.open {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.submenu a {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.submenu a:hover {
+  color: #ffb347;
+}
+
+/* ---------- Overlay ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  z-index: 1150;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---------- Scroll personalizado ---------- */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+
+/* ========================
+   5. CONTENIDO (CANCIONES)
+======================== */
+.content {
+  max-width: 1100px;
+  margin: auto;
+  padding: 0 16px 40px;
+}
+
+/* --- Tarjeta de cada canción --- */
+.song {
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+  padding: 20px;
+  border-left: 5px solid #A51E17;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
+}
+
+.song:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  background: rgba(40, 40, 40, 0.75);
+}
+
+/* --- Encabezado de la canción --- */
+.song-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.song-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.6rem;
+  color: #ff4c4c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+
+.song-header h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 3px;
+  background: #ff4c4c;
+  transition: width 0.3s ease;
+}
+
+.song-header h2:hover::after {
+  width: 100%;
+}
+
+/* --- Autor (debajo o junto al título) --- */
+.autor {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #9fa3b0;
+  margin-left: 10px;
+  opacity: 0.8;
+  transition: color 0.3s ease;
+}
+
+.song-header:hover .autor {
+  color: #ff7878;
+}
+
+/* --- Botones --- */
+.add-repertorio,
+.toggle-lyrics {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-repertorio {
+  background: linear-gradient(135deg, #A51E17, #ff4c4c);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 76, 76, 0.2);
+}
+
+.add-repertorio:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(255, 76, 76, 0.5);
+}
+
+.toggle-lyrics {
+  background: #333;
+  color: #fff;
+}
+
+.toggle-lyrics:hover {
+  background: #A51E17;
+}
+
+/* --- Letras (letra y acordes) --- */
+.lyrics,
+.lyrics1 {
+  column-count: 2;
+  column-gap: 40px;
+  text-align: justify;
+  margin-top: 25px;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.4s ease;
+}
+
+.lyrics.show,
+.lyrics1.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  animation: fadeSlideIn 0.6s ease forwards;
+}
+
+/* Animación de aparición */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lyrics pre,
+.lyrics1 pre {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  white-space: pre-wrap;
+  font-family: 'Fira Code', monospace;
+  line-height: 1.9;
+  background: rgba(40, 40, 40, 0.6);
+  color: #ddd;
+  padding: 16px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+.chord {
+  color: #ff7878; /* rojo coral suave */
+}
+
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .lyrics {
+    column-count: 1;
+  }
+}
+
+
+/* ========================
+   6. PAGINACIÓN
+======================== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 30px 0;
+}
+
+.pagination button {
+  background: #1e1e1e;
+  color: #fff;
+  border: 1px solid #ff4c4c;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination button.active {
+  background: #ff4c4c;
+  font-weight: bold;
+}
+
+/* ========================
+   Transición entre páginas (estilo minimalista)
+======================== */
+#songsContainer {
+  transition: opacity 0.3s ease;
+}
+
+/* ========================
+   7. PIE DE PÁGINA (PROFESIONAL)
+======================== */
+.footer {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #e5e5e5;
+  padding: 60px 40px 30px;
+  margin-top: 60px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Contenedor principal --- */
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  max-width: 1150px;
+  margin: auto;
+  align-items: start;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* 👈 espacio entre líneas */
+}
+/* --- Secciones individuales --- */
+.footer-section h3 {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ff4c4c;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.footer-section p {
+  font-size: 0.92rem;
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* --- Enlaces de redes sociales --- */
+.footer-section a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e5e5e5;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  opacity: 0.85;
+}
+
+.footer-section a:hover {
+  color: #ff4c4c;
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* --- Íconos de redes --- */
+.footer-section .icon {
+  width: 22px;
+  height: 22px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.footer-section a:hover .icon {
+  transform: scale(1.2);
+  filter: brightness(1.5) drop-shadow(0 0 6px #ff4c4c);
+}
+
+/* --- Parte inferior --- */
+.footer-bottom {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #aaa;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+.footer-bottom span {
+  color: #ff4c4c;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 20px 25px;
+  }
+
+  .footer-content {
+    gap: 25px;
+    text-align: center;
+  }
+
+  .footer-section a {
+    justify-content: center;
+  }
 }
 
 
 
+
+
 /* ========================
-   5. CARGA DE CANCIONES
+   8. ADAPTACIÓN RESPONSIVE
 ======================== */
-function loadSongs(files, categoryTitle = "CANCIONERO DIGITAL") {
-  if (!Array.isArray(files)) files = [files]; // si pasas 1 archivo, lo convierte en array
 
-  Promise.all(files.map(file => fetch(file).then(res => res.text())))
-    .then(htmls => {
-      document.getElementById("songsContainer").innerHTML = htmls.join(""); // concatena
+/* --- Tablets (pantallas medianas) --- */
+@media (max-width: 1024px) {
+  .logo-left img { height: 65px; margin-left: 20px; }
+  .logo-right { height: 50px; margin-right: 20px; }
 
-      // capturamos todas las canciones cargadas
-      allSongs = Array.from(document.querySelectorAll(".song"));
+  .hero-text h1 {
+    font-size: 3rem;
+    -webkit-text-stroke: 1px #fff;
+  }
 
-      initSongButtons();
-      initSearch();
-      updateTitle(categoryTitle);
-
-      // mostrar primera página con paginación
-      currentPage = 1;
-      showPage(currentPage);
-    })
-    .catch(err => console.error("Error cargando canciones:", err));
+  .search-bar {
+    max-width: 700px;
+    padding: 10px 16px;
+  }
 }
 
-// Detectar clicks en el sidebar
-document.querySelectorAll('#submenu a').forEach(link => {
-  link.addEventListener('click', e => {
-    e.preventDefault();
-    const file = e.target.getAttribute('data-file');
-    const name = e.target.textContent;
-    if (file) {
-      loadSongs(file, `Cantos ${name}`);
-      closeSidebar();
-    }
-  });
-});
+/* --- Celulares (pantallas pequeñas) --- */
+@media (max-width: 768px) {
+  /* Header */
+  .topbar {
+    padding: 6px 12px;
+    gap: 15px;
+  }
+  .logo-left img { height: 50px; margin-left: 0; }
+  .logo-right { height: 40px; margin-right: 0; }
 
-// Botón inicio → vuelve al general
-homeBtn?.addEventListener("click", () => {
-  loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
-  updateTitle("CANCIONERO DIGITAL");
-});
+  .top-icon {
+    width: 16px;
+    height: 16px;
+  }
 
-/* ========================
-   6. BOTONES DE CANCIONES
-======================== */
-function initSongButtons() {
-  // Toggle letra
-  document.querySelectorAll(".toggle-lyrics").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const lyrics = btn.closest(".song").querySelector(".lyrics, .lyrics1");
-      const iconSpan = btn.querySelector(".icon");
-      const textSpan = btn.querySelector(".text");
+  /* Hero */
+  .hero { height: 35vh; }
+  .hero-text h1 {
+    font-size: 2.8rem;
+    -webkit-text-stroke: 0.8px #fff;
+  }
 
-      lyrics.classList.toggle("show");
+  /* Barra búsqueda */
+  .search-bar {
+    width: 90%;
+    max-width: 3500%;
+    padding: 5px 14px;
+    margin: 20px auto;
+  }
+  .search-bar input { font-size: 14px; }
+  .search-bar .icon { width: 22px; height: 22px; }
 
-      if (iconSpan) iconSpan.textContent = lyrics.classList.contains("show") ? "▲" : "▼";
-      if (textSpan) textSpan.textContent = lyrics.classList.contains("show") ? "Ocultar letra" : "Ver letra";
-    });
-  });
+  /* CATEGORIAS */
 
-// Añadir repertorio
-document.querySelectorAll('.add-repertorio').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const songSection = btn.closest('.song');
-    const title = songSection.querySelector("h2")?.textContent.trim();
-    const lyrics = songSection.querySelector(".lyrics, .lyrics1")?.innerHTML.trim();
-    const category = songSection.dataset.category || "Sin categoría";
+  .category-btn {
+    border-radius: 7px;
+  }
 
-    if (!title || !lyrics) {
-      console.error("❌ No se pudo guardar la canción. Faltan datos.");
-      return;
-    }
+  /* Canciones */
+  .song {
+    padding: 15px;
+    margin-bottom: 18px;
+  }
+  .song-header {
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .song-header h2 {
+    font-size: 1rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+  }
+  .song:last-child { margin-bottom: 0; }
 
-    let repertorio = JSON.parse(localStorage.getItem("repertorio")) || [];
+  /* Botones compactos */
+  .add-repertorio,
+  .toggle-lyrics {
+    width: auto;
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    border-radius: 7px;
+  }
+  .add-repertorio .icon { color: #fff !important; }
+  .toggle-lyrics .text,
+  .add-repertorio .text { display: none; }
 
-    // Evita duplicados
-    if (!repertorio.some(song => song.title === title)) {
-      repertorio.push({ title, lyrics, category });
-      localStorage.setItem("repertorio", JSON.stringify(repertorio));
-      alert(`✅ "${title}" se añadió al repertorio`);
-    } else {
-      alert(`⚠️ "${title}" ya está en tu repertorio`);
-    }
-  });
-});
+  /* Letras */
+  .lyrics, .lyrics1 {
+    column-count: 1 !important;
+    font-size: 0.61rem;
+    line-height: 1.3;
+    display: none;
+  }
+  .lyrics.show, .lyrics1.show { display: block; }
 
+  .autor {
+  font-size: 0.5rem;
 }
 
-/* ========================
-   7. INICIO
-======================== */
-loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html" ]);
 
+  /* Sidebar */
+  .sidebar { width: 180px; }
 
-/* ========================
-   8. ACORDEÓN MÓVIL (solo en celulares)
-======================== */
-function enableMobileAccordion() {
-  document.querySelectorAll(".song-header").forEach(header => {
-    // Eliminar handler viejo si existe
-    if (header._mobileHandler) {
-      header.removeEventListener("click", header._mobileHandler);
-      delete header._mobileHandler;
-    }
-
-    // Solo activar en pantallas pequeñas
-    if (window.innerWidth <= 768) {
-      header._mobileHandler = function(e) {
-        // Evita conflicto con botón "añadir repertorio"
-        if (e.target.closest(".add-repertorio") || e.target.closest(".toggle-lyrics")) return;
-
-        const lyrics = header.closest(".song").querySelector(".lyrics, .lyrics1");
-        const iconSpan = header.querySelector(".toggle-lyrics .icon");
-        const textSpan = header.querySelector(".toggle-lyrics .text");
-
-        lyrics.classList.toggle("show");
-
-        if (iconSpan) iconSpan.textContent = lyrics.classList.contains("show") ? "▲" : "▼";
-        if (textSpan) textSpan.textContent = lyrics.classList.contains("show") ? "Ocultar letra" : "Ver letra";
-      };
-
-      header.addEventListener("click", header._mobileHandler);
-    }
-  });
+  /* Footer */
+  .footer {
+    padding: 20px 15px;
+    text-align: center;
+  }
+  .footer-section h3 {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    gap: 5px;
+  }
+  .social-links a img.icon,
+  .footer-section a img.icon {
+    width: 20px;
+    height: 20px;
+  }
+  .footer-section a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    text-decoration: none;
+    color: inherit;
+    margin-bottom: 6px;
+     margin-bottom: 15px;  /* 🔹 más separación entre enlaces */
+  }
 }
-
-// Detectar cambio de tamaño o carga inicial
-window.addEventListener("load", enableMobileAccordion);
-window.addEventListener("resize", enableMobileAccordion);
-
