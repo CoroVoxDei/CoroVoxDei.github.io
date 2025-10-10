@@ -1,12 +1,18 @@
 /* ========================
-   0. RESET
+   0. ESTILO GLOBAL
 ======================== */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
 body {
   font-family: 'Poppins', sans-serif;
   background: #121212;
-  color: #fff;
+  color: #e5e5e5;
+  padding-top: 80px;
+  overflow-x: hidden;
 }
 
 /* ========================
@@ -14,18 +20,22 @@ body {
 ======================== */
 .topbar {
   position: fixed;
-  top: 0; left: 0; width: 100%;
+  top: 0; left: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1b1f24 !important; /* 👈 fuerza el color */
+
+  background: rgba(27, 31, 36, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 30px 85px !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   z-index: 2000;
-  transition: transform 0.3s ease;
 }
 
-.topbar a, 
+.topbar a,
 .topbar button {
   display: flex;
   align-items: center;
@@ -36,51 +46,57 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.7rem;
-  transition: color 0.3s;
+  font-size: 1.2rem;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
-.topbar a:hover, 
+.topbar a:hover,
 .topbar button:hover {
   color: #ff4c4c !important;
+  transform: scale(1.05);
 }
 
 .top-icon, .top-icon1 {
-  width: 38px;
-  height: 38px;
-  object-fit: contain;
+  width: 32px;
+  height: 32px;
   filter: brightness(0) invert(1);
+  transition: transform 0.3s ease;
+}
+
+.topbar a:hover .top-icon,
+.topbar button:hover .top-icon {
+  transform: scale(1.1);
 }
 
 /* ========================
-   2. IMAGEN + TÍTULO
+   2. HERO (IMAGEN PRINCIPAL)
 ======================== */
 .hero {
   position: relative;
   width: 100%;
-  height: 55vh;
+  height: 70vh;
   overflow: hidden;
-  margin-top: 100px; /* 🔥 ajusta este valor según el alto del topbar */
+  margin-top: -60px;
 }
 
 .hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 70%;   /* 👈 muestra la parte inferior */
-   filter: brightness(0.6);
+  object-position: 50% 70%;
+  filter: brightness(0.45);
 }
 
 .hero-text {
   position: absolute;
-  top: 50%; left: 50%;
+  top: 58%;
+  left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  z-index: 2; /* sobre la imagen */
 }
 
 .hero-text h1 {
-  font-size: 4.5rem;
+  font-size: 5rem;
   color: #A51E17;
   font-weight: 700;
   text-shadow: 0 2px 6px rgba(0,0,0,0.9);
@@ -90,22 +106,30 @@ body {
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================
    3. BARRA DE BÚSQUEDA
 ======================== */
 .search-bar {
+  position: relative;
   display: flex;
   align-items: center;
-  background: #1e1e1e;
-  border: 2px solid #ff4c4c;
-  border-radius: 30px;
-  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 10px 16px;
   width: 90%;
-  max-width: 700px;
-  margin: 30px auto;
+  max-width: 800px;
+  margin: 50px auto;
+  transition: all 0.3s ease;
+}
+
+.search-bar:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .search-bar input {
@@ -117,6 +141,10 @@ body {
   color: #fff;
 }
 
+.search-bar input::placeholder {
+  color: #aaa;
+}
+
 .search-bar button {
   background: none;
   border: none;
@@ -124,36 +152,44 @@ body {
 }
 
 .search-bar img {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: transform 0.3s ease;
+}
+
+.search-bar button:hover img {
+  transform: scale(1.1);
 }
 
 /* ========================
    4. CONTENIDO
 ======================== */
 .content {
-  max-width: 950px;
-  margin: 30px auto;
+  max-width: 1100px;
+  margin: 40px auto;
   padding: 0 16px 40px;
 }
 
 .song {
-  background: #1e1e1e;
-  margin-bottom: 25px;
-  padding: 18px;
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+  padding: 20px;
   border-left: 5px solid #A51E17;
-  border-radius: 8px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.5);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
 }
 
 .song:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  background: rgba(40, 40, 40, 0.75);
 }
 
-/* Título canción */
 .song-header {
   display: flex;
   align-items: center;
@@ -163,121 +199,150 @@ body {
 }
 
 .song-header h2 {
-  font-size: 1.5rem !important;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #ff4c4c !important;
+  color: #ff4c4c;
+  position: relative;
 }
 
 .song-header h2::after {
   content: "";
   position: absolute;
-  left: 0; bottom: -5px;
-  width: 0%; height: 3px;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 3px;
   background: #ff4c4c;
   transition: width 0.3s ease;
 }
 
-.song-header h2:hover::after { width: 100%; }
-
-/* Botones */
-.song-header button {
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.song-header h2:hover::after {
+  width: 100%;
 }
 
-.song-header button:hover {
-  background: #ff4c4c;
-  border-color: #ff4c4c;
+.drag-ghost {
+  opacity: 0.6;
+  transform: scale(1.02);
+  background: rgba(255, 76, 76, 0.08);
+  border: 1px dashed #ff4c4c;
 }
 
-.remove-btn {
-  color: #ffffff !important;
-}
 
-.song-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
+/* ========================
+   BOTONES
+======================== */
 .song-actions {
   display: flex;
   gap: 10px;
 }
 
 .song-actions button {
-  background: #2a2a2a;
+  background: #333;
   border: 1px solid #444;
   color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: 7px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .song-actions button:hover {
-  background: #ff4c4c;
-  border-color: #ff4c4c;
+  background: #A51E17;
+  border-color: #A51E17;
+  transform: scale(1.08);
 }
 
-/* ==============================
-   COLORES DE ACORDES Y LETRAS
-============================== */
+.song.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  background: #2a2a2a;
+}
 
-/* Letras */
+.song.drag-over {
+  border: 2px dashed #ff4c4c;
+}
+
+
+/* ========================
+   ICONO "LIMPIAR" AJUSTADO
+======================== */
+.limpiar img {
+  width: 26px;        /* Tamaño más equilibrado */
+  height: 26px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); /* Asegura que sea blanco puro */
+  margin-top: -2px;   /* Corrige alineación vertical */
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.limpiar:hover img {
+  transform: rotate(-10deg) scale(1.1);
+}
+.limpiar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+/* ========================
+   LETRAS
+======================== */
 .lyrics {
   column-count: 2;
   column-gap: 40px;
   text-align: justify;
   margin-top: 25px;
+  display: none;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.5s ease, transform 0.4s ease;
 }
 
-.lyrics1 {
-  column-count: 1;
-  column-gap: 40px;
-  text-align: justify;
-  margin-top: 25px;
+.lyrics.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.lyrics pre, .lyrics p,
-.lyrics1 pre, .lyrics1 p {
+.lyrics pre {
   break-inside: avoid;
   margin-bottom: 16px;
   white-space: pre-wrap;
-  font-family:'Fira Code', monospace;
+  font-family: 'Fira Code', monospace;
   line-height: 1.9;
-  background: #2a2a2a;
+  background: rgba(40, 40, 40, 0.6);
   color: #ddd;
   padding: 16px;
   border-radius: 6px;
-  /* font-weight: bold; negrita */
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
 }
-/* Ocultas por defecto */
-.lyrics, .lyrics1 {
-  display: none;
-}
-
-/* Se muestran cuando tienen la clase "show" */
-.lyrics.show, .lyrics1.show {
-  display: block;
-}
-
-.chord {
-  color: #ffb347;   /* dorado suave */
-}
-
-
 
 /* ========================
-   5. MENSAJE VACÍO
+   Estilo del autor (como en principal)
+======================== */
+.autor {
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #ccc !important;  /* 👈 tono gris claro */
+  margin-left: 8px;
+  opacity: 0.8;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.song-header:hover .autor {
+  color: #ff7878; /* 👈 efecto suave al pasar el mouse */
+}
+
+
+.chord {
+  color: #ff7878;
+}
+
+/* ========================
+   MENSAJE VACÍO
 ======================== */
 #empty-message {
   text-align: center;
@@ -285,6 +350,7 @@ body {
   margin-top: 20px;
   font-size: 1.1rem;
 }
+
 
 
 /* ========================
@@ -395,5 +461,6 @@ body {
 }
   .song:last-child { margin-bottom: 0; }
 
-  
-
+    .autor {
+  font-size: 0.5rem;
+}
