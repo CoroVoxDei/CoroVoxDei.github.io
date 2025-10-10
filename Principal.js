@@ -63,6 +63,75 @@ function initSearch() {
 }
 
 /* ========================
+   FILTRO POR CATEGORÍAS
+======================== */
+const categoryButtons = document.querySelectorAll('.category-btn');
+let allSongsList = document.querySelectorAll('.song');
+
+categoryButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    // Quitar clase activa de todos
+    categoryButtons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+
+    const selectedCategory = button.dataset.category?.toLowerCase();
+
+    allSongsList.forEach(song => {
+      const songCategory = song.dataset.category?.toLowerCase();
+
+      // Mostrar solo canciones que coinciden o todas si es "todos"
+      song.style.display =
+        selectedCategory === 'todos' || songCategory === selectedCategory
+          ? 'block'
+          : 'none';
+    });
+  });
+});
+
+// Reactivar después de cargar nuevas canciones dinámicamente
+document.addEventListener("DOMContentLoaded", () => {
+  const observer = new MutationObserver(() => {
+    allSongsList = document.querySelectorAll('.song');
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+});
+
+/* ========================
+   SCROLL HORIZONTAL CON ARRASTRE (para PC)
+======================== */
+const scrollContainer = document.querySelector('.search-categories');
+let isDown = false;
+let startX, scrollLeft;
+
+if (scrollContainer) {
+  scrollContainer.addEventListener('mousedown', e => {
+    isDown = true;
+    scrollContainer.classList.add('grabbing');
+    startX = e.pageX - scrollContainer.offsetLeft;
+    scrollLeft = scrollContainer.scrollLeft;
+  });
+
+  scrollContainer.addEventListener('mouseleave', () => {
+    isDown = false;
+    scrollContainer.classList.remove('grabbing');
+  });
+
+  scrollContainer.addEventListener('mouseup', () => {
+    isDown = false;
+    scrollContainer.classList.remove('grabbing');
+  });
+
+  scrollContainer.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainer.offsetLeft;
+    const walk = (x - startX) * 1.5; // velocidad de desplazamiento
+    scrollContainer.scrollLeft = scrollLeft - walk;
+  });
+}
+
+/* ========================
    4. PAGINACIÓN
 ======================== */
 const songsPerPage = 5;
@@ -81,8 +150,10 @@ function renderPagination() {
     if (i === currentPage) btn.classList.add("active");
 
     btn.addEventListener("click", () => {
-      currentPage = i;
-      showPage(currentPage);
+      if (i !== currentPage) {
+        currentPage = i;
+        showPage(currentPage);
+      }
     });
 
     paginationContainer.appendChild(btn);
@@ -90,15 +161,27 @@ function renderPagination() {
 }
 
 function showPage(page) {
-  const start = (page - 1) * songsPerPage;
-  const end = start + songsPerPage;
+  const container = document.getElementById("songsContainer");
 
-  allSongs.forEach((song, index) => {
-    song.style.display = (index >= start && index < end) ? "block" : "none";
-  });
+  // 🔹 Animación de fundido sutil
+  container.style.opacity = "0";
 
-  renderPagination();
+  setTimeout(() => {
+    const start = (page - 1) * songsPerPage;
+    const end = start + songsPerPage;
+
+    allSongs.forEach((song, index) => {
+      song.style.display = (index >= start && index < end) ? "block" : "none";
+    });
+
+    renderPagination();
+
+    // 🔹 Aparece suavemente
+    container.style.opacity = "1";
+  }, 150); // Duración de fundido corta y elegante
 }
+
+
 
 /* ========================
    5. CARGA DE CANCIONES
