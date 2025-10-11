@@ -92,22 +92,27 @@ function initButtons() {
     });
   });
 
-  // Quitar canción del repertorio
-  document.querySelectorAll(".remove-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const idx = btn.closest(".song").dataset.index;
-      const title = repertorio[idx].title;
+  // ✅ Botón quitar canción (corrige el bug del índice tras mover canciones)
+document.querySelectorAll(".remove-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const song = btn.closest(".song");
+    const title = song.querySelector("h2")?.childNodes[0]?.textContent.trim();
 
-      // Eliminar del arreglo y actualizar almacenamiento
-      repertorio.splice(idx, 1);
-      letrasAbiertas = letrasAbiertas.filter(t => t !== title);
+    // Buscar por título (más confiable que por índice)
+    const indexToRemove = repertorio.findIndex(item => item.title === title);
+    if (indexToRemove === -1) return; // no encontrado (seguridad)
 
-      localStorage.setItem("repertorio", JSON.stringify(repertorio));
-      localStorage.setItem("letrasAbiertas", JSON.stringify(letrasAbiertas));
+    // Eliminar también de letras abiertas
+    letrasAbiertas = letrasAbiertas.filter(t => t !== title);
 
-      renderRepertorio(searchInput.value);
-    });
+    repertorio.splice(indexToRemove, 1);
+    localStorage.setItem("repertorio", JSON.stringify(repertorio));
+    localStorage.setItem("letrasAbiertas", JSON.stringify(letrasAbiertas));
+
+    renderRepertorio(searchInput.value);
   });
+});
+
 }
 
 // ========================
