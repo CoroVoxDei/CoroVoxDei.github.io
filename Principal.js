@@ -244,7 +244,7 @@ document.querySelectorAll("#submenu a").forEach(link => {
 });
 
 homeBtn?.addEventListener("click", () => {
-  loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
+  loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Aclamacion.html", "Ofertorio.html", "Santo.html", "Cordero.html", "Comunion.html", "PosComunion.html", "Marianos.html", "Eucaristicos.html"]);
   updateTitle("CANCIONERO DIGITAL");
 });
 
@@ -293,7 +293,7 @@ function initSongButtons() {
 /* ========================
    10. INICIO
 ======================== */
-loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
+loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Aclamacion.html", "Ofertorio.html", "Santo.html", "Cordero.html", "Comunion.html", "PosComunion.html", "Marianos.html", "Eucaristicos.html"]);
 
 /* ========================
    11. ACORDEÓN MÓVIL
