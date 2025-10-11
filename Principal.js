@@ -31,13 +31,13 @@ overlay?.addEventListener("click", closeSidebar);
 const toggleSubmenu = document.getElementById("toggleSubmenu");
 const submenu = document.getElementById("submenu");
 
-toggleSubmenu?.addEventListener("click", (e) => {
+toggleSubmenu?.addEventListener("click", e => {
   e.preventDefault();
   submenu.classList.toggle("open");
 });
 
 /* ========================
-   2. TITULO DINAMICO
+   2. TÍTULO DINÁMICO
 ======================== */
 function updateTitle(newTitle) {
   pageTitle.textContent = newTitle;
@@ -63,76 +63,75 @@ function initSearch() {
 }
 
 /* ========================
-   FILTRO POR CATEGORÍAS
+   4. FILTRO POR CATEGORÍAS
 ======================== */
-const categoryButtons = document.querySelectorAll('.category-btn');
-let allSongsList = document.querySelectorAll('.song');
+const categoryButtons = document.querySelectorAll(".category-btn");
+let allSongsList = document.querySelectorAll(".song");
 
 categoryButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    // Quitar clase activa de todos
-    categoryButtons.forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+  button.addEventListener("click", () => {
+    categoryButtons.forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
 
     const selectedCategory = button.dataset.category?.toLowerCase();
 
     allSongsList.forEach(song => {
       const songCategory = song.dataset.category?.toLowerCase();
-
-      // Mostrar solo canciones que coinciden o todas si es "todos"
       song.style.display =
-        selectedCategory === 'todos' || songCategory === selectedCategory
-          ? 'block'
-          : 'none';
+        selectedCategory === "todos" || songCategory === selectedCategory
+          ? "block"
+          : "none";
     });
   });
 });
 
-// Reactivar después de cargar nuevas canciones dinámicamente
 document.addEventListener("DOMContentLoaded", () => {
   const observer = new MutationObserver(() => {
-    allSongsList = document.querySelectorAll('.song');
+    allSongsList = document.querySelectorAll(".song");
   });
-
   observer.observe(document.body, { childList: true, subtree: true });
 });
 
-/* ========================
-   SCROLL HORIZONTAL CON ARRASTRE (para PC)
-======================== */
-const scrollContainer = document.querySelector('.search-categories');
+/* ================================================================================
+   5. SCROLL HORIZONTAL CON ARRASTRE (PC)
+      sirve para que en computadoras (no celulares) puedas deslizar con el mouse la 
+      fila de categorías de izquierda a derecha como si fuera una galería, haciendo 
+      clic y arrastrando.
+================================================================================ */
+
+const scrollContainer = document.querySelector(".search-categories");
 let isDown = false;
 let startX, scrollLeft;
 
 if (scrollContainer) {
-  scrollContainer.addEventListener('mousedown', e => {
+  scrollContainer.addEventListener("mousedown", e => {
     isDown = true;
-    scrollContainer.classList.add('grabbing');
+    scrollContainer.classList.add("grabbing");
     startX = e.pageX - scrollContainer.offsetLeft;
     scrollLeft = scrollContainer.scrollLeft;
   });
 
-  scrollContainer.addEventListener('mouseleave', () => {
+  scrollContainer.addEventListener("mouseleave", () => {
     isDown = false;
-    scrollContainer.classList.remove('grabbing');
+    scrollContainer.classList.remove("grabbing");
   });
 
-  scrollContainer.addEventListener('mouseup', () => {
+  scrollContainer.addEventListener("mouseup", () => {
     isDown = false;
-    scrollContainer.classList.remove('grabbing');
+    scrollContainer.classList.remove("grabbing");
   });
 
-  scrollContainer.addEventListener('mousemove', e => {
+  scrollContainer.addEventListener("mousemove", e => {
     if (!isDown) return;
     e.preventDefault();
     const x = e.pageX - scrollContainer.offsetLeft;
-    const walk = (x - startX) * 1.5; // velocidad de desplazamiento
+    const walk = (x - startX) * 1.5;
     scrollContainer.scrollLeft = scrollLeft - walk;
   });
 }
 
 /* ========================
-   4. PAGINACIÓN
+   6. PAGINACIÓN
 ======================== */
 const songsPerPage = 5;
 let currentPage = 1;
@@ -162,8 +161,6 @@ function renderPagination() {
 
 function showPage(page) {
   const container = document.getElementById("songsContainer");
-
-  // 🔹 Animación de fundido sutil
   container.style.opacity = "0";
 
   setTimeout(() => {
@@ -175,108 +172,69 @@ function showPage(page) {
     });
 
     renderPagination();
-
-    // 🔹 Aparece suavemente
     container.style.opacity = "1";
-  }, 150); // Duración de fundido corta y elegante
+  }, 150);
 }
-
 
 /* ========================
-   MOSTRAR / OCULTAR ACORDES (desde el menú lateral)
+   7. MOSTRAR / OCULTAR ACORDES
 ======================== */
 const toggleChordsBtn = document.getElementById("toggleChordsBtn");
-
-// Leer preferencia guardada
 let showChords = localStorage.getItem("showChords");
-showChords = showChords === null ? true : showChords === "true"; // Por defecto visibles
-
-function updateChordsVisibility() {
-  if (showChords) {
-    document.body.classList.remove("hide-chords");
-  } else {
-    document.body.classList.add("hide-chords");
-  }
-
-  // Cambiar texto del botón
-  if (toggleChordsBtn) {
-    toggleChordsBtn.textContent = showChords ? "Ocultar acordes" : "Mostrar acordes";
-  }
-
-  // Guardar preferencia
-  localStorage.setItem("showChords", showChords);
-}
+showChords = showChords === null ? true : showChords === "true";
 
 function cleanEmptyChordLines() {
   document.querySelectorAll("pre").forEach(pre => {
-    // Si el <pre> solo contiene acordes (o queda vacío tras ocultarlos)
     const text = pre.textContent.trim();
     const hasOnlyChords = pre.querySelectorAll(".chord").length > 0 && text === "";
-    if (hasOnlyChords || text === "") pre.style.display = "none";
-    else pre.style.display = "";
+    pre.style.display = (hasOnlyChords || text === "") ? "none" : "";
   });
 }
 
-// Llama a la limpieza cada vez que cambie el modo de acordes
 function updateChordsVisibility() {
-  if (showChords) {
-    document.body.classList.remove("hide-chords");
-  } else {
-    document.body.classList.add("hide-chords");
-  }
+  document.body.classList.toggle("hide-chords", !showChords);
 
-  // Cambiar texto del botón
   if (toggleChordsBtn) {
     toggleChordsBtn.textContent = showChords ? "Ocultar acordes" : "Mostrar acordes";
   }
 
-  // Guardar preferencia
   localStorage.setItem("showChords", showChords);
-
-  // 🧹 Limpia líneas vacías o contenedores vacíos
   cleanEmptyChordLines();
 }
 
-
-// Evento click
 toggleChordsBtn?.addEventListener("click", e => {
   e.preventDefault();
   showChords = !showChords;
   updateChordsVisibility();
 });
 
-// Aplicar visibilidad inicial al cargar la página
 document.addEventListener("DOMContentLoaded", updateChordsVisibility);
 
 /* ========================
-   5. CARGA DE CANCIONES
+   8. CARGA DE CANCIONES
 ======================== */
 function loadSongs(files, categoryTitle = "CANCIONERO DIGITAL") {
-  if (!Array.isArray(files)) files = [files]; // si pasas 1 archivo, lo convierte en array
+  if (!Array.isArray(files)) files = [files];
 
   Promise.all(files.map(file => fetch(file).then(res => res.text())))
     .then(htmls => {
-      document.getElementById("songsContainer").innerHTML = htmls.join(""); // concatena
-
-      // capturamos todas las canciones cargadas
+      document.getElementById("songsContainer").innerHTML = htmls.join("");
       allSongs = Array.from(document.querySelectorAll(".song"));
 
       initSongButtons();
       initSearch();
       updateTitle(categoryTitle);
 
-      // mostrar primera página con paginación
       currentPage = 1;
       showPage(currentPage);
     })
     .catch(err => console.error("Error cargando canciones:", err));
 }
 
-// Detectar clicks en el sidebar
-document.querySelectorAll('#submenu a').forEach(link => {
-  link.addEventListener('click', e => {
+document.querySelectorAll("#submenu a").forEach(link => {
+  link.addEventListener("click", e => {
     e.preventDefault();
-    const file = e.target.getAttribute('data-file');
+    const file = e.target.getAttribute("data-file");
     const name = e.target.textContent;
     if (file) {
       loadSongs(file, `Cantos ${name}`);
@@ -285,17 +243,15 @@ document.querySelectorAll('#submenu a').forEach(link => {
   });
 });
 
-// Botón inicio → vuelve al general
 homeBtn?.addEventListener("click", () => {
   loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
   updateTitle("CANCIONERO DIGITAL");
 });
 
 /* ========================
-   6. BOTONES DE CANCIONES
+   9. BOTONES DE CANCIONES
 ======================== */
 function initSongButtons() {
-  // Toggle letra
   document.querySelectorAll(".toggle-lyrics").forEach(btn => {
     btn.addEventListener("click", () => {
       const lyrics = btn.closest(".song").querySelector(".lyrics, .lyrics1");
@@ -303,63 +259,54 @@ function initSongButtons() {
       const textSpan = btn.querySelector(".text");
 
       lyrics.classList.toggle("show");
-
       if (iconSpan) iconSpan.textContent = lyrics.classList.contains("show") ? "▲" : "▼";
       if (textSpan) textSpan.textContent = lyrics.classList.contains("show") ? "Ocultar letra" : "Ver letra";
     });
   });
 
-// Añadir repertorio
-document.querySelectorAll('.add-repertorio').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const songSection = btn.closest('.song');
-    const title = songSection.querySelector("h2")?.childNodes[0]?.textContent.trim() || "";
-    const author = songSection.querySelector(".autor")?.textContent.trim() || "";
-    const lyrics = songSection.querySelector(".lyrics, .lyrics1")?.innerHTML.trim();
-    const category = songSection.dataset.category || "Sin categoría";
+  document.querySelectorAll(".add-repertorio").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const songSection = btn.closest(".song");
+      const title = songSection.querySelector("h2")?.childNodes[0]?.textContent.trim() || "";
+      const author = songSection.querySelector(".autor")?.textContent.trim() || "";
+      const lyrics = songSection.querySelector(".lyrics, .lyrics1")?.innerHTML.trim();
+      const category = songSection.dataset.category || "Sin categoría";
 
-    if (!title || !lyrics) {
-      console.error("❌ No se pudo guardar la canción. Faltan datos.");
-      return;
-    }
+      if (!title || !lyrics) {
+        console.error("❌ No se pudo guardar la canción. Faltan datos.");
+        return;
+      }
 
-    let repertorio = JSON.parse(localStorage.getItem("repertorio")) || [];
+      let repertorio = JSON.parse(localStorage.getItem("repertorio")) || [];
 
-    // Evita duplicados
-    if (!repertorio.some(song => song.title === title)) {
-      repertorio.push({ title, author, lyrics, category }); // 👈 Agregamos el autor
-      localStorage.setItem("repertorio", JSON.stringify(repertorio));
-      alert(`✅ "${title}" de ${author} se añadió al repertorio`);
-    } else {
-      alert(`⚠️ "${title}" ya está en tu repertorio`);
-    }
+      if (!repertorio.some(song => song.title === title)) {
+        repertorio.push({ title, author, lyrics, category });
+        localStorage.setItem("repertorio", JSON.stringify(repertorio));
+        alert(`✅ "${title}" de ${author} se añadió al repertorio`);
+      } else {
+        alert(`⚠️ "${title}" ya está en tu repertorio`);
+      }
+    });
   });
-});
-
-
 }
 
 /* ========================
-   7. INICIO
+   10. INICIO
 ======================== */
-loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html" ]);
-
+loadSongs(["Entrada.html", "Penitencial.html", "Gloria.html", "Comunion.html", "Eucaristicos.html"]);
 
 /* ========================
-   8. ACORDEÓN MÓVIL (solo en celulares)
+   11. ACORDEÓN MÓVIL
 ======================== */
 function enableMobileAccordion() {
   document.querySelectorAll(".song-header").forEach(header => {
-    // Eliminar handler viejo si existe
     if (header._mobileHandler) {
       header.removeEventListener("click", header._mobileHandler);
       delete header._mobileHandler;
     }
 
-    // Solo activar en pantallas pequeñas
     if (window.innerWidth <= 768) {
-      header._mobileHandler = function(e) {
-        // Evita conflicto con botón "añadir repertorio"
+      header._mobileHandler = function (e) {
         if (e.target.closest(".add-repertorio") || e.target.closest(".toggle-lyrics")) return;
 
         const lyrics = header.closest(".song").querySelector(".lyrics, .lyrics1");
@@ -367,7 +314,6 @@ function enableMobileAccordion() {
         const textSpan = header.querySelector(".toggle-lyrics .text");
 
         lyrics.classList.toggle("show");
-
         if (iconSpan) iconSpan.textContent = lyrics.classList.contains("show") ? "▲" : "▼";
         if (textSpan) textSpan.textContent = lyrics.classList.contains("show") ? "Ocultar letra" : "Ver letra";
       };
@@ -377,7 +323,5 @@ function enableMobileAccordion() {
   });
 }
 
-// Detectar cambio de tamaño o carga inicial
 window.addEventListener("load", enableMobileAccordion);
 window.addEventListener("resize", enableMobileAccordion);
-
