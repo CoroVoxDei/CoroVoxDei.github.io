@@ -10,52 +10,54 @@ body {
   padding-top: 80px; /* compensa la altura del header fijo */
 }
 
-/* ========================
+/* =========================================
    1. ENCABEZADO (TOPBAR)
-======================== */
+   Barra superior fija con efecto vidrio
+========================================= */
 .topbar {
   position: fixed;
-  top: 0; left: 0; width: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  /* 🎵 Efecto vidrio estilo Spotify */
+  padding: 8px 16px;
   background: rgba(27, 31, 36, 0.55);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
-  padding: 8px 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   z-index: 2000;
   transition: transform 0.3s ease, background 0.3s ease;
 }
 
+/* Oculta la barra al hacer scroll */
 .topbar.hidden {
   transform: translateY(-100%);
 }
 
-/* Logos */
-.logo-left img { 
-  height: 80px; 
-  margin-left: 50px; 
-  transition: opacity 0.3s ease; 
-}
-.logo-right { 
-  height: 60px; 
-  margin-right: 50px; 
-  opacity: 0.9; 
+/* ---------- Logos ---------- */
+.logo-left img {
+  height: 80px;
+  margin-left: 50px;
+  transition: opacity 0.3s ease;
 }
 
-/* Iconos superiores */
+.logo-right {
+  height: 60px;
+  margin-right: 50px;
+  opacity: 0.9;
+}
+
+/* ---------- Iconos superiores ---------- */
 .top-icons {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
-/* Iconos de imagen */
+/* Iconos individuales */
 .top-icons .icon {
   width: 24px;
   height: 24px;
@@ -69,13 +71,13 @@ body {
   transform: scale(1.1);
 }
 
-/* Botones */
+/* ---------- Botones ---------- */
 .icon-btn {
   background: none;
   border: none;
-  cursor: pointer;
-  font-size: 28px;
   color: #fff;
+  font-size: 28px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,77 +89,97 @@ body {
   opacity: 0.9;
 }
 
-/* ========================
-   2. IMAGEN + TÍTULO (ajustado)
-======================== */
+
+/* =========================================
+   2. SECCIÓN HERO (Imagen + Título)
+   Imagen principal con texto centrado
+========================================= */
 .hero {
   position: relative;
   width: 100%;
-  height: 70vh; /* 🔹 antes 55vh → ahora más alto */
+  height: 70vh; /* Altura principal del bloque */
   overflow: hidden;
-  margin-top: -60px; /* mantiene alineado con el header */
+  margin-top: -60px; /* Alineación con el encabezado */
 }
 
+/* Imagen de fondo */
 .hero img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 50% 70%;
-  filter: brightness(0.45);
+  filter: brightness(0.45); /* Oscurece ligeramente para resaltar el texto */
 }
 
+/* Contenedor del texto */
 .hero-text {
   position: absolute;
-  top: 58%; /* 🔹 antes 50% → lo baja ligeramente */
+  top: 58%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 2;
 }
 
+/* Título principal */
 .hero-text h1 {
-  font-size: 5rem; /* 🔹 un poco más grande para llenar mejor el espacio */
+  font-size: 5rem;
   color: #A51E17;
   font-weight: 700;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
   -webkit-text-stroke: 1.5px #fff;
   animation: fadeIn 2s ease forwards;
 }
 
+/* Animación de aparición suave */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
-/* ========================
-   3. BARRA DE BÚSQUEDA ELEGANTE
-======================== */
+/* =========================================
+   3. BARRA DE BÚSQUEDA (Diseño elegante)
+   Barra central con efecto de vidrio y enfoque moderno
+========================================= */
+
 .search-bar {
   position: relative;
   display: flex;
   align-items: center;
+  width: 90%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 10px 16px;
+  
+  /* Fondo con efecto vidrio */
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  padding: 10px 16px;
-  width: 90%;
-  max-width: 800px;
-  margin: 50px auto;
+
   transition: all 0.3s ease;
 }
 
+/* Efecto al pasar el cursor */
 .search-bar:hover {
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* Efecto al estar enfocada */
 .search-bar:focus-within {
   border-color: #A51E17;
   background: rgba(255, 255, 255, 0.1);
 }
 
+/* Icono de la lupa */
 .search-bar .icon {
   width: 22px;
   height: 22px;
@@ -166,64 +188,29 @@ body {
   opacity: 0.85;
 }
 
+/* Campo de texto */
 .search-bar input {
   flex: 1;
   border: none;
   outline: none;
-  font-size: 1rem;
-  padding: 8px 0;
   background: transparent;
   color: #f2f2f2;
+  font-size: 1rem;
+  padding: 8px 0;
 }
 
+/* Texto del placeholder */
 .search-bar input::placeholder {
   color: #aaa;
 }
 
-/* ======== SUGERENCIAS ======== */
-.search-suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  background: rgba(18, 18, 18, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
-  margin-top: 2px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  max-height: 220px;
-  overflow-y: auto;
-  display: none;
-  z-index: 1000;
-}
 
-.search-suggestions.active {
-  display: block;
-  animation: fadeIn 0.2s ease;
-}
 
-.search-suggestions li {
-  list-style: none;
-  padding: 10px 16px;
-  color: #ccc;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
+/* =========================================
+   4. BOTONES DE CATEGORÍAS
+   Barra horizontal con desplazamiento suave y sin scrollbar visible
+========================================= */
 
-.search-suggestions li:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ff4c4c;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========================
-   3.1 BOTONES DE CATEGORÍAS (scroll limpio sin barra visible)
-======================== */
 .search-categories {
   display: flex;
   flex-wrap: nowrap;
@@ -232,32 +219,35 @@ body {
   padding: 10px 20px;
   margin: 20px auto 40px;
   max-width: 1070px;
+  
+  /* Desplazamiento suave en horizontal */
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* mejora el desplazamiento en móviles */
-}
+  -webkit-overflow-scrolling: touch; /* mejora en móviles */
 
-/* 👇 Ocultar barra de scroll visualmente */
-.search-categories::-webkit-scrollbar {
-  display: none;
-}
-.search-categories {
+  /* Ocultar barra de scroll visualmente */
   -ms-overflow-style: none;  /* IE y Edge */
   scrollbar-width: none;     /* Firefox */
 }
 
+.search-categories::-webkit-scrollbar {
+  display: none; /* Chrome / Safari */
+}
+
+/* Botones individuales de categoría */
 .category-btn {
   background: rgba(40, 40, 40, 0.9);
   color: #e5e5e5;
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px 22px;
   font-size: 0.95rem;
+  font-weight: 500;
   border-radius: 10px;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.25s ease;
-  font-weight: 500;
 }
 
+/* Efecto hover */
 .category-btn:hover {
   background: rgba(165, 30, 23, 0.85);
   color: #fff;
@@ -265,13 +255,16 @@ body {
   box-shadow: 0 0 8px rgba(165, 30, 23, 0.4);
 }
 
+/* Estado activo */
 .category-btn.active {
   background: #A51E17;
   color: #fff;
   box-shadow: 0 0 10px rgba(165, 30, 23, 0.5);
 }
 
-/* Adaptación móvil */
+/* =========================================
+   Adaptación para pantallas pequeñas
+========================================= */
 @media (max-width: 768px) {
   .search-categories {
     padding: 8px 12px;
@@ -286,32 +279,40 @@ body {
 }
 
 
-/* ========================
+/* =========================================
    4. MENÚ LATERAL
-======================== */
+   (Diseño del sidebar con submenús y overlay)
+========================================= */
+
 .sidebar {
   position: fixed;
   top: 0;
   left: -260px;
   width: 240px;
   height: 100%;
-  background: rgba(25, 25, 25, 0.55); /* menos opaco */
+  padding: 22px 18px;
+  color: #fff;
+
+  /* Fondo con efecto vidrio */
+  background: rgba(25, 25, 25, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  color: #fff;
-  padding: 22px 18px;
+
+  /* Borde y sombra */
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+
+  overflow-y: auto;
   transition: left 0.35s ease, background 0.4s ease;
   z-index: 1200;
-  overflow-y: auto;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-
+/* Sidebar visible */
 .sidebar.active {
   left: 0;
 }
 
+/* Botón de cierre */
 .sidebar-close {
   background: none;
   border: none;
@@ -327,7 +328,9 @@ body {
   transform: rotate(90deg);
 }
 
-/* ---------- Navegación ---------- */
+/* =========================================
+   Navegación principal
+========================================= */
 .sidebar nav ul {
   list-style: none;
   padding: 0;
@@ -345,9 +348,9 @@ body {
   padding: 10px 12px;
   color: #ddd;
   text-decoration: none;
-  border-radius: 8px;
   font-size: 0.95rem;
   letter-spacing: 0.3px;
+  border-radius: 8px;
   transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
@@ -363,13 +366,15 @@ body {
   font-weight: 600;
 }
 
-/* ---------- Submenús ---------- */
+/* =========================================
+   Submenús desplegables
+========================================= */
 .submenu {
   max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
   margin-left: 15px;
+  overflow: hidden;
   opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
 }
 
 .submenu.open {
@@ -386,7 +391,9 @@ body {
   color: #ffb347;
 }
 
-/* ---------- Overlay ---------- */
+/* =========================================
+   Overlay (fondo oscuro al abrir menú)
+========================================= */
 .overlay {
   position: fixed;
   inset: 0;
@@ -402,23 +409,25 @@ body {
   visibility: visible;
 }
 
-/* ---------- Scroll personalizado ---------- */
+/* =========================================
+   Scroll personalizado del sidebar
+========================================= */
 .sidebar::-webkit-scrollbar {
   width: 6px;
 }
+
 .sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 3px;
 }
+
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-
-
-/* ================================
+/* =========================================
    🎵 MODO "OCULTAR ACORDES"
-================================ */
+========================================= */
 .hide-chords .chord {
   display: none !important;
 }
@@ -431,9 +440,11 @@ body {
 }
 
 
-/* ========================
+/* =========================================
    5. CONTENIDO (CANCIONES)
-======================== */
+========================================= */
+
+/* --- Contenedor principal --- */
 .content {
   max-width: 1100px;
   margin: auto;
@@ -442,21 +453,23 @@ body {
 
 /* --- Tarjeta de cada canción --- */
 .song {
-  background: rgba(30, 30, 30, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   margin-bottom: 30px;
   padding: 20px;
   border-left: 5px solid #A51E17;
   border-radius: 12px;
+
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
 }
 
 .song:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
   background: rgba(40, 40, 40, 0.75);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 /* --- Encabezado de la canción --- */
@@ -493,12 +506,12 @@ body {
   width: 100%;
 }
 
-/* --- Autor (debajo o junto al título) --- */
+/* --- Autor de la canción --- */
 .autor {
+  margin-left: 10px;
   font-size: 0.9rem;
   font-style: italic;
   color: #9fa3b0;
-  margin-left: 10px;
   opacity: 0.8;
   transition: color 0.3s ease;
 }
@@ -507,7 +520,7 @@ body {
   color: #ff7878;
 }
 
-/* --- Botones --- */
+/* --- Botones (repertorio / mostrar letra) --- */
 .add-repertorio,
 .toggle-lyrics {
   display: inline-flex;
@@ -516,14 +529,15 @@ body {
   padding: 8px 16px;
   font-size: 0.9rem;
   border: none;
-  border-radius: 25px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
+/* Botón agregar al repertorio */
 .add-repertorio {
-  background: linear-gradient(135deg, #A51E17, #ff4c4c);
   color: #fff;
+  background: linear-gradient(135deg, #A51E17, #ff4c4c);
   box-shadow: 0 0 10px rgba(255, 76, 76, 0.2);
 }
 
@@ -532,6 +546,7 @@ body {
   box-shadow: 0 0 14px rgba(255, 76, 76, 0.5);
 }
 
+/* Botón alternar letra */
 .toggle-lyrics {
   background: #333;
   color: #fff;
@@ -541,13 +556,13 @@ body {
   background: #A51E17;
 }
 
-/* --- Letras (letra y acordes) --- */
+/* --- Letras y acordes --- */
 .lyrics,
 .lyrics1 {
+  margin-top: 25px;
+  text-align: justify;
   column-count: 2;
   column-gap: 40px;
-  text-align: justify;
-  margin-top: 25px;
   display: none;
   opacity: 0;
   transform: translateY(-10px);
@@ -562,7 +577,7 @@ body {
   animation: fadeSlideIn 0.6s ease forwards;
 }
 
-/* Animación de aparición */
+/* --- Animación de aparición --- */
 @keyframes fadeSlideIn {
   from {
     opacity: 0;
@@ -574,24 +589,25 @@ body {
   }
 }
 
+/* --- Texto de letras --- */
 .lyrics pre,
 .lyrics1 pre {
-  break-inside: avoid;
   margin-bottom: 16px;
-  white-space: pre-wrap;
-  font-family: 'Fira Code', monospace;
-  line-height: 1.9;
-  background: rgba(40, 40, 40, 0.6);
-  color: #ddd;
   padding: 16px;
   border-radius: 6px;
+
+  font-family: 'Fira Code', monospace;
+  line-height: 1.9;
+  white-space: pre-wrap;
+
+  background: rgba(40, 40, 40, 0.6);
+  color: #ddd;
   box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
 }
 
 .chord {
-  color: #ff7878; /* rojo coral suave */
+  color: #ff7878;
 }
-
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
@@ -600,10 +616,10 @@ body {
   }
 }
 
-
-/* ========================
+/* =========================================
    6. PAGINACIÓN
-======================== */
+========================================= */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -612,11 +628,11 @@ body {
 }
 
 .pagination button {
+  padding: 6px 12px;
+  border: 1px solid #ff4c4c;
+  border-radius: 6px;
   background: #1e1e1e;
   color: #fff;
-  border: 1px solid #ff4c4c;
-  padding: 6px 12px;
-  border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -626,16 +642,15 @@ body {
   font-weight: bold;
 }
 
-/* ========================
-   Transición entre páginas (estilo minimalista)
-======================== */
+/* --- Transición entre páginas --- */
 #songsContainer {
   transition: opacity 0.3s ease;
 }
 
-/* ========================
+/* =========================================
    7. PIE DE PÁGINA (PROFESIONAL)
-======================== */
+========================================= */
+
 .footer {
   background: rgba(20, 20, 20, 0.6);
   backdrop-filter: blur(12px);
@@ -657,12 +672,13 @@ body {
   align-items: start;
 }
 
+/* --- Sección individual --- */
 .footer-section {
   display: flex;
   flex-direction: column;
-  gap: 20px; /* 👈 espacio entre líneas */
+  gap: 20px;
 }
-/* --- Secciones individuales --- */
+
 .footer-section h3 {
   margin-bottom: 16px;
   font-size: 1.1rem;
@@ -679,7 +695,7 @@ body {
   margin-bottom: 10px;
 }
 
-/* --- Enlaces de redes sociales --- */
+/* --- Enlaces de redes --- */
 .footer-section a {
   display: flex;
   align-items: center;
@@ -687,8 +703,8 @@ body {
   color: #e5e5e5;
   text-decoration: none;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
   opacity: 0.85;
+  transition: all 0.3s ease;
 }
 
 .footer-section a:hover {
@@ -697,7 +713,7 @@ body {
   transform: translateX(4px);
 }
 
-/* --- Íconos de redes --- */
+/* --- Íconos --- */
 .footer-section .icon {
   width: 22px;
   height: 22px;
@@ -742,23 +758,29 @@ body {
 }
 
 
-
-
-
-/* ========================
+/* =========================================
    8. ADAPTACIÓN RESPONSIVE
-======================== */
+========================================= */
 
 /* --- Tablets (pantallas medianas) --- */
 @media (max-width: 1024px) {
-  .logo-left img { height: 65px; margin-left: 20px; }
-  .logo-right { height: 50px; margin-right: 20px; }
+  /* Encabezado */
+  .logo-left img {
+    height: 65px;
+    margin-left: 20px;
+  }
+  .logo-right {
+    height: 50px;
+    margin-right: 20px;
+  }
 
+  /* Portada */
   .hero-text h1 {
     font-size: 3rem;
     -webkit-text-stroke: 1px #fff;
   }
 
+  /* Barra de búsqueda */
   .search-bar {
     max-width: 700px;
     padding: 10px 16px;
@@ -767,53 +789,78 @@ body {
 
 /* --- Celulares (pantallas pequeñas) --- */
 @media (max-width: 768px) {
-  /* Header */
+
+  /* ========================
+     ENCABEZADO
+  ======================== */
   .topbar {
     padding: 6px 12px;
     gap: 15px;
   }
-  .logo-left img { height: 50px; margin-left: 0; }
-  .logo-right { height: 40px; margin-right: 0; }
-
+  .logo-left img {
+    height: 50px;
+    margin-left: 0;
+  }
+  .logo-right {
+    height: 40px;
+    margin-right: 0;
+  }
   .top-icon {
     width: 16px;
     height: 16px;
   }
 
-  /* Hero */
-  .hero { height: 35vh; }
+  /* ========================
+     PORTADA
+  ======================== */
+  .hero {
+    height: 35vh;
+  }
   .hero-text h1 {
     font-size: 2.8rem;
     -webkit-text-stroke: 0.8px #fff;
   }
 
-  /* Barra búsqueda */
+  /* ========================
+     BARRA DE BÚSQUEDA
+  ======================== */
   .search-bar {
     width: 90%;
-    max-width: 3500%;
     padding: 5px 14px;
     margin: 20px auto;
   }
-  .search-bar input { font-size: 14px; }
-  .search-bar .icon { width: 22px; height: 22px; }
-
-  /* CATEGORIAS */
-
-  .category-btn {
-    border-radius: 7px;
+  .search-bar input {
+    font-size: 14px;
+  }
+  .search-bar .icon {
+    width: 22px;
+    height: 22px;
   }
 
-  /* Canciones */
+  /* ========================
+     BOTONES DE CATEGORÍA
+  ======================== */
+  .category-btn {
+    border-radius: 7px;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+  }
+
+  /* ========================
+     CONTENIDO (CANCIONES)
+  ======================== */
   .song {
     padding: 15px;
     margin-bottom: 18px;
   }
+
   .song-header {
-    flex-direction: row !important;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
   }
+
   .song-header h2 {
     font-size: 1rem;
     margin: 0;
@@ -822,12 +869,14 @@ body {
     text-overflow: ellipsis;
     max-width: 60%;
   }
-  .song:last-child { margin-bottom: 0; }
+
+  .autor {
+    font-size: 0.5rem;
+  }
 
   /* Botones compactos */
   .add-repertorio,
   .toggle-lyrics {
-    width: auto;
     padding: 2px 4px;
     font-size: 0.7rem;
     min-width: 28px;
@@ -835,46 +884,66 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0;
     border-radius: 7px;
   }
-  .add-repertorio .icon { color: #fff !important; }
+
+  .add-repertorio .icon {
+    color: #fff !important;
+  }
+
   .toggle-lyrics .text,
-  .add-repertorio .text { display: none; }
+  .add-repertorio .text {
+    display: none;
+  }
 
   /* Letras */
-  .lyrics, .lyrics1 {
+  .lyrics,
+  .lyrics1 {
     column-count: 1 !important;
     font-size: 0.61rem;
     line-height: 1.3;
-    display: none;
   }
-  .lyrics.show, .lyrics1.show { display: block; }
-
-  .autor {
-  font-size: 0.5rem;
-}
-
 
   /* Sidebar */
-  .sidebar { width: 180px; }
+  .sidebar {
+    width: 180px;
+  }
 
-  /* Footer */
+  /* ========================
+     PIE DE PÁGINA
+  ======================== */
   .footer {
     padding: 20px 15px;
     text-align: center;
   }
+
   .footer-section h3 {
     margin-bottom: 8px;
     font-size: 1.2rem;
-    text-align: center;
   }
+
+  .footer-section a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: inherit;
+    margin-bottom: 15px;
+    text-decoration: none;
+  }
+
+  .footer-section a img.icon {
+    width: 20px;
+    height: 20px;
+  }
+
   .social-links {
     display: flex;
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
   }
+
   .social-links a {
     display: inline-flex;
     align-items: center;
@@ -882,23 +951,8 @@ body {
     padding: 6px 10px;
     color: #fff;
     border-radius: 6px;
-    text-decoration: none;
     font-size: 0.9rem;
-    gap: 5px;
-  }
-  .social-links a img.icon,
-  .footer-section a img.icon {
-    width: 20px;
-    height: 20px;
-  }
-  .footer-section a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
     text-decoration: none;
-    color: inherit;
-    margin-bottom: 6px;
-     margin-bottom: 15px;  /* 🔹 más separación entre enlaces */
+    gap: 5px;
   }
 }
