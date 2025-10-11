@@ -212,7 +212,6 @@ body {
   bottom: -5px;
   width: 0%;
   height: 3px;
-  background: #ff4c4c;
   transition: width 0.3s ease;
 }
 
@@ -323,7 +322,7 @@ body {
    Estilo del autor (como en principal)
 ======================== */
 .autor {
-  font-size: 0.9rem;
+  font-size: 0.9rem !important;
   font-style: italic;
   color: #ccc !important;  /* 👈 tono gris claro */
   margin-left: 8px;
@@ -349,6 +348,54 @@ body {
   color: #aaa;
   margin-top: 20px;
   font-size: 1.1rem;
+}
+
+/* 🎵 Ícono de arrastre */
+.drag-handle {
+  cursor: grab;
+  font-size: 1.3rem;
+  color: #ccc;
+  margin-right: 8px;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+
+/* Evita que el arrastre bloquee el scroll en móviles */
+.song[draggable="true"]:not(.dragging) {
+  touch-action: pan-y;
+}
+
+/* Ícono de arrastre ☰ */
+.drag-handle {
+  cursor: grab;
+  font-size: 1.2rem;
+  color: #888;
+  margin-right: 10px;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  color: #ff4c4c;
+}
+
+.song-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.song-header h2 {
+  flex: 1;
+  text-align: left; /* 👈 asegura que el título quede al costado */
+  margin: 0;
 }
 
 
@@ -458,9 +505,10 @@ body {
     font-size: 0.9rem;
     margin-top: 15px;
   }
-}
+
   .song:last-child { margin-bottom: 0; }
 
-    .autor {
-  font-size: 0.5rem;
+  .autor {
+  font-size: 0.5rem !important;
+}
 }
