@@ -1,45 +1,64 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Repertorio</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Fuentes y estilos -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="Repertorio.css">
+
+  <!-- Librería Sortable -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
 
-  <!-- Topbar -->
+  <!-- ========================
+       1. ENCABEZADO
+  ======================== -->
   <header class="topbar">
     <a href="index.html" class="inicio">
-      <img src="Principal/Inicio.png" alt="Inicio" class="top-icon1">Inicio
+      <img src="Principal/Inicio.png" alt="Inicio" class="top-icon1">
+      Inicio
     </a>
     <button id="clearBtn" class="limpiar">
-      <img src="Principal/Limpiar-01.png" alt="Limpiar" class="top-icon"> Limpiar
+      <img src="Principal/Limpiar-01.png" alt="Limpiar" class="top-icon">
+      Limpiar
     </button>
   </header>
 
-  <!-- Hero -->
+  <!-- ========================
+       2. PORTADA
+  ======================== -->
   <section class="hero">
-    <img src="Principal/Santisimo.png" alt="Imagen repertorio">
+    <img src="Principal/Santisimo.png" alt="Imagen de repertorio">
     <div class="hero-text">
       <h1>Mi Repertorio</h1>
     </div>
   </section>
 
-  <!-- Barra búsqueda -->
+  <!-- ========================
+       3. BARRA DE BÚSQUEDA
+  ======================== -->
   <div class="search-bar">
     <input type="text" id="searchRepertorio" placeholder="Buscar...">
-    <button><img src="Principal/Buscar.png" alt="Buscar"></button>
+    <button>
+      <img src="Principal/Buscar.png" alt="Buscar">
+    </button>
   </div>
 
-  <!-- Contenido -->
+  <!-- ========================
+       4. CONTENIDO
+  ======================== -->
   <main class="content">
     <div id="repertorio-list"></div>
     <p id="empty-message">Aún no has añadido ninguna canción.</p>
   </main>
 
+  <!-- ========================
+       5. SCRIPT
+  ======================== -->
   <script src="Repertorio.js"></script>
 </body>
 </html>
