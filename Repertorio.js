@@ -37,21 +37,23 @@ function renderRepertorio(filter = "") {
     section.dataset.index = index;
 
     section.innerHTML = `
-      <div class="song-header">
-        <h2>${song.title} <span class="autor">${song.author || ''}</span></h2>
-        <div class="song-actions">
-          <button class="toggle-lyrics">
-            <span class="icon">▼</span>
-            <span class="text">Ver letra</span>
-          </button>
-          <button class="remove-btn">
-            <span class="icon">🗑</span>
-            <span class="text">Quitar</span>
-          </button>
-        </div>
-      </div>
-      <div class="lyrics">${song.lyrics}</div>
-    `;
+  <div class="song-header">
+    <span class="drag-handle">☰</span>
+    <h2>${song.title} <span class="autor">${song.author || ''}</span></h2>
+    <div class="song-actions">
+      <button class="toggle-lyrics">
+        <span class="icon">▼</span>
+        <span class="text">Ver letra</span>
+      </button>
+      <button class="remove-btn">
+        <span class="icon">🗑</span>
+        <span class="text">Quitar</span>
+      </button>
+    </div>
+  </div>
+  <div class="lyrics">${song.lyrics}</div>
+`;
+
 
     list.appendChild(section);
   });
@@ -153,12 +155,14 @@ function initSortable() {
   if (!container) return;
 
   Sortable.create(container, {
-    animation: 150,
+    animation: 150, // suaviza el movimiento
+    handle: ".drag-handle", // 👈 solo se arrastra desde el icono ☰
     ghostClass: "drag-ghost",
-    onEnd: () => {
+    onEnd: function () {
+      // Actualizar el orden en localStorage
       const newOrder = [];
       document.querySelectorAll(".song").forEach(song => {
-        const title = song.querySelector("h2").childNodes[0].textContent.trim();
+        const title = song.querySelector("h2")?.childNodes[0]?.textContent.trim();
         const found = repertorio.find(item => item.title === title);
         if (found) newOrder.push(found);
       });
@@ -167,6 +171,9 @@ function initSortable() {
     }
   });
 }
+
+
+
 
 // ========================
 // 🔹 8. ACORDEÓN EN MÓVILES
