@@ -1,0 +1,685 @@
+
+
+/* ========================
+   0. ESTILO GLOBAL
+======================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, #0e0e0e 0%, #1b1b1b 100%);
+  color: #e5e5e5;
+  overflow-x: hidden;
+  padding-top: 80px;
+  scroll-behavior: smooth;
+}
+
+/* ========================
+   1. ENCABEZADO
+======================== */
+.topbar {
+  background: linear-gradient(to right, #1a1a1a, #2d0b0b);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000 !important; /* bajo para quedar detrás del overlay/sidebar */
+  height: 95px;
+  display: flex;
+  justify-content: center; /* centra horizontalmente */
+  align-items: center; /* centra verticalmente */
+}
+
+.topbar-content {
+  display: flex;
+  justify-content: space-between; /* los separa automáticamente */
+  align-items: center;
+  width: 100%;
+  padding: 0 20px;
+  margin: 0; /* eliminamos desplazamiento extra */
+  gap: 0; /* ya no se usa separación fija */
+}
+
+
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.icon-btn:hover {
+  color: #ff4c4c ;
+}
+
+
+
+.topbar img.icon {
+  height: 34px;         /* solo controlamos la altura */
+  margin-right: 10px;
+  width: auto;          /* deja que el ancho se ajuste proporcionalmente */
+  vertical-align: middle;
+  object-fit: contain;  /* asegura que no se deforme */
+}
+
+
+/* =========================================
+   4. MENÚ LATERAL
+   (Diseño del sidebar con submenús y overlay)
+========================================= */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 240px;
+  height: 100%;
+  padding: 22px 18px;
+  color: #fff;
+
+  /* Fondo con efecto vidrio */
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  /* Borde y sombra */
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+
+  overflow-y: auto;
+  transition: left 0.35s ease, background 0.4s ease;
+  z-index: 1200;
+}
+
+/* Sidebar visible */
+.sidebar.active {
+  left: 0;
+}
+
+/* Botón de cierre */
+.sidebar-close {
+  background: none;
+  border: none;
+  color: #ff4c4c;
+  font-size: 22px;
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-close:hover {
+  color: #ff6c6c;
+  transform: rotate(90deg);
+}
+
+/* =========================================
+   Navegación principal
+========================================= */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav li {
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #ddd;
+  text-decoration: none;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+  border-radius: 8px;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar nav a:hover {
+  background: rgba(255, 76, 76, 0.1);
+  color: #ff4c4c;
+  transform: translateX(4px);
+}
+
+.sidebar nav a.active {
+  background: rgba(255, 76, 76, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* =========================================
+   Submenús desplegables (ajustado)
+========================================= */
+.submenu {
+  max-height: 0;
+  margin-left: 15px;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.submenu.open {
+  max-height: none;  /* ya no hay límite */
+  opacity: 1;
+  overflow: visible; /* muestra todo el contenido */
+}
+
+.submenu a {
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.submenu a:hover {
+  color: #ffb347;
+}
+
+
+
+/* Ocultar barra de desplazamiento solo en el menú lateral */
+.sidebar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE y Edge antiguos */
+  overflow-y: auto; /* mantiene el scroll */
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Edge, Safari */
+}
+
+
+/* =========================================
+   Overlay (fondo oscuro al abrir menú)
+========================================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  z-index: 1150;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =========================================
+   Scroll personalizado del sidebar
+========================================= */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================
+   🎵 MODO "OCULTAR ACORDES"
+========================================= */
+.hide-chords .chord {
+  display: none !important;
+}
+
+.hide-chords pre {
+  white-space: pre-wrap !important;
+  line-height: 1.7 !important;
+  color: #f2f2f2 !important;
+  transition: all 0.2s ease-in-out;
+}
+
+
+/* ========================
+   2. PORTADA (HERO)
+======================== */
+.hero {
+  position: relative;
+  width: 100%;
+  height: min(80vh, 720px);
+  overflow: hidden;
+  margin-top: -60px;
+}
+
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45);
+  transition: transform 8s ease;
+}
+
+.hero:hover img {
+  transform: scale(1.05);
+}
+
+.hero-text {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.hero-text h1 {
+  font-size: 5rem;
+  color: #A51E17;
+  font-weight: 700;
+  text-shadow: 0 3px 6px rgba(0,0,0,0.9);
+  -webkit-text-stroke: 1.5px #fff;
+  animation: fadeIn 2s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* =========================================
+   3. BARRA DE BÚSQUEDA (Diseño elegante)
+   Barra central con efecto de vidrio y enfoque moderno
+========================================= */
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 90%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 10px 16px;
+  
+  /* Fondo con efecto vidrio */
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+
+  transition: all 0.3s ease;
+}
+
+/* Efecto al pasar el cursor */
+.search-bar:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Efecto al estar enfocada */
+.search-bar:focus-within {
+  border-color: #A51E17;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Icono de la lupa */
+.search-bar .icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+
+/* Campo de texto */
+.search-bar input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #f2f2f2;
+  font-size: 1rem;
+  padding: 8px 0;
+}
+
+/* Texto del placeholder */
+.search-bar input::placeholder {
+  color: #aaa;
+}
+
+
+/* ========================
+   5. BOTONES (ACTUALIZADO)
+======================== */
+.song-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.song-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: all 0.3s ease;
+}
+
+.song-actions button:hover {
+  background: rgba(255, 76, 76, 0.15);
+  border-color: #ff4c4c;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 76, 76, 0.25);
+}
+
+/* BOTÓN LIMPIAR */
+.limpiar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.limpiar img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  transition: transform 0.25s ease, filter 0.25s ease;
+  margin-top: 1px;
+}
+
+.limpiar:hover img {
+  transform: rotate(-10deg) scale(1.1);
+  filter: brightness(0) invert(1) drop-shadow(0 0 4px #ff4c4c);
+}
+
+
+
+/* ========================
+   7. MENSAJE VACÍO
+======================== */
+#empty-message {
+  text-align: center;
+  color: #aaa;
+  margin-top: 30px;
+  font-size: 1.1rem;
+}
+
+/* ========================
+   8. DRAG & DROP
+======================== */
+.drag-handle {
+  cursor: grab;
+  font-size: 1.2rem;
+  color: #888;
+  margin-right: 10px;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  color: #ff4c4c;
+}
+
+.song.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+  background: #2a2a2a;
+}
+
+.song.drag-over {
+  border: 2px dashed #ff4c4c;
+}
+
+
+/* ========================
+   9. ADAPTACIÓN RESPONSIVE GLOBAL
+======================== */
+/* ========================
+   🔧 Centrar el ícono de quitar dentro del botón
+======================== */
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centra el ícono horizontalmente */
+  text-align: center;
+  padding: 0; /* evita que el padding lo desplace */
+}
+
+.remove-btn::before {
+  display: inline-block;
+  margin: 0; /* elimina cualquier desplazamiento */
+  line-height: 1; /* centra verticalmente el ícono */
+}
+
+
+/* --- Pantallas grandes (hasta 1400px) --- */
+@media (max-width: 1400px) {
+  .hero-text h1 {
+    font-size: 3.5rem;
+  }
+  .search-bar {
+    max-width: 800px;
+  }
+}
+
+/* --- Laptops y tablets horizontales (hasta 1024px) --- */
+@media (max-width: 1024px) {
+  .hero-text h1 {
+    font-size: 2.8rem;
+    -webkit-text-stroke: 1px #fff;
+  }
+  .search-bar {
+    max-width: 650px;
+    padding: 10px 16px;
+  }
+  .song-header h2 {
+    max-width: 70%;
+  }
+  .sidebar {
+    width: 70vw;
+    max-width: 320px;
+  }
+  .lyrics {
+    font-size: 0.9rem;
+  }
+}
+
+/* --- Tablets y celulares grandes (hasta 768px) --- */
+@media (max-width: 768px) {
+  .topbar {
+    height: auto;
+    padding: 15px;
+  }
+
+  .topbar-content {
+    justify-content: space-between;
+    gap: 15px;
+    margin: 0 20px;
+    flex-wrap: wrap;
+  }
+
+  .topbar .icon-btn {
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 8px;
+  }
+
+  .hero {
+    height: 35vh;
+  }
+
+  .hero-text h1 {
+    font-size: 2rem;
+    -webkit-text-stroke: 0.6px #fff;
+    text-align: center;
+  }
+
+  .search-bar {
+    width: 90%;
+    max-width: 360px;
+    padding: 8px 12px;
+    margin: 20px auto;
+  }
+
+  .song {
+    padding: 12px;
+    margin-bottom: 18px;
+  }
+
+  .song-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .song-header h2 {
+    font-size: 1rem;
+    width: 100%;
+  }
+
+  .lyrics {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .autor {
+    font-size: 0.7rem !important;
+  }
+
+  #clearBtn {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+}
+
+/* --- Celulares medianos (hasta 600px) --- */
+@media (max-width: 600px) {
+  .topbar-content {
+    justify-content: space-between;
+    margin: 0 15px;
+    gap: 10px;
+  }
+
+  .remove-btn,
+  .toggle-lyrics {
+    width: 26px;  /* más pequeño que el tamaño base */
+    height: 26px;
+    border-radius: 8px !important;
+  }
+
+  .remove-btn .text,
+  .toggle-lyrics .text {
+    display: none !important;
+  }
+
+  .remove-btn::before,
+  .toggle-lyrics::before {
+    font-size: 1.1rem;
+  }
+
+  .hero {
+    height: 28vh;
+  }
+
+  .hero-text h1 {
+    font-size: 1.9rem;
+  }
+
+  .lyrics {
+    font-size: 0.75rem;
+  }
+
+  .autor {
+    font-size: 0.6rem !important;
+  }
+
+  #clearBtn {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+  }
+}
+
+/* --- Celulares pequeños (hasta 480px) --- */
+@media (max-width: 480px) {
+  .topbar {
+    height: auto;
+    padding: 12px 16px;
+  }
+
+  .topbar-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+    gap: 0;
+  }
+
+  .search-bar {
+    width: 95%;
+    max-width: 260px;
+  }
+
+  .hero {
+    height: 30vh;
+  }
+
+  .hero-text h1 {
+    font-size: 1.6rem;
+  }
+
+  .song {
+    padding: 10px;
+  }
+
+  .song-header h2 {
+    font-size: 0.9rem;
+  }
+
+  .lyrics {
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  #clearBtn {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  #clearBtn .icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* --- Ultra pantallas (más de 1800px) --- */
+@media (min-width: 1800px) {
+  body {
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .hero-text h1 {
+    font-size: 4.5rem;
+  }
+  .song {
+    max-width: 80%;
+    margin: 0 auto 25px;
+  }
+}
