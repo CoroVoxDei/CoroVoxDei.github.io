@@ -1,0 +1,2510 @@
+
+/* ========================================================================================================================
+      MODO OCURO (ESTILO PRINCIPAL)
+======================================================================================================================== */
+
+/* ========
+  0. RESETEO GLOBAL
+======== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+  font-family: 'Poppins', sans-serif; 
+  background: #121212; 
+  color: #e5e5e5; 
+  padding-top: 80px; /* compensa la altura del header fijo */
+  overflow-x: hidden; /* Evita scroll horizontal indeseado en móviles */
+}
+
+/* =========================================
+  1. ENCABEZADO (TOPBAR)
+  Barra superior fija con efecto vidrio
+========================================= */
+/* ======= TOPBAR estilo Spotify (glassmorphism) ======= */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 90px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 150px;
+
+  background: rgba(0, 0, 0, 0.4);           /* Transparencia estilo Spotify */
+  backdrop-filter: blur(22px) saturate(180%);    /* Difuminado + saturación */
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06); /* Línea suave */
+
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);   /* Sombra elegante */
+
+  z-index: 2000;
+  transition: all 0.3s ease; /* Transición suave para responsive */
+}
+
+/* Ocultar al hacer scroll (mantén si ya usas la clase .hidden) */
+.topbar.hidden { transform: translateY(-100%); }
+
+/* ======= Contenedores izquierdo / derecho ======= */
+.top-left,
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Alineación izquierda: menu + logo escrito */
+.top-left {
+  gap: 18px;
+}
+
+/* ======= Botón menú (izquierda) ======= */
+.menu-btn {
+  font-size: 26px;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* ======= Logo escrito (Vox Dei) ======= */
+.logo-left img {
+  height: 60px;
+  display: block;
+  margin: 0;
+  cursor: pointer;
+  filter: brightness(1);
+}
+
+/* ======= Botón inicio (derecha) ======= */
+.top-right .icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-right .icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* ======= Logo redondo derecho ======= */
+.logo-right {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.logo-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ======= Interacciones ======= */
+.icon-btn:hover, .menu-btn:hover { transform: scale(1.03); opacity: 0.85; transition: transform .15s, opacity .15s; }
+
+/* ======= Reserva espacio por el header fijo ======= */
+body { padding-top: 78px; }
+
+
+
+/* =========================================
+  2. SECCIÓN HERO (Imagen + Título)
+  Imagen principal con texto centrado
+========================================= */
+.hero {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding: 0 10px; /* Margen de seguridad para móviles */
+}
+
+/* Card principal */
+.hero-card {
+  width: 100%; /* Cambiado a 100% del contenedor padre */
+  max-width: 1150px;
+
+  height: 360px;
+  position: relative;
+
+  border-radius: 22px;
+  overflow: hidden;
+
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+
+  background: #000;
+}
+
+/* Imagen */
+.hero-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45);
+}
+
+/* Texto centrado */
+.hero-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  z-index: 2;
+  width: 90%; /* Asegura que el texto no toque los bordes en móvil */
+}
+
+/* Título principal */
+.hero-text h1 {
+  font-size: 3.1rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 2px;
+  line-height: 1.1; /* Mejor espaciado en líneas múltiples */
+
+  text-shadow: 0 3px 10px rgba(0,0,0,0.7);
+}
+
+/* Palabra DIGITAL en rojo */
+.hero-text h1 span {
+  color: #C62828;
+}
+
+/* Subtítulo */
+.hero-text p {
+  font-size: 1.4rem;
+  margin-top: 10px;
+  opacity: 0.9;
+  font-style: italic;
+}
+
+/* Animación suave */
+.hero-text { 
+  animation: fadeIn 1.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -40%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+
+
+/* =========================================
+  3. BARRA DE BÚSQUEDA (Diseño elegante)
+  Barra central con efecto de vidrio y enfoque moderno
+========================================= */
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  width: 92%; /* Ajustado para móviles */
+  max-width: 1150px;
+  margin: 30px auto 20px auto;
+
+  padding: 14px 20px;
+
+  background: #121212;                 /* Fondo oscuro limpio */
+  border: 1px solid #222;              /* Borde suave */
+  border-radius: 10px;                 /* Forma más redondeada */
+
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03); /* Delineado casi invisible */
+  transition: 0.25s ease;
+}
+
+/* Efecto hover */
+.search-bar:hover {
+  border-color: #2d2d2d;
+  box-shadow: 0 0 4px rgba(255,255,255,0.05);
+}
+
+/* Efecto enfoque (focus) */
+.search-bar:focus-within {
+  border-color: #A51E17;
+  box-shadow: 0 0 6px rgba(165, 30, 23, 0.4);
+}
+
+/* Icono de la lupa */
+.search-bar .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  flex-shrink: 0; /* Evita que el icono se aplaste */
+
+  filter: brightness(0) invert(1);  /* Blanco */
+  opacity: 0.7;                     /* Tono suave como en la imagen */
+}
+
+/* Input */
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%; /* Asegura uso total */
+
+  font-size: 0.95rem;
+  color: #f5f5f5;
+}
+
+/* Placeholder gris suave */
+.search-bar input::placeholder {
+  color: #7a7a7a;
+}
+
+
+
+
+/* =========================================
+  4. BOTONES DE CATEGORÍAS
+  Barra horizontal con desplazamiento suave y sin scrollbar visible
+========================================= */
+
+.search-categories {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  margin: 20px auto 40px;
+  max-width: 1070px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  /* Ocultar scrollbar */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.search-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.category-btn {
+  background: rgba(35, 35, 35, 0.9);
+  color: #f2f2f2;              /* más claro */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 10px 24px;
+  font-size: 1rem;             /* un poquito más grande */
+  font-weight: 400;            /* NEGRITA más visible */
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  /* Resaltar texto */
+  text-shadow: 0 0 3px rgba(0,0,0,0.4);
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  transition: background 0.25s ease, 
+              transform 0.25s ease,
+              box-shadow 0.25s ease;
+}
+
+.category-btn:hover {
+  background: rgba(165, 30, 23, 0.9);
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0,0,0,0.5);
+}
+
+.category-btn.active {
+  background: #A51E17;
+  color: #fff;
+  text-shadow: 0 0 4px rgba(0,0,0,0.55);
+}
+
+/* Contenedor con flechas a los lados */
+.categories-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 1070px;
+  margin: 0 auto;
+  width: 95%; /* Adaptable */
+}
+
+/* Estilos de las flechas */
+.cat-arrow {
+  position: absolute;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 1.6rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.cat-arrow:hover {
+  background: rgba(165, 30, 23, 0.85);
+  box-shadow: 0 0 10px rgba(165, 30, 23, 0.5);
+}
+
+/* Izquierda */
+.cat-arrow.left {
+  left: -20px; /* Ajustado para pantallas más pequeñas */
+  margin-top: -20px;
+}
+
+/* Derecha */
+.cat-arrow.right {
+  right: -20px; /* Ajustado para pantallas más pequeñas */
+  margin-top: -20px;
+}
+
+/* Cuando no hay más scroll en un lado */
+.cat-arrow.disabled {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+
+/* =========================================
+  5. MENÚ LATERAL
+  (Diseño del sidebar con submenús y overlay)
+========================================= */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px; /* Aumentado un poco para asegurar ocultamiento */
+  width: 260px; /* Un poco más ancho para legibilidad */
+  height: 100%;
+  padding: 22px 18px;
+  color: #fff;
+
+  background: rgba(25, 25, 25, 0.85); /* Más opacidad para legibilidad sobre contenido */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+
+  overflow-y: auto;
+  transition: left 0.35s ease;
+  z-index: 3000; /* Asegurar que esté sobre TODO, incluyendo header */
+
+  scrollbar-width: none;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar.active {
+  left: 0;
+}
+
+/* =========================================
+  BOTÓN CERRAR
+========================================= */
+
+.sidebar-close {
+  background: none;
+  border: none;
+  color: #ff4c4c;
+  font-size: 26px; /* Icono más grande para dedo */
+  cursor: pointer;
+  margin-bottom: 25px;
+  transition: transform 0.3s ease, color 0.3s ease;
+  padding: 10px; /* Área táctil más grande */
+}
+
+.sidebar-close:hover {
+  color: #ff6c6c;
+  transform: rotate(90deg);
+}
+
+/* =========================================
+  NAVEGACIÓN
+========================================= */
+
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav li {
+  margin-bottom: 6px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  color: #ddd;
+  text-decoration: none;
+  font-size: 1rem; /* Texto legible en móvil */
+  border-radius: 10px;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Hover */
+.sidebar nav a:hover {
+  background: rgba(255, 76, 76, 0.12);
+  color: #ff4c4c;
+}
+
+/* Activo / seleccionado */
+.sidebar nav a.active {
+  background: rgba(255, 76, 76, 0.25);
+  color: #ff4c4c;
+  font-weight: 500;
+}
+
+/* =========================================
+  SECCIÓN SUPERIOR (REPERTORIO / AJUSTES)
+========================================= */
+
+.sidebar nav ul li:nth-child(-n+3) a {
+  font-weight: 500;
+}
+
+/* Raya divisora SOLO debajo de "Modo Claro" (menú principal) */
+.sidebar > nav > ul > li:nth-child(4) {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================
+  CATEGORÍAS (TÍTULO)
+========================================= */
+
+.has-submenu {
+  margin-top: 10px;
+}
+
+.has-submenu > a {
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #777;
+}
+
+/* =========================================
+  SUBMENÚ (CATEGORÍAS DESPLEGABLES)
+========================================= */
+
+.submenu {
+  margin-top: 6px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.submenu.open {
+  max-height: none;
+  opacity: 1;
+}
+
+.submenu a {
+  padding: 10px 12px; /* Más padding vertical para dedo */
+  font-size: 0.95rem;
+  border-radius: 8px;
+  color: #bbb;
+}
+
+/* Hover categorías */
+.submenu a:hover {
+  background: rgba(255, 76, 76, 0.12);
+  color: #ff4c4c;
+}
+
+/* Categoría activa */
+.submenu a.active {
+  background: rgba(255, 76, 76, 0.25);
+  color: #ff4c4c;
+  font-weight: 500;
+}
+
+/* =========================================
+  OVERLAY
+========================================= */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease;
+  z-index: 2500; /* Debajo del sidebar pero sobre el contenido */
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =========================================
+  OCULTAR ACORDES
+========================================= */
+
+.hide-chords .chord {
+  display: none !important;
+}
+
+.hide-chords pre {
+  white-space: pre-wrap !important;
+  line-height: 1.7 !important;
+  color: #f2f2f2;
+}
+
+
+
+/* =========================================
+  6. CONTENIDO (CANCIONES)
+========================================= */
+
+/* --- Contenedor principal --- */
+.content {
+  max-width: 1160px;
+  margin: auto;
+  padding: 0 16px 40px;
+  width: 100%;
+}
+
+/* --- Tarjeta de cada canción --- */
+.song {
+  margin-bottom: 30px;
+  padding: 20px;
+  border-left: 5px solid #A51E17;
+  border-radius: 12px;
+
+  background: rgba(30, 30, 30, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.song:hover {
+  transform: translateY(-4px);
+  background: rgba(40, 40, 40, 0.75);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+/* --- Encabezado de la canción --- */
+.song-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap; /* Permitir que los elementos bajen si no caben */
+}
+
+.song-header h2 {
+  flex: 1;
+  min-width: 200px; /* Asegura un ancho mínimo para el título */
+  margin: 0;
+  font-size: 1.6rem;
+  color: #ff4c4c;
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  position: relative;
+}
+
+.song-header h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0%;
+  height: 3px;
+  background: #ff4c4c;
+  transition: width 0.3s ease;
+}
+
+.song-header h2:hover::after {
+  width: 100%;
+}
+
+/* --- Autor (si lo usas) --- */
+.autor {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: #9fa3b0;
+  opacity: 0.8;
+  transition: color 0.3s ease;
+}
+
+.song-header:hover .autor {
+  color: #ff7878;
+}
+
+/* =========================================
+  BOTONES DE ACCIÓN (Contenedor)
+========================================= */
+.song-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* BOTÓN AÑADIR AL REPERTORIO */
+.add-repertorio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  background: transparent;
+  color: #ff4c4c;
+
+  padding: 8px 14px;
+  border: 2px solid #ff4c4c;
+  border-radius: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.add-repertorio:hover {
+  background: #ff4c4c;
+  color: white;
+}
+
+.add-repertorio.active {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.add-repertorio.active:hover {
+  background: #22c55e;
+  color: white;
+}
+
+/* REPERTORIO EN LA PÁGINA repertorio.html */
+#repertorio-list {
+  margin-top: 25px;
+}
+
+.item-repertorio {
+  padding: 14px;
+  margin-bottom: 12px;
+
+  background: rgba(30, 30, 30, 0.7);
+  border-left: 5px solid #ff4c4c;
+  border-radius: 10px;
+
+  color: white;
+  font-size: 1rem;
+}
+
+
+
+/* =========================================
+  ESTADO ACTIVO (YA AÑADIDO)
+========================================= */
+
+.add-repertorio.active {
+  background: rgba(0, 180, 80, 0.18);
+  border-color: #14b84a;
+  color: #14b84a;
+}
+
+/* Hover del estado activo */
+.add-repertorio.active:hover {
+  background: rgba(0, 180, 80, 0.28);
+  border-color: #16c952;
+}
+
+
+/* BOTÓN MOSTRAR LETRA (popup) */
+.lyrics-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: #2f3b52;
+  color: #fff;
+
+  /* CORRECCIÓN: Aumentado padding izquierdo para dejar espacio al icono */
+  padding: 10px 18px 10px 42px;
+  
+  border: none;
+  border-radius: 10px;
+
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+  position: relative; /* Asegura posicionamiento del ::before */
+}
+
+/* Icono del ojo (pseudo-elemento) */
+.lyrics-btn::before {
+  content: "";
+  width: 1.3rem;
+  height: 1.3rem;
+  position: absolute;
+  
+  /* CORRECCIÓN: Separar el icono del borde izquierdo */
+  left: 14px; 
+  top: 50%;
+  transform: translateY(-50%);
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+.lyrics-btn:hover {
+  background: #42526e;
+  transform: scale(1.06);
+}
+
+/* --- Acordes dentro de <pre> --- */
+.chord {
+  font-weight: 700;
+  color: #ffd369;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================
+  6.1 VENTANA EMERGENTE (CANCIONES) — REDISEÑO TOTAL
+========================================= */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9); /* Fondo más oscuro para enfoque tipo imagen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 0; /* Sin padding en móvil para full width */
+}
+
+/* CUADRO DEL POPUP: Hoja de documento */
+.popup-content {
+  background: #0b0b0b; /* Fondo negro profundo como en la referencia */
+  width: 100%;
+  position: relative;
+  
+  /* CAMBIO CRÍTICO: Usar 100dvh para evitar que el navegador móvil lo corte */
+  height: 100dvh; 
+  
+  /* En desktop */
+  display: flex;
+  flex-direction: column;
+}
+
+@media(min-width: 640px) {
+    .popup-content {
+        width: 90%;
+        max-width: 800px;
+        height: auto;
+        max-height: 90vh;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+    }
+    .popup-overlay {
+        padding: 20px;
+    }
+}
+
+/* CABECERA DEL DOCUMENTO - Flex para botones a los extremos */
+.doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Alineado al centro verticalmente */
+    gap: 15px;
+    margin-bottom: 30px;
+    padding: 10px 5px;
+    width: 100%;
+}
+
+.header-text {
+    flex: 1;
+    text-align: center;
+}
+
+/* Botones de acción del popup (Descargar y Cerrar) */
+.popup-action-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 10px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.popup-download-btn:hover { color: #3b82f6; transform: scale(1.1); }
+.popup-cerrar { font-size: 32px; line-height: 1; }
+.popup-cerrar:hover { color: #ef4444; transform: scale(1.1); }
+
+/* Ajuste para modo claro */
+body.light-mode .popup-action-btn {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/* CUERPO DEL POPUP: SCROLLABLE */
+.popup-body {
+  padding: 10px 20px 60px 20px;
+  overflow-y: auto;
+  flex: 1;
+  text-align: center; /* Centrar contenido por defecto */
+}
+
+.popup-title {
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  color: #ef4444; /* Rojo Título */
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.popup-autor {
+  font-size: 1rem;
+  color: #9ca3af;
+  font-style: italic;
+  font-family: serif;
+  margin: 0;
+}
+
+.popup-transp-info {
+  font-size: 0.8rem;
+  color: #71717a;
+  margin-top: 5px;
+  font-weight: 500;
+  display: none; /* Se activa vía JS */
+}
+
+/* LETRA Y ACORDES - ROBOTO MONO - ESTILO IMAGEN REFERENCIA */
+.popup-letra {
+  /* Por defecto: Estricto para mantener alineación de acordes */
+  white-space: pre; 
+  word-break: normal;
+  
+  /* AJUSTE PARA MÁXIMA LEGIBILIDAD (IGUAL A LA IMAGEN) */
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  font-weight: 400; /* PESO NORMAL BASE */
+  font-size: 16px; 
+  line-height: 1.5; /* Espaciado profesional equilibrado */
+  
+  color: #ffffff; /* Blanco puro para contraste máximo */
+  margin: 0 auto;
+  display: inline-block; 
+  text-align: left; 
+  max-width: 100%;
+}
+
+/* CAMBIO SOLICITADO: Solo cuando no hay acordes, permitir el salto de línea automático al agrandar fuente */
+.popup-letra.sin-acordes {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}
+
+/* Asegurar que el coro sea negrita con peso 700 */
+.popup-letra b, .popup-letra strong {
+  font-weight: 700 !important;
+}
+
+/* Acordes dentro del pre - ESTILO AMARILLO REFERENCIA */
+.popup-letra .chord {
+  color: #ffca28; /* Amarillo ámbar vibrante como en la imagen */
+  font-weight: 700; /* Bold para acordes */
+}
+
+/* =========================================
+  6.2 SISTEMA DE AJUSTES MULTI-BOTÓN (DISEÑO REFERENCIA)
+========================================= */
+.popup-settings-wrapper {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 15px;
+  z-index: 1000;
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+}
+
+/* Ocultar wrapper suavemente */
+.popup-settings-wrapper.hidden-fab {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+/* Botón principal (GEAR) */
+.settings-fab {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #ffffff; /* Blanco por defecto */
+  border: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-fab img {
+  width: 26px;
+  height: 26px;
+  transition: transform 0.6s ease;
+}
+
+/* Estado activo del engranaje - ROJO VOX DEI */
+.settings-fab.active {
+  background: #ef4444; 
+  transform: scale(1.1);
+}
+
+.settings-fab.active img {
+  transform: rotate(180deg);
+  filter: brightness(0) invert(1);
+}
+
+/* MENÚ VERTICAL */
+.settings-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 5px;
+  
+  /* Animación inicial oculta */
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: visible; /* Permitir que los paneles salgan a la izquierda */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-menu.active {
+  max-height: 500px;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Ítems del menú (botones rojos premium) */
+.menu-item-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ef4444; /* Rojo premium */
+  border: none;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.menu-fab:hover { transform: scale(1.1); }
+.menu-fab.active { background: #dc2626; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+
+/* PANELES DE HERRAMIENTAS (Sliders horizontales) - ROJO VOX DEI */
+.tool-panel {
+  background: #ef4444;
+  height: 42px;
+  padding: 0 15px;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  
+  /* Animación */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+}
+
+.tool-panel.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.tool-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Sliders dentro de paneles rojos */
+.tool-panel input[type="range"] {
+  -webkit-appearance: none;
+  width: 100px;
+  height: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 5px;
+  outline: none;
+}
+
+.tool-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* MODO CLARO PARA AJUSTES */
+body.light-mode .settings-fab {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+body.light-mode .settings-fab.active {
+    background: #ef4444;
+}
+body.light-mode .menu-fab {
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+
+/* --- SCROLLBAR CUSTOM --- */
+.popup-body::-webkit-scrollbar { width: 6px; }
+.popup-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+
+
+
+
+/* ========================
+  6. PAGINACIÓN INTELIGENTE
+======================== */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 30px 0;
+  flex-wrap: nowrap; /* Evitar que se rompa la línea de navegación */
+}
+
+.pagination button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #ff4c4c;
+  border-radius: 8px;
+  background: #1e1e1e;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Botones de navegación (Flechas) */
+.pagination button.nav-btn {
+  background: rgba(255, 76, 76, 0.1);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: rgba(255, 76, 76, 0.2);
+  transform: translateY(-2px);
+}
+
+.pagination button.active {
+  background: #ff4c4c;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 76, 76, 0.3);
+}
+
+.pagination button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #555;
+  color: #888;
+}
+
+/* MODO CLARO PAGINACIÓN */
+body.light-mode .pagination button {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+body.light-mode .pagination button.nav-btn {
+  background: #f9fafb;
+}
+
+body.light-mode .pagination button.active {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+body.light-mode .pagination button:disabled {
+  border-color: #eee;
+  color: #ccc;
+}
+
+/* RESPONSIVIDAD PAGINACIÓN */
+@media (max-width: 600px) {
+  .pagination {
+    gap: 4px;
+  }
+  .pagination button {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+    padding: 0 5px;
+  }
+  .pagination button.nav-btn {
+    font-size: 1rem;
+  }
+}
+
+/* Panel de Transposición */
+.transpose-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin-top: 5px;
+}
+
+.trans-btn {
+    background: #ff4c4c;
+    border: none;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+
+.trans-btn:active {
+    transform: scale(0.9);
+}
+
+#transposeValue {
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.1rem;
+}
+
+body.light-mode .transpose-controls {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+
+/* RESPONSIVIDAD PAGINACIÓN */
+@media (max-width: 600px) {
+  .pagination {
+    gap: 4px;
+  }
+  .pagination button {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+    padding: 0 5px;
+  }
+  .pagination button.nav-btn {
+    font-size: 1rem;
+  }
+}
+
+/* =========================================
+  7. PIE DE PÁGINA (PROFESIONAL)
+========================================= */
+
+.footer {
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #e5e5e5;
+  padding: 60px 40px 30px;
+  margin-top: 60px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Contenedor principal --- */
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  max-width: 1150px;
+  margin: auto;
+  align-items: start;
+}
+
+/* --- Sección individual --- */
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-section h3 {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ff4c4c;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.footer-section h3:after {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: #ff4c4c;
+  margin-top: 8px;
+}
+
+.footer-section p {
+  font-size: 0.92rem;
+  color: #bbb;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* --- Enlaces de redes --- */
+.footer-section a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e5e5e5;
+  text-decoration: none;
+  font-size: 0.95rem;
+  opacity: 0.85;
+  transition: all 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: #ff4c4c;
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* --- Íconos --- */
+.footer-section .icon {
+  width: 22px;
+  height: 22px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.footer-section a:hover .icon {
+  transform: scale(1.2);
+  filter: brightness(1.5) drop-shadow(0 0 6px #ff4c4c);
+}
+
+/* --- Parte inferior --- */
+.footer-bottom {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #aaa;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 16px;
+}
+
+.footer-bottom span {
+  color: #ff4c4c;
+}
+
+
+/* ========================================================================================================================
+      MODO CLARO (PROFESIONAL Y MODERNO)
+======================================================================================================================== */
+
+/* ========================
+  0. RESETEO GLOBAL
+======================== */
+body.light-mode {
+  background: #f0f2f5; 
+  color: #1f2937;      
+  transition: all 0.4s ease;
+}
+
+/* ========================
+  1. ENCABEZADO (TOPBAR - EFECTO VIDRIO)
+======================== */
+body.light-mode .topbar {
+  /* Transparencia alta y blur fuerte como Spotify/Apple Music */
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+/* Botones e iconos del header en modo claro */
+body.light-mode .icon-btn,
+body.light-mode .menu-btn {
+  color: #374151;
+}
+
+/* Invierte los iconos blancos para que sean negros en modo claro */
+body.light-mode .topbar .icon {
+  filter: invert(1) brightness(0.2); 
+  opacity: 0.8;
+}
+
+/* LOGOS */
+body.light-mode .logo-left img {
+  content: url("Principal/VoxDei.png");
+}
+
+body.light-mode .logo-right {
+  content: url("Principal/Logo.png");
+}
+
+/* ========================
+  2. SECCIÓN HERO (PORTADA CON OVERLAY)
+======================== */
+body.light-mode .hero {
+  background: transparent;
+}
+
+body.light-mode .hero-card {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  background: #000;
+  position: relative; /* Necesario para el overlay */
+}
+
+/* Imagen: Restauramos brillo normal */
+body.light-mode .hero-card img {
+  filter: none;
+  opacity: 1;
+}
+
+body.light-mode .hero-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35); /* Capa negra transparente */
+  pointer-events: none;
+}
+
+/* Texto de portada: Blanco (por el fondo oscuro) */
+body.light-mode .hero-text h1 {
+  color: #fff; 
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+body.light-mode .hero-text h1 span {
+  color: #ef4444; /* Rojo brillante para resaltar sobre oscuro */
+}
+
+body.light-mode .hero-text p {
+  color: #f3f4f6;
+
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+/* ========================
+  3. BARRA DE BÚSQUEDA
+======================== */
+body.light-mode .search-bar {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+body.light-mode .search-bar input {
+  color: #111827;
+}
+
+body.light-mode .search-bar input::placeholder {
+  color: #6b7280;
+}
+
+body.light-mode .search-bar .icon {
+  filter: brightness(0.2); 
+  opacity: 0.6;
+}
+
+body.light-mode .search-bar:focus-within {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.15);
+}
+
+/* ========================
+  4. BOTONES DE CATEGORÍAS (ROJOS Y PLANOS)
+======================== */
+body.light-mode .category-btn {
+  background: #ffffff;
+  /* Texto Rojo Oscuro Profesional (#b91c1c = red-700) */
+  color: #2c2c2c;
+  border: 1px solid #e5e7eb;
+  
+  /* SIN SOMBRA EN MODO CLARO (Corrección solicitada) */
+  box-shadow: none !important; 
+  text-shadow: none !important; /* CORRECCIÓN IMPORTANTE */
+  font-weight: 600;
+}
+
+body.light-mode .category-btn:hover {
+  background: #fef2f2; /* Rojo muy pálido al hover */
+  color: #991b1b;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+body.light-mode .category-btn.active {
+  background: #b91c1c;
+  color: #fff;
+  border-color: #b91c1c;
+}
+
+body.light-mode .cat-arrow {
+    background: #e5e7eb;
+    color: #374151;
+    box-shadow: none;
+}
+body.light-mode .cat-arrow:hover {
+    background: #b91c1c;
+    color: #fff;
+}
+
+/* ========================
+  5. MENÚ LATERAL
+======================== */
+body.light-mode .sidebar {
+  background: #ffffff;
+  color: #1f2937;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 5px 0 25px rgba(0,0,0,0.05);
+}
+
+body.light-mode .sidebar nav a {
+  color: #4b5563;
+}
+
+body.light-mode .sidebar nav a:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+body.light-mode .sidebar nav a.active {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-left: 3px solid #b91c1c;
+}
+
+body.light-mode .sidebar-close {
+  color: #ef4444;
+}
+
+body.light-mode .sidebar > nav > ul > li:nth-child(4) {
+  border-bottom-color: rgba(0, 0, 0, 0.1) !important; /* Línea divisora visible en menú lateral modo claro */
+}
+
+/* ========================
+  6. CONTENIDO (CANCIONES)
+======================= */
+body.light-mode .song {
+  background: #ffffff;
+  border-left: 5px solid #b91c1c; /* Borde rojo consistente */
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* Sombra muy sutil */
+}
+
+body.light-mode .song:hover {
+  background: #ffffff;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+}
+
+/* TÍTULOS DE CANCIONES EN ROJO (PROFESIONAL) */
+body.light-mode .song-header h2 {
+  color: #b91c1c; /* Rojo oscuro elegante */
+}
+body.light-mode .song-header h2:hover {
+    color: #991b1b; /* Más oscuro al hover */
+}
+
+body.light-mode .autor {
+  color: #6b7280;
+}
+
+body.light-mode .chord {
+  color: #d97706; 
+  text-shadow: none;
+}
+
+/* Botones dentro de la tarjeta */
+
+/* Botón Repertorio INACTIVO */
+body.light-mode .add-repertorio {
+    color: #b91c1c;
+    border-color: #b91c1c;
+    background: transparent;
+}
+body.light-mode .add-repertorio:hover {
+    background: #b91c1c;
+    color: #fff;
+}
+
+/* Botón Repertorio ACTIVO (Verde Oscuro Profesional) */
+/* El usuario pidió un verde no tan claro, con más contraste */
+body.light-mode .add-repertorio.active {
+  background: #15803d !important; /* Green 700 (Esmeralda oscuro) */
+  border-color: #15803d !important;
+  color: #ffffff !important;
+}
+body.light-mode .add-repertorio.active:hover {
+  background: #14532d !important; /* Green 900 al hover */
+  border-color: #14532d !important;
+}
+
+
+body.light-mode .lyrics-btn {
+    background: #f3f4f6;
+    color: #374151;
+    font-weight: 500;
+}
+body.light-mode .lyrics-btn:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+/* Ojo negro (modo claro) */
+body.light-mode .lyrics-btn::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+}
+
+/* ========================
+  7. POPUP & MODALES (MODO CLARO) - AJUSTE TIPOGRAFÍA
+======================== */
+body.light-mode .popup-content {
+    background: #ffffff; /* Fondo Blanco Papel */
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+body.light-mode .popup-title {
+    color: #b91c1c; /* Rojo Oscuro */
+}
+body.light-mode .popup-letra {
+    color: #1a1a1a; /* Casi negro para contraste alto en blanco */
+    font-weight: 400; /* PESO NORMAL BASE */
+}
+body.light-mode .popup-letra .chord {
+    color: #d97706; /* Naranja legible */
+}
+
+body.light-mode .font-buttons {
+    background: #f3f4f6;
+}
+body.light-mode .font-btn {
+    color: #374151;
+}
+body.light-mode .font-btn:hover {
+    background: #e5e7eb;
+    color: #000;
+}
+
+/* Botón de ajustes en MODO CLARO */
+body.light-mode .settings-fab {
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+body.light-mode .settings-fab img {
+    filter: brightness(0.2);
+}
+body.light-mode .settings-fab.active {
+    background: #ef4444;
+}
+body.light-mode .settings-fab.active img {
+    filter: brightness(1) invert(1);
+}
+body.light-mode .font-size-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #e5e7eb;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+body.light-mode .size-label {
+    color: #374151;
+}
+body.light-mode #fontSizeSlider {
+    background: #e5e7eb;
+}
+body.light-mode #fontSizeSlider::-webkit-slider-thumb {
+    background: #b91c1c;
+    border-color: #fff;
+    box-shadow: 0 0 10px rgba(185, 28, 28, 0.3);
+}
+
+
+
+/* ========================
+  8. FOOTER
+======================== */
+body.light-mode .footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -10px 15px -3px rgba(0,0,0,0.02);
+}
+
+body.light-mode .footer-section h3 {
+  color: #b91c1c;
+}
+
+body.light-mode .footer-section p {
+  color: #4b5563;
+}
+
+body.light-mode .footer-section a {
+  color: #374151;
+}
+
+body.light-mode .footer-section a:hover {
+  color: #b91c1c;
+}
+
+body.light-mode .footer-section .icon {
+  filter: brightness(0.2);
+}
+
+body.light-mode .footer-bottom {
+  color: #6b7280;
+  border-top-color: #e5e7eb;
+}
+
+/* ========================
+  9. PAGINACIÓN
+======================== */
+body.light-mode .pagination button {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    color: #374151;
+}
+body.light-mode .pagination button.active {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+
+/* ========================================================================================================================
+      11. RESPONSIVIDAD (MEDIA QUERIES)
+      Adaptación a Tabletas y Móviles de gama baja
+======================================================================================================================== */
+
+/* ========================
+  A. TABLETAS Y LAPTOPS PEQUEÑAS (Max 1024px)
+======================== */
+@media (max-width: 1024px) {
+  .topbar {
+    padding: 0 40px; /* Reducir padding lateral */
+  }
+  
+  .hero-card {
+    height: 320px; /* Altura un poco menor */
+  }
+  
+  .hero-text h1 {
+    font-size: 2.6rem;
+  }
+
+  /*CATEGORIA DE LAS CANCIONES*/
+  .category-btn {
+  font-size: 0.95rem;             /* un poquito más grande */
+  }
+
+  /*TAMAÑO DE LOS TITULOS DE LAS CANCIONES*/
+  .song-header h2 {
+  font-size: 1.4rem;
+  }
+
+  /*TAMAÑO DEL AUTOR*/
+  .autor {
+    font-size: 0.85rem;
+  }
+}
+
+/* ========================
+  B. TABLETAS Y MOVILES GRANDES (Max 800px)
+======================== */
+@media (max-width: 800px) {
+  /* Header más compacto */
+  .topbar {
+    height: 70px;
+    padding: 0 25px;
+  }
+  
+  body {
+    padding-top: 65px;
+  }
+  
+  /* Logo más pequeño */
+  .logo-left img {
+    height: 45px;
+  }
+  
+  .logo-right {
+    width: 45px;
+    height: 45px;
+  }
+  
+  /* Portada más pequeña */
+  .hero-card {
+    height: 250px;
+    border-radius: 16px;
+  }
+  
+  .hero-text h1 {
+    font-size: 2.2rem;
+  }
+  
+  .hero-text p {
+    font-size: 1.1rem;
+  }
+
+  /*CATEGORIA DE LAS CANCIONES*/
+  .category-btn {
+  font-size: 0.85rem;             /* un poquito más grande */
+  }
+
+  /*TAMAÑO DE LOS TITULOS DE LAS CANCIONES*/
+  .song-header h2 {
+  font-size: 1.2rem;
+  }
+
+  /*TAMAÑO DEL AUTOR*/
+  .autor {
+    font-size: 0.78rem;
+  }
+
+  /* Footer en una sola columna si es muy estrecho */
+  .footer {
+    padding: 40px 20px;
+  }
+  
+  .footer-content {
+    gap: 30px;
+    text-align: center;
+  }
+  
+  .footer-section a {
+    justify-content: center;
+  }
+  
+  .modal-letra .modal-contenido {
+    width: 95%; /* Modal ocupa casi toda la pantalla */
+    margin-top: 15%;
+    max-height: 80vh;
+  }
+
+  /* Ajustar botón ajustes flotante en tablets */
+  .popup-settings-wrapper {
+      bottom: 20px;
+      right: 20px;
+  }
+}
+
+/* ========================
+  C. MÓVILES (Max 600px)
+======================== */
+@media (max-width: 600px) {
+  
+  /* Ajustes Header */
+  .topbar {
+    padding: 0 15px;
+  }
+  
+  /* Ocultar texto "Inicio" si existiera, dejar solo icono */
+  .top-right .icon-btn {
+    padding: 8px;
+  }
+
+  /* Ajustar Hero - Reducción solicitada */
+  .hero-card {
+    height: 180px;
+  }
+  
+  .hero-text h1 {
+    font-size: 1.5rem; /* Texto portada más pequeño */
+    letter-spacing: 1px;
+  }
+  
+  .hero-text p {
+    font-size: 0.9rem;
+  }
+
+  /*CATEGORIA DE LAS CANCIONES*/
+  .category-btn {
+  font-size: 0.75rem;             /* un poquito más grande */
+}
+
+  /* Ocultar flechas de categorías en móviles (scroll táctil) */
+  .cat-arrow {
+      display: none !important;
+  }
+  
+  .search-categories {
+      margin: 15px auto 25px; /* Reducir márgenes */
+      padding: 10px 10px;
+  }
+  
+  /* Ajustar Tarjetas de Canciones - Distribución Horizontal solicitada */
+  .song {
+      padding: 15px; /* Padding interno más pequeño */
+      margin-bottom: 18px;
+  }
+
+
+  /* REPOSICIONAMIENTO DEL AUTOR DEBAJO DEL TÍTULO EN MÓVIL SIN MOVER BOTONES */
+  .song-header {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex-wrap: nowrap !important; 
+  }
+
+  /* El contenedor de info de texto se vuelve columna para apilar título y autor */
+  .song-info {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      flex: 1 !important;
+      min-width: 0 !important;
+  }
+
+  .song-header h2 {
+      font-size: 1rem !important;
+      white-space: normal !important;
+      margin: 0 !important;
+      line-height: 1.2;
+  }
+
+  .autor {
+      margin: 2px 0 0 0 !important; 
+      font-size: 0.75rem !important;
+      display: block !important;
+      margin-top: 5px !important;
+  }
+
+  /* TRANSFORMACIÓN DE BOTONES A ICONOS EN MÓVIL */
+  /* Botón Repertorio */
+  .add-repertorio {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 30%; /* Hacerlo redondo */
+  }
+  
+  .add-repertorio .text {
+    display: none !important; /* Asegura ocultamiento total del texto */
+  }
+  
+  .add-repertorio .icon {
+    margin: 0; /* Quitar margen del icono si tiene */
+    font-size: 1.2rem;
+  }
+
+  /* Botón Letra - CORRECCIÓN CENTRADO ICONO */
+  .lyrics-btn {
+    width: 40px; /* Un poco más grande para mejor toque */
+    height: 40px;
+    padding: 0;  /* Resetear padding para que el centrado funcione */
+    justify-content: center;
+    border-radius: 30%;
+    font-size: 0 !important; /* Ocultar el texto "Ver letra" */
+  }
+  
+  .lyrics-btn::before {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centrado absoluto perfecto */
+    font-size: 1.1rem; 
+    margin: 0;
+  }
+
+  /* Botón Quitar Individual en Móvil */
+  .remove-button {
+    width: 40px !important; /* Igualamos a 40px para alineación perfecta */
+    height: 40px !important;
+    padding: 0 !important;
+    margin: 0 !important; /* Evita desplazamientos indeseados */
+    justify-content: center !important;
+    align-items: center !important; /* Aseguramos alineación central flex */
+    border-radius: 30% !important;
+    display: flex !important;
+  }
+
+  .remove-button .text {
+    display: none !important;
+  }
+
+  .remove-button .icon {
+    font-size: 1.2rem !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Contenedor de botones en móvil para asegurar alineación vertical central perfecta */
+  .song-btns {
+    display: flex !important;
+    align-items: center !important; /* Eje vertical central */
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 40px !important; /* Misma altura que los botones */
+  }
+
+  /*TAMAÑO DE LOS TITULOS DE LAS CANCIONES*/
+  .song-header h2 {
+  font-size: 1rem;
+  }
+
+  /*TAMAÑO DEL AUTOR*/
+  .autor {
+    font-size: 0.7rem;
+  }
+
+  /* Popup adaptable - MÓVIL FULL SCREEN */
+  .popup-content {
+    border-radius: 0;
+    height: 100dvh; 
+    max-height: 100dvh;
+  }
+  
+  .popup-overlay {
+      padding: 0;
+  }
+
+  /* Barra de búsqueda */
+  .search-bar {
+    margin: 15px auto 15px auto;
+    padding: 10px 15px;
+  }
+
+  /* Botón de ajustes en MÓVIL (Alineación Menú) */
+  .popup-settings-wrapper {
+      bottom: 25px;
+      right: 25px;
+  }
+  .tool-panel {
+      position: absolute;
+      right: 58px;
+      /* AJUSTE PARA PRECISIÓN: Más ancho en móvil para mejor control táctil */
+      width: 190px;
+  }
+}
+
+/* ========================
+  D. MOVILES GAMA BAJA / PEQUEÑOS (Max 380px)
+======================== */
+@media (max-width: 380px) {
+  
+  .hero-text h1 {
+    font-size: 1.3rem;
+  }
+  
+  .hero-text p {
+    font-size: 0.8rem;
+  }
+  
+  .category-btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr; /* Una sola columna estricta */
+  }
+
+  /*CATEGORIA DE LAS CANCIONES*/
+  .category-btn {
+  font-size: 0.70rem;             /* un poquito más grande */
+  }
+
+  /*TAMAÑO DE LOS TITULOS DE LAS CANCIONES*/
+  .song-header h2 {
+  font-size: 0.9rem;
+  }
+
+  /*TAMAÑO DEL AUTOR*/
+  .autor {
+    font-size: 0.65rem;
+  }
+}
+
+/* ========================================================================================================================
+      ESTILOS EXCLUSIVOS PARA REPERTORIO.HTML
+======================================================================================================================== */
+
+/* ========================
+  1. BARRA DE ACCIONES (Botón Limpiar + Contador)
+======================== */
+.actions-bar {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  max-width: 1160px;
+  margin: 0 auto 25px auto;
+  padding: 15px 20px;
+  
+  background: rgba(30, 30, 30, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Texto del contador - COLOR NEGRO */
+.counter-text {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #cccaca; 
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Botón Limpiar Repertorio (Izquierda) */
+.btn-limpiar {
+  background: transparent;
+  color: #ff4c4c;
+  border: 1.5px solid #ff4c4c;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-limpiar:hover {
+  background: #ff4c4c;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 76, 76, 0.3);
+}
+
+.btn-limpiar:active {
+  transform: translateY(0);
+}
+
+/* ========================
+  2. DRAG & DROP (MANIPULACIÓN)
+======================== */
+.drag-handle {
+  cursor: grab;
+  font-size: 1.4rem;
+  color: #555;
+  margin-right: 15px;
+  user-select: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  /* IMPORTANTE: Evitar scroll nativo al arrastrar con el dedo */
+  touch-action: none;
+}
+
+.drag-handle:hover {
+  color: #ff4c4c;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Estado de la canción mientras se arrastra (PC) */
+.song[draggable="true"] {
+  cursor: grabbing;
+}
+
+/* Animación y Feedback visual mejorado para Arrastre */
+.song.dragging {
+  opacity: 0.5;
+  transform: scale(1.02) rotate(1deg);
+  background: rgba(165, 30, 23, 0.15) !important;
+  border: 2px dashed #ff4c4c !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5) !important;
+  z-index: 100;
+}
+
+/* Estilo para el destino (donde caerá el elemento) */
+.song.over {
+  border-top: 4px solid #ff4c4c !important;
+  background: rgba(255, 76, 76, 0.1) !important;
+  transform: translateY(5px);
+}
+
+/* ========================
+  3. BOTÓN QUITAR INDIVIDUAL
+======================== */
+.remove-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.remove-button:hover {
+  background: #ef4444;
+  color: #fff;
+  border-color: #ef4444;
+}
+
+/* ========================
+  4. MENsquare VACÍO */
+#empty-message {
+  text-align: center;
+  color: #777;
+  padding: 60px 20px;
+  font-style: italic;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+}
+
+/* =========================================
+  5. MODO CLARO (REPERTORIO)
+========================================= */
+body.light-mode .actions-bar {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .counter-text {
+  color: #000000; 
+}
+
+body.light-mode .btn-limpiar {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+body.light-mode .btn-limpiar:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+body.light-mode .remove-button {
+  background: rgba(185, 28, 28, 0.05);
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.2);
+}
+
+body.light-mode .remove-button:hover {
+  background: #b91c1c;
+  color: #fff;
+}
+
+body.light-mode #empty-message {
+  background: #fff;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+/* ==============================
+  OCULTAR / MOSTRAR ACORDES
+============================== */
+.hide-chords .chord {
+  display: none;
+}
+
+/* =========================================
+  6. RESPONSIVIDAD MÓVIL
+========================================= */
+@media (max-width: 600px) {
+  .actions-bar {
+    flex-direction: row; 
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 15px;
+  }
+
+  .counter-text {
+    font-size: 0.75rem; 
+  }
+
+  .btn-limpiar {
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 30% !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .btn-limpiar .text {
+    display: none !important;
+  }
+
+  .btn-limpiar .icon {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+
+  .drag-handle {
+    margin-right: 10px;
+    font-size: 1.2rem;
+  }
+
+  .song.dragging {
+    transform: scale(1.05);
+    opacity: 0.7;
+    background: #1f1f1f !important;
+  }
+
+  /* SISTEMA DE AJUSTES EN MÓVIL - OPTIMIZACIÓN */
+  .popup-settings-wrapper {
+      bottom: 20px;
+      right: 20px;
+      gap: 10px;
+  }
+  
+  .settings-fab {
+      width: 50px;
+      height: 50px;
+  }
+
+  .menu-fab {
+      width: 44px;
+      height: 44px;
+      font-size: 16px;
+  }
+
+  .tool-panel {
+      position: absolute;
+      right: 55px; /* Ajuste para que no tape los botones verticales */
+      width: auto;
+      max-width: calc(100vw - 110px);
+      height: 38px;
+      padding: 0 12px;
+      gap: 8px;
+      transform: translateX(10px);
+  }
+
+  .tool-label {
+      display: none; /* Ocultar texto en móviles para ahorrar espacio */
+  }
+
+  .tool-panel input[type="range"] {
+      width: 80px; /* Slider más compacto */
+  }
+}
+
+/* Ajuste extremo para slider en mini-móviles o pantallas muy estrechas */
+@media (max-width: 380px) {
+  .tool-panel input[type="range"] { width: 60px; }
+  .popup-settings-wrapper { bottom: 15px; right: 15px; }
+}
+
+/* Optimización para Laptops y Desktop con Hover */
+@media (min-width: 1024px) {
+    .settings-fab:hover {
+        transform: scale(1.05);
+    }
+    .tool-panel {
+        padding: 0 20px;
+        height: 45px;
+    }
+    .tool-panel input[type="range"] {
+        width: 120px;
+    }
+}
+
+/* ESTILOS PARA LA CAPTURA DE IMAGEN (OPTIMIZADOS PARA A4 PROFESIONAL) */
+.capture-mode {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 800px !important; /* Ancho base para proporción A4 */
+    min-height: auto !important;
+    padding: 60px !important;
+    display: block !important;
+    box-sizing: border-box !important;
+    font-family: 'Poppins', sans-serif !important;
+    
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: -9999 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    transform: none !important;
+}
+
+/* ELIMINAR SOMBRAS EN LA CAPTURA */
+.capture-mode *,
+.capture-mode *::before,
+.capture-mode *::after {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+.capture-mode .doc-header {
+    margin-bottom: 35px !important;
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+}
+
+.capture-mode .popup-title { 
+    color: #b91c1c !important; 
+    font-size: 32px !important;
+    margin: 0 0 5px 0 !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+}
+
+.capture-mode .popup-autor { 
+    color: #4b5563 !important; 
+    font-size: 16px !important;
+    font-style: italic !important;
+    margin: 0 !important;
+    text-align: center !important;
+}
+
+.capture-mode .popup-transp-info { 
+    display: block !important; 
+    text-align: center !important; 
+    color: #6b7280 !important; 
+    font-size: 13px !important; 
+    margin-top: 8px !important;
+    border-top: 1px solid #eee !important;
+    padding-top: 5px !important;
+}
+
+.capture-mode .popup-letra { 
+    color: #000000 !important; 
+    font-family: 'Roboto Mono', 'Consolas', monospace !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    white-space: pre !important; 
+    overflow: visible !important;
+    display: block !important;
+    text-align: left !important;
+    font-weight: 400 !important;
+    line-height: 1.5;
+}
+
+.capture-mode .chord { 
+    color: #d97706 !important; 
+    font-weight: 700 !important; 
+}
+
+/* Modo dos columnas inteligente */
+.capture-mode.multi-column .popup-letra {
+    column-count: 2 !important;
+    column-gap: 50px !important;
+    column-rule: 1px solid #f0f0f0 !important;
+    white-space: pre-wrap !important; 
+    width: 100% !important;
+}
+
+/* Ocultar botones y ajustes en la captura */
+.capture-mode .popup-settings-wrapper,
+.capture-mode .popup-action-btn,
+.capture-mode .popup-cerrar,
+.capture-mode .popup-download-btn {
+    display: none !important;
+}
