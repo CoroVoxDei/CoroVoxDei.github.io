@@ -1138,146 +1138,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const autor = document.getElementById("popupAutor").textContent;
     const lyricsHtml = document.getElementById("popupTexto").innerHTML;
     const transpInfo = document.getElementById("popupTranspInfo").textContent;
+    const currentFontSize = window.tamañoFuente || 16;
+    const currentLineHeight = window.espaciadoLinea || 1.6;
 
-    const PT_TO_PX = 1.333;
     const A4_WIDTH = 794; 
     const A4_HEIGHT = 1123; 
-    const MARGIN_X = 75; // Más margen lateral para evitar cortes
-    const MARGIN_Y = 60;
-    const COLUMN_GAP = 50; // Más espacio entre columnas
-    const CONTENT_WIDTH = A4_WIDTH - (MARGIN_X * 2);
-    const COLUMN_WIDTH = (CONTENT_WIDTH - COLUMN_GAP) / 2;
-    const HEADER_HEIGHT = 160;
-    const FOOTER_HEIGHT = 60;
+    const MARGIN_Y = 50;
+    const HEADER_HEIGHT = 140;
+    const FOOTER_HEIGHT = 50;
     const MAX_CONTENT_HEIGHT = A4_HEIGHT - (MARGIN_Y * 2) - HEADER_HEIGHT - FOOTER_HEIGHT;
 
     const lines = lyricsHtml.split(/\r?\n/);
 
-    // Función para maquetar el contenido y devolver páginas
-    const layoutContent = (fontSizePx, forceTwoColumns = false, maxH = MAX_CONTENT_HEIGHT) => {
-        const pages = [];
-        let currentPage = { col1: [], col2: [] };
-        let currentColumn = 'col1';
-        let hasWidthOverflow = false;
-        
-        const measurer = document.createElement('div');
-        const targetWidth = forceTwoColumns ? COLUMN_WIDTH : CONTENT_WIDTH;
-        
-        // Estilos idénticos a la columna final para medición exacta
-        measurer.style.width = targetWidth + 'px';
-        measurer.style.fontSize = fontSizePx + 'px';
-        measurer.style.fontFamily = "'Roboto Mono', monospace";
-        measurer.style.lineHeight = "1.5";
-        measurer.style.whiteSpace = 'pre'; 
-        measurer.style.position = 'absolute';
-        measurer.style.visibility = 'hidden';
-        measurer.style.left = '-9999px';
-        measurer.style.padding = '0';
-        measurer.style.margin = '0';
-        measurer.style.boxSizing = 'border-box';
-        document.body.appendChild(measurer);
+    // Contenedor invisible para el motor de renderizado pero presente en el DOM
+    const container = document.createElement('div');
+    container.className = 'capture-container';
+    document.body.appendChild(container);
 
-        for (let line of lines) {
-            const lineDiv = document.createElement('div');
-            // Medir el texto real sin etiquetas para el ancho
-            const textOnly = line.replace(/<[^>]*>?/gm, '');
-            lineDiv.textContent = textOnly || ' ';
-            measurer.appendChild(lineDiv);
-            
-            // Detección estricta de ancho: scrollWidth captura el ancho real del texto pre
-            if (lineDiv.scrollWidth > targetWidth + 1) {
-                hasWidthOverflow = true;
-            }
-
-            if (measurer.offsetHeight > maxH) {
-                measurer.removeChild(lineDiv);
-                if (!forceTwoColumns) {
-                    pages.push(currentPage);
-                    currentPage = { col1: [], col2: [] };
-                    measurer.innerHTML = '';
-                    measurer.appendChild(lineDiv);
-                } else {
-                    if (currentColumn === 'col1') {
-                        currentColumn = 'col2';
-                        measurer.innerHTML = '';
-                        measurer.appendChild(lineDiv);
-                    } else {
-                        pages.push(currentPage);
-                        currentPage = { col1: [], col2: [] };
-                        currentColumn = 'col1';
-                        measurer.innerHTML = '';
-                        measurer.appendChild(lineDiv);
-                    }
-                }
-            }
-            currentPage[currentColumn].push(line);
-        }
-        if (currentPage.col1.length > 0) pages.push(currentPage);
-        const finalHeight = measurer.offsetHeight;
-        document.body.removeChild(measurer);
-        return { pages, contentHeight: finalHeight, widthOverflow: hasWidthOverflow };
-    };
-
-    let bestFontSize = 14 * PT_TO_PX;
-    let finalPages = [];
-    let useTwoColumns = false;
-    let isShortSong = false;
-    let calculatedHeight = A4_HEIGHT;
-
-    // 1. Intentar 1 página a una columna (14pt -> 9pt)
-    for (let fs = 14; fs >= 9; fs--) {
-        const res = layoutContent(fs * PT_TO_PX, false, 9999);
-        if (!res.widthOverflow) {
-            if (res.contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + (MARGIN_Y * 2) < A4_HEIGHT) {
-                bestFontSize = fs * PT_TO_PX;
-                finalPages = res.pages;
-                isShortSong = true;
-                calculatedHeight = res.contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + (MARGIN_Y * 2);
-                break;
-            } else {
-                const resA4 = layoutContent(fs * PT_TO_PX, false);
-                if (resA4.pages.length === 1 && !resA4.widthOverflow) {
-                    bestFontSize = fs * PT_TO_PX;
-                    finalPages = resA4.pages;
-                    isShortSong = false;
-                    calculatedHeight = A4_HEIGHT;
-                    break;
-                }
-            }
-        }
-    }
-
-    // 2. Si no cupo o se salía de ancho, intentar 2 columnas (14pt -> 9pt)
-    if (finalPages.length === 0 || (!isShortSong && finalPages.length > 1)) {
-        useTwoColumns = true;
-        isShortSong = false;
-        calculatedHeight = A4_HEIGHT;
-        for (let fs = 14; fs >= 9; fs--) {
-            const res = layoutContent(fs * PT_TO_PX, true);
-            if (res.pages.length === 1 && !res.widthOverflow) {
-                bestFontSize = fs * PT_TO_PX;
-                finalPages = res.pages;
-                break;
-            }
-        }
-    }
-
-    // 3. Si sigue sin caber, usar 9pt multi-página (2 columnas)
-    if (finalPages.length === 0 || finalPages.length > 1) {
-        bestFontSize = 9 * PT_TO_PX;
-        finalPages = layoutContent(bestFontSize, true).pages;
-        useTwoColumns = true;
-        isShortSong = false;
-        calculatedHeight = A4_HEIGHT;
-    }
-
-    for (let i = 0; i < finalPages.length; i++) {
-        const pageData = finalPages[i];
-        const pageEl = document.createElement('div');
-        pageEl.className = 'capture-page' + (isShortSong ? ' short-song' : '');
-        if (isShortSong) pageEl.style.height = calculatedHeight + 'px';
-        
-        pageEl.innerHTML = `
+    const createPageElement = (isShort = false) => {
+        const page = document.createElement('div');
+        page.className = 'capture-page' + (isShort ? ' short-song' : '');
+        page.style.height = isShort ? 'auto' : A4_HEIGHT + 'px';
+        page.innerHTML = `
             <div class="capture-header-v2">
                 <div class="header-line"></div>
                 <h2 class="capture-title-v2">${titulo}</h2>
@@ -1286,57 +1168,74 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="capture-transp-v2">${transpInfo}</div>
             </div>
             <div class="capture-content">
-                <table style="width: 100%; table-layout: fixed; border-collapse: collapse; border: none;">
-                    <tr>
-                        <td style="width: ${useTwoColumns ? '50%' : '100%'}; vertical-align: top; padding: 0; margin: 0;">
-                            <div class="capture-column" style="font-size: ${bestFontSize}px; width: 100%;">
-                                ${pageData.col1.join('\n')}
-                            </div>
-                        </td>
-                        ${useTwoColumns ? `
-                        <td style="width: 50%; vertical-align: top; padding: 0 0 0 ${COLUMN_GAP}px; margin: 0;">
-                            <div class="capture-column" style="font-size: ${bestFontSize}px; width: 100%;">
-                                ${pageData.col2.join('\n')}
-                            </div>
-                        </td>` : ''}
-                    </tr>
-                </table>
+                <div class="capture-column" style="font-size: ${currentFontSize}px; line-height: ${currentLineHeight};"></div>
             </div>
-            ${!isShortSong ? `
-            <div class="capture-footer">
-                Página ${i + 1} de ${finalPages.length} | Vox Dei Cancionero
-            </div>` : ''}
+            <div class="capture-footer">Vox Dei Cancionero</div>
         `;
+        container.appendChild(page);
+        return page;
+    };
 
-        document.body.appendChild(pageEl);
+    const pages = [];
+    let currentPage = createPageElement(true);
+    let currentColumn = currentPage.querySelector('.capture-column');
+
+    // Llenado secuencial con pausas para forzar el layout
+    for (let line of lines) {
+        const lineDiv = document.createElement('div');
+        lineDiv.innerHTML = line || ' ';
+        currentColumn.appendChild(lineDiv);
+
+        // Forzar recalculo de altura
+        if (currentPage.offsetHeight > A4_HEIGHT) {
+            if (currentPage.classList.contains('short-song')) {
+                currentPage.classList.remove('short-song');
+                currentPage.style.height = A4_HEIGHT + 'px';
+            }
+
+            if (currentColumn.offsetHeight > MAX_CONTENT_HEIGHT) {
+                currentColumn.removeChild(lineDiv);
+                pages.push(currentPage);
+                
+                currentPage = createPageElement(false);
+                currentColumn = currentPage.querySelector('.capture-column');
+                currentColumn.appendChild(lineDiv);
+            }
+        }
+    }
+    pages.push(currentPage);
+
+    // Asegurar que las fuentes estén listas
+    if (document.fonts) await document.fonts.ready;
+    // Pequeña pausa extra para asegurar el renderizado de los estilos
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 800)));
+
+    for (let i = 0; i < pages.length; i++) {
+        const pageEl = pages[i];
+        if (pages.length > 1) {
+            pageEl.querySelector('.capture-footer').textContent = `Página ${i + 1} de ${pages.length} | Vox Dei Cancionero`;
+        }
 
         try {
-            if (document.fonts) await document.fonts.ready;
-            await new Promise(r => setTimeout(r, 800));
-
             const dataUrl = await window.htmlToImage.toPng(pageEl, {
                 width: A4_WIDTH,
-                height: isShortSong ? calculatedHeight : A4_HEIGHT,
+                height: pageEl.offsetHeight,
                 pixelRatio: 2,
                 backgroundColor: '#ffffff',
-                style: {
-                    opacity: '1',
-                    visibility: 'visible',
-                    left: '0',
-                    top: '0',
-                    position: 'relative'
-                }
+                cacheBust: true, // Evitar problemas de caché en imágenes/fuentes
             });
+
             const link = document.createElement('a');
-            link.download = `${titulo.replace(/\s+/g, '_')}${finalPages.length > 1 ? '_Pag' + (i + 1) : ''}.png`;
+            link.download = `${titulo.replace(/\s+/g, '_')}${pages.length > 1 ? '_Pag' + (i + 1) : ''}.png`;
             link.href = dataUrl;
             link.click();
         } catch (e) {
-            console.error("Error al generar página", i, e);
-        } finally {
-            document.body.removeChild(pageEl);
+            console.error("Error en descarga:", e);
         }
     }
+
+    // Limpiar todo al final
+    document.body.removeChild(container);
   });
 
   popupBody?.addEventListener("scroll", resetHideTimer);
