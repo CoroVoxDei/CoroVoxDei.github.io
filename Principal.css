@@ -1140,102 +1140,101 @@ body.light-mode .popup-letra.multi-column {
 /* =========================================
   ESTILOS PARA DESCARGA A4 PROFESIONAL
 ========================================= */
+.capture-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  z-index: -9999 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+}
+
 .capture-page {
   width: 794px;
-  height: 1123px;
   background: white !important;
   color: black !important;
-  padding: 60px 75px !important; /* Ajuste de padding lateral */
+  padding: 50px 60px !important; 
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
-  position: fixed !important;
-  left: 0 !important;
-  top: 0 !important;
-  z-index: -9999 !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
   visibility: visible !important;
-  overflow: hidden !important; /* Evitar cualquier desborde visual */
+  position: relative !important;
 }
 
 .capture-page.short-song {
-  justify-content: center !important;
+  height: auto !important;
 }
 
 .capture-header-v2 {
   text-align: center !important;
-  margin-bottom: 40px !important;
+  margin-bottom: 25px !important;
   width: 100% !important;
 }
 
 .header-line {
   height: 1px !important;
-  background: #f0f0f0 !important;
-  width: 100px !important;
-  margin: 10px auto !important;
+  background: #ddd !important;
+  width: 120px !important;
+  margin: 6px auto !important;
 }
 
 .capture-title-v2 {
   font-family: 'Raleway', sans-serif !important;
-  font-size: 36px !important;
+  font-size: 30px !important;
   font-weight: 700 !important;
-  margin: 10px 0 !important;
-  color: #a51e17 !important; /* Rojo Vox Dei */
+  margin: 4px 0 !important;
+  color: #a51e17 !important; 
   text-transform: uppercase !important;
-  letter-spacing: 2px !important;
 }
 
 .capture-author-v2 {
   font-family: 'Inter', sans-serif !important;
-  font-size: 18px !important;
+  font-size: 16px !important;
   color: #333 !important;
-  margin: 5px 0 !important;
+  margin: 0 !important;
+  font-style: italic !important;
 }
 
 .capture-transp-v2 {
   font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   color: #666 !important;
-  margin-top: 10px !important;
+  margin-top: 6px !important;
 }
 
 .capture-content {
   flex: 1 !important;
-  display: block !important; /* Cambiado de flex a block para contener la tabla */
   width: 100% !important;
-  overflow: hidden !important;
-}
-
-.capture-page.short-song .capture-content {
-  flex: 0 0 auto !important;
 }
 
 .capture-column {
   font-family: 'Roboto Mono', monospace !important;
-  white-space: pre !important; /* MANTENER ALINEACIÓN ESTRICTA */
+  white-space: pre !important; 
   word-break: normal !important;
-  line-height: 1.5 !important;
   color: #000 !important;
   display: block !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .capture-column .chord {
-  color: #d97706 !important; /* Ámbar original */
+  color: #b45309 !important; 
   font-weight: 700 !important;
-  text-shadow: none !important;
+  background: transparent !important;
 }
 
 .capture-footer {
-  margin-top: auto !important;
-  padding-top: 20px !important;
+  margin-top: 15px !important;
+  padding-top: 10px !important;
   font-family: 'Inter', sans-serif !important;
-  font-size: 11px !important;
-  color: #aaa !important;
-  text-align: right !important;
-  border-top: 1px solid #f9f9f9 !important;
+  font-size: 10px !important;
+  color: #999 !important;
+  text-align: center !important;
+  border-top: 1px solid #eee !important;
 }
 
 /* --- Acordes dentro de <pre> --- */
