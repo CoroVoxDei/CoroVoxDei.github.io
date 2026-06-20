@@ -2594,125 +2594,110 @@ body.light-mode .pagination button.active {
       flex-direction: row !important;
       justify-content: space-between !important;
       align-items: center !important;
-      gap: 10px !important;
-      flex-wrap: nowrap !important; 
+      gap: 12px 10px !important;
+      flex-wrap: wrap !important; /* Permitir que los botones bajen ordenadamente en móviles */
   }
 
-  /* El contenedor de info de texto se vuelve columna para apilar título y autor */
-  .song-info {
+  /* El contenedor de info de texto se vuelve full-width en móvil */
+  .song-info, .song-info-container {
       display: flex !important;
       flex-direction: column !important;
       align-items: flex-start !important;
-      flex: 1 !important;
+      flex: 1 1 100% !important; /* Forzar ancho completo para empujar botones al siguiente nivel */
       min-width: 0 !important;
   }
 
-  .song-header h2 {
-      font-size: 1rem !important;
+  .song-title-author {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      width: 100% !important;
+  }
+
+  .song-header h2, .repertorio-title {
+      font-size: 1.1rem !important;
       white-space: normal !important;
-      margin: 0 !important;
-      line-height: 1.2;
+      margin: 0 0 4px 0 !important;
+      line-height: 1.3;
       display: block !important;
-      flex: 1 !important;
-      min-width: 0 !important;
+      width: 100% !important;
   }
 
   .autor {
-      margin: 2px 0 0 0 !important; 
+      margin: 0 !important; 
       font-size: 0.75rem !important;
       display: block !important;
-      margin-top: 5px !important;
       white-space: normal !important;
+      color: #9fa3b0;
   }
 
-  /* TRANSFORMACIÓN DE BOTONES A ICONOS EN MÓVIL */
-  /* Botón Repertorio */
-  .add-repertorio {
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 30%; /* Hacerlo redondo */
-  }
-  
-  .add-repertorio .text {
-    display: none !important; /* Asegura ocultamiento total del texto */
-  }
-  
-  .add-repertorio .icon {
-    margin: 0; /* Quitar margen del icono si tiene */
-    font-size: 1.2rem;
-  }
-
-  /* Botón Letra - CORRECCIÓN CENTRADO ICONO */
-  .lyrics-btn {
-    width: 40px; /* Un poco más grande para mejor toque */
-    height: 40px;
-    padding: 0;  /* Resetear padding para que el centrado funcione */
-    justify-content: center;
-    border-radius: 30%;
-    font-size: 0 !important; /* Ocultar el texto "Ver letra" */
-  }
-  
-  .lyrics-btn::before {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); /* Centrado absoluto perfecto */
-    font-size: 1.1rem; 
-    margin: 0;
-  }
-
-  /* Botón Quitar Individual en Móvil */
-  .remove-button {
-    width: 40px !important; /* Igualamos a 40px para alineación perfecta */
-    height: 40px !important;
-    padding: 0 !important;
-    margin: 0 !important; /* Evita desplazamientos indeseados */
-    justify-content: center !important;
-    align-items: center !important; /* Aseguramos alineación central flex */
-    border-radius: 30% !important;
-    display: flex !important;
-  }
-
-  .remove-button .text {
-    display: none !important;
-  }
-
-  .remove-button .icon {
-    font-size: 1.2rem !important;
-    margin: 0 !important;
-    display: flex !important;
+  /* DISEÑO UNIFICADO Y CONSISTENTE DE LOS BOTONES EN MÓVIL COINCIDIENDO CON PC */
+  .lyrics-btn, .add-repertorio, .remove-button {
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 100% !important;
-    height: 100% !important;
+    gap: 6px !important;
+    height: 38px !important;
+    padding: 8px 14px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    width: auto !important;
+    position: relative !important;
+  }
+
+  /* Asegurar que se visualice el texto completo sin ocultarlo */
+  .add-repertorio .text, .remove-button .text {
+    display: inline-block !important;
+    font-size: 0.8rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .add-repertorio .icon, .remove-button .icon {
+    margin: 0 !important;
+    font-size: 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .remove-button .icon svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
 
-  /* Contenedor de botones en móvil para asegurar alineación vertical central perfecta */
+  /* Botón Letra con icono del ojo perfectamente posicionado a la izquierda */
+  .lyrics-btn {
+    padding-left: 36px !important; /* Espacio exacto para el pseudo-elemento del ojo */
+    font-size: 0.8rem !important;
+  }
+  
+  .lyrics-btn::before {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 1.1rem !important;
+    height: 1.1rem !important;
+    content: "" !important;
+    display: block !important;
+  }
+
+  /* Contenedor de botones en móvil con flujo horizontal alineado al inicio */
   .song-btns {
     display: flex !important;
-    align-items: center !important; /* Eje vertical central */
-    justify-content: flex-end !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
     gap: 8px !important;
-    margin: 0 !important;
+    margin: 4px 0 0 0 !important;
     padding: 0 !important;
-    height: 40px !important; /* Misma altura que los botones */
+    height: auto !important;
   }
 
-  /*TAMAÑO DE LOS TITULOS DE LAS CANCIONES*/
+  /* Ajustar tamaño de cabeceras de canciones en móviles */
   .song-header h2 {
-  font-size: 1rem;
-  }
-
-  /*TAMAÑO DEL AUTOR*/
-  .autor {
-    font-size: 0.7rem;
+    font-size: 1.1rem !important;
   }
 
   /* Popup adaptable - MÓVIL FULL SCREEN */
