@@ -204,7 +204,8 @@ function initSearch() {
     "PadreNuestro": "Padre Nuestro", "Cordero": "Cordero", "Comunión": "Comunión",
     "AdoracionMeditacion": "Adoración y Meditación", "EnvioSalida": "Salida y Envío",
     "Marianos": "Marianos", "Salesianos": "Salesianos", "Cuaresma": "Cuaresma",
-    "Pascua": "Pascua", "Adviento": "Adviento y Navidad", "HimnosSalmos": "Himnos y Salmos"
+    "Pascua": "Pascua", "Adviento": "Adviento y Navidad", "HimnosSalmos": "Himnos y Salmos",
+    "Contemporáneo" : "Contemporáneo"
   };
 
   const matchWord = (qWord, nTitle, nLyrics, nAuthor, nCategory, titleWords, lyricsWordSet, lyricsWords, songAllWords, allSearchableWords) => {
@@ -818,6 +819,12 @@ function renderizarRepertorio(lista, esBusqueda = false) {
       section.classList.add("song");
       section.dataset.index = index;
       if (song.audio) section.dataset.audio = song.audio;
+      if (song.tags) section.dataset.tags = song.tags;
+      if (song.category) section.dataset.category = song.category;
+      if (song.type) section.dataset.type = song.type;
+
+      // Unificar etiqueta visual
+      const visualTag = song.tags || window.getSongTag(section, song.category);
 
       // UNIFICACIÓN DE ESTRUCTURA: Para que el buscador delegado funcione idéntico en ambas vistas
       section.innerHTML = `
@@ -920,10 +927,17 @@ function shuffleArray(array) {
   }
 }
 
+window.getSongTag = function(songSection, activeCategory) {
+  if (songSection?.dataset && songSection.dataset.tags) {
+    return songSection.dataset.tags.toUpperCase();
+  }
+  return "";
+};
+
 function loadSongs(files) {
   const container = document.getElementById("songsContainer");
   if (!container) return;
-  Promise.all(files.map(f => fetch(f).then(r => r.text()).catch(() => "")))
+  Promise.all(files.map(f => fetch(f).then(r => r.ok && r.status === 200 ? r.text() : "").catch(() => "")))
     .then(htmls => {
       container.innerHTML = htmls.join("");
       
@@ -951,14 +965,6 @@ function loadSongs(files) {
             // También asegurar que el botón de letra tenga el data-audio
             const lyricsBtn = song.querySelector(".lyrics-btn");
             if (lyricsBtn) lyricsBtn.dataset.audio = audio;
-        }
-
-        const type = song.dataset.type || song.querySelector(".lyrics-btn")?.dataset.type;
-        if (type) {
-          const h2 = song.querySelector("h2");
-          if (h2 && !h2.querySelector(".song-tag")) {
-            // ELIMINADO: Ya no se agregan etiquetas en la lista principal
-          }
         }
       });
 
@@ -994,7 +1000,9 @@ function initSongButtons() {
         const lyrics = songSection.querySelector(".lyrics-hidden, .lyrics, .lyrics1")?.innerHTML.trim();
         const type = songSection.dataset.type || "";
         const audio = songSection.dataset.audio || songSection.querySelector(".lyrics-btn")?.dataset.audio || "";
-        currentRep.push({ title, author, lyrics, type, audio });
+        const tags = songSection.dataset.tags || window.getSongTag(songSection) || "";
+        const category = songSection.dataset.category || "";
+        currentRep.push({ title, author, lyrics, type, audio, tags, category });
         localStorage.setItem("repertorio", JSON.stringify(currentRep));
         actualizarBoton(btn, true);
       } else {
@@ -1094,8 +1102,8 @@ document.addEventListener("DOMContentLoaded", () => {
    "Categorias/Entrada.html", "Categorias/Penitencial.html", "Categorias/Gloria.html", "Categorias/Aclamacion.html",
     "Categorias/Ofertorio.html", "Categorias/Santo.html", "Categorias/PadreNuestro.html", "Categorias/Cordero.html",
     "Categorias/Comunion.html", "Categorias/AdoracionMeditacion.html", "Categorias/EnvioSalida.html", "Categorias/Marianos.html",
-    "Categorias/Salesianos.html","Categorias/Cuaresma.html", "Categorias/Pascua.html" ,
-    "Categorias/Adviento.html", "Categorias/HimnosSalmos.html",
+    "Categorias/Salesianos.html","Categorias/Cuaresma.html", "Categorias/Pascua.html" , "Categorias/EspirituSanto.html" ,
+    "Categorias/Adviento.html", "Categorias/HimnosSalmos.html", "Categorias/Contemporáneo.html",
   ]);
 });
 
@@ -1156,32 +1164,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   }
 
-  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl) {
+  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl, tags) {
     const popup = document.getElementById("popupLetra");
     if (!popup) return;
     
-    // Sistema dinámico de etiquetas
-    const tagMapping = {
-      "liturgico": { label: "Litúrgico", class: "tag-liturgico" },
-      "personal": { label: "Personal", class: "tag-no-liturgico" },
-      "no-liturgico": { label: "Personal", class: "tag-no-liturgico" },
-      "domingo-ramos": { label: "Domingo de Ramos", class: "tag-semana-santa" },
-      "jueves-santo": { label: "Jueves Santo", class: "tag-semana-santa" },
-      "viernes-santo": { label: "Viernes Santo", class: "tag-semana-santa" },
-      "vigilia-pascual": { label: "Vigilia Pascual", class: "tag-semana-santa" },
-      "domingo-resurreccion": { label: "Domingo de Resurrección", class: "tag-semana-santa" },
-      "navidad": { label: "Navidad", class: "tag-navidad" },
-      "entrada": { label: "Canto de Entrada", class: "tag-misa" },
-      "salida": { label: "Canto de Salida", class: "tag-misa" }
-    };
-
+    // Obtener la etiqueta visual de forma unificada y premium
+    let displayTag = tags || "";
+    const sElem = Array.from(document.querySelectorAll(".song")).find(s => {
+      const t = s.querySelector("h2")?.childNodes[0]?.textContent.trim() || 
+                s.querySelector("h2 div")?.childNodes[0]?.textContent.trim() || 
+                s.querySelector(".repertorio-title")?.textContent.trim() || "";
+      return t === titulo;
+    });
+    if (sElem) {
+        displayTag = window.getSongTag(sElem);
+    }
+    
     let tagHtml = "";
-    if (tipo) {
-      const info = tagMapping[tipo.toLowerCase()] || { 
-        label: tipo.charAt(0).toUpperCase() + tipo.slice(1).replace(/-/g, ' '), 
-        class: "tag-generic" 
-      };
-      tagHtml = `<span class="song-tag ${info.class}">Para uso: ${info.label}</span>`;
+    if (displayTag) {
+      tagHtml = `<span class="song-tag">${displayTag.toUpperCase()}</span>`;
     }
 
     document.getElementById("popupTitulo").textContent = titulo;
@@ -1404,108 +1405,90 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const titulo = document.getElementById("popupTitulo").textContent;
-    const autor = document.getElementById("popupAutor").textContent;
-    const lyricsHtml = document.getElementById("popupTexto").innerHTML;
-    const transpInfo = document.getElementById("popupTranspInfo").textContent;
-    const currentFontSize = window.tamañoFuente || 16;
-    const currentLineHeight = window.espaciadoLinea || 1.6;
+    const originalContent = btnDownloadImage.innerHTML;
+    btnDownloadImage.innerHTML = `<svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="30 10"></circle></svg>`;
+    btnDownloadImage.style.pointerEvents = "none";
 
-    const A4_WIDTH = 794; 
-    const A4_HEIGHT = 1123; 
-    const MARGIN_Y = 50;
-    const HEADER_HEIGHT = 140;
-    const FOOTER_HEIGHT = 50;
-    const MAX_CONTENT_HEIGHT = A4_HEIGHT - (MARGIN_Y * 2) - HEADER_HEIGHT - FOOTER_HEIGHT;
+    try {
+        const titulo = document.getElementById("popupTitulo").textContent.trim();
+        const autor = document.getElementById("popupAutor").textContent.trim();
+        const lyricsHtml = document.getElementById("popupTexto").innerHTML;
+        const transpInfo = document.getElementById("popupTranspInfo").textContent.trim();
+        const currentFontSize = window.tamañoFuente || 15;
+        const currentLineHeight = window.espaciadoLinea || 1.65;
 
-    const lines = lyricsHtml.split(/\r?\n/);
+        // Obtener el tag de la canción en pantalla
+        const tagContainer = document.getElementById("popupTagContainer");
+        const activeTagText = tagContainer ? tagContainer.textContent.trim() : "";
 
-    // Contenedor invisible para el motor de renderizado pero presente en el DOM
-    const container = document.createElement('div');
-    container.className = 'capture-container';
-    document.body.appendChild(container);
+        // Crear contenedor para renderizado premium fuera de pantalla
+        const captureCard = document.createElement("div");
+        captureCard.className = "single-capture-sheet";
+        
+        // Copiar si tiene columnas activas
+        const isMultiColumn = document.getElementById("popupTexto").classList.contains("multi-column");
+        if (isMultiColumn) {
+            captureCard.classList.add("multi-column-active");
+        }
 
-    const createPageElement = (isShort = false) => {
-        const page = document.createElement('div');
-        page.className = 'capture-page' + (isShort ? ' short-song' : '');
-        page.style.height = isShort ? 'auto' : A4_HEIGHT + 'px';
-        page.innerHTML = `
-            <div class="capture-header-v2">
-                <div class="header-line"></div>
-                <h2 class="capture-title-v2">${titulo}</h2>
-                <div class="header-line"></div>
-                <p class="capture-author-v2">${autor}</p>
-                <div class="capture-transp-v2">${transpInfo}</div>
+        const isSinAcordes = document.getElementById("popupTexto").classList.contains("sin-acordes");
+
+        captureCard.innerHTML = `
+            <div class="capture-card-inner">
+                <div class="capture-card-header">
+                    <span class="choir-branding">CORO JUVENIL SALESIANO VOX DEI</span>
+                    <h1 class="capture-card-title">${titulo}</h1>
+                    ${autor ? `<p class="capture-card-author">${autor}</p>` : ""}
+                    ${activeTagText ? `<span class="capture-card-badge">${activeTagText}</span>` : ""}
+                    ${transpInfo ? `<p class="capture-card-transp">${transpInfo}</p>` : ""}
+                </div>
+                <div class="capture-card-divider"></div>
+                <pre class="capture-card-lyrics ${isSinAcordes ? "sin-acordes" : ""}" 
+                     style="font-size: ${currentFontSize}px; line-height: ${currentLineHeight};">${lyricsHtml}</pre>
+                <div class="capture-card-footer">
+                    <span>Generado digitalmente por el Cancionero Vox Dei</span>
+                    <p class="copyright">© 2026 Vox Dei. Todos los derechos reservados.</p>
+                </div>
             </div>
-            <div class="capture-content">
-                <div class="capture-column${document.getElementById("popupTexto").classList.contains("sin-acordes") ? " sin-acordes" : ""}" style="font-size: ${currentFontSize}px; line-height: ${currentLineHeight};"></div>
-            </div>
-            <div class="capture-footer">Vox Dei Cancionero</div>
         `;
-        container.appendChild(page);
-        return page;
-    };
 
-    const pages = [];
-    let currentPage = createPageElement(true);
-    let currentColumn = currentPage.querySelector('.capture-column');
+        // Añadir al DOM de forma invisible pero activa
+        document.body.appendChild(captureCard);
 
-    // Llenado secuencial con pausas para forzar el layout
-    for (let line of lines) {
-        const lineDiv = document.createElement('div');
-        lineDiv.innerHTML = line || ' ';
-        currentColumn.appendChild(lineDiv);
+        // Esperar fuentes
+        if (document.fonts) await document.fonts.ready;
+        await new Promise(resolve => setTimeout(resolve, 600));
 
-        // Forzar recalculo de altura
-        if (currentPage.offsetHeight > A4_HEIGHT) {
-            if (currentPage.classList.contains('short-song')) {
-                currentPage.classList.remove('short-song');
-                currentPage.style.height = A4_HEIGHT + 'px';
+        // Capturar usando html-to-image
+        const dataUrl = await window.htmlToImage.toPng(captureCard, {
+            width: 800,
+            height: captureCard.offsetHeight,
+            pixelRatio: 2, // Súper nítido en HD
+            backgroundColor: "#ffffff",
+            cacheBust: true,
+            style: {
+                transform: "none",
+                left: "0",
+                top: "0"
             }
+        });
 
-            if (currentColumn.offsetHeight > MAX_CONTENT_HEIGHT) {
-                currentColumn.removeChild(lineDiv);
-                pages.push(currentPage);
-                
-                currentPage = createPageElement(false);
-                currentColumn = currentPage.querySelector('.capture-column');
-                currentColumn.appendChild(lineDiv);
-            }
-        }
+        // Enlace de descarga automática
+        const link = document.createElement("a");
+        const safeName = titulo.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+        link.download = `VOX_DEI_${safeName}.png`;
+        link.href = dataUrl;
+        link.click();
+
+        // Limpiar
+        document.body.removeChild(captureCard);
+    } catch (error) {
+        console.error("Error al generar la imagen PNG:", error);
+        alert("Ocurrió un error al descargar la canción en formato de imagen de alta calidad. Por favor inténtalo de nuevo.");
+    } finally {
+        btnDownloadImage.innerHTML = originalContent;
+        btnDownloadImage.style.pointerEvents = "auto";
     }
-    pages.push(currentPage);
-
-    // Asegurar que las fuentes estén listas
-    if (document.fonts) await document.fonts.ready;
-    // Pequeña pausa extra para asegurar el renderizado de los estilos
-    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 800)));
-
-    for (let i = 0; i < pages.length; i++) {
-        const pageEl = pages[i];
-        if (pages.length > 1) {
-            pageEl.querySelector('.capture-footer').textContent = `Página ${i + 1} de ${pages.length} | Vox Dei Cancionero`;
-        }
-
-        try {
-            const dataUrl = await window.htmlToImage.toPng(pageEl, {
-                width: A4_WIDTH,
-                height: pageEl.offsetHeight,
-                pixelRatio: 2,
-                backgroundColor: '#ffffff',
-                cacheBust: true, // Evitar problemas de caché en imágenes/fuentes
-            });
-
-            const link = document.createElement('a');
-            link.download = `${titulo.replace(/\s+/g, '_')}${pages.length > 1 ? '_Pag' + (i + 1) : ''}.png`;
-            link.href = dataUrl;
-            link.click();
-        } catch (e) {
-            console.error("Error en descarga:", e);
-        }
-    }
-
-    // Limpiar todo al final
-    document.body.removeChild(container);
   });
 
   popupBody?.addEventListener("scroll", resetHideTimer);
@@ -1552,7 +1535,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const autor = songSection?.querySelector(".autor")?.textContent.trim();
     const tipo = songSection?.dataset.type || btn.dataset.type;
     const audio = songSection?.dataset.audio || btn.dataset.audio;
-    window.abrirLetra(title, lyrics, autor, tipo, audio);
+    const tags = songSection?.dataset.tags || btn.dataset.tags || "";
+    window.abrirLetra(title, lyrics, autor, tipo, audio, tags);
   });
 
   /* ========================
@@ -1568,14 +1552,18 @@ document.addEventListener("DOMContentLoaded", () => {
     "PadreNuestro": { name: "Padre Nuestro", order: 7 },
     "Cordero": { name: "Cordero", order: 8 },
     "Comunión": { name: "Comunión", order: 9 },
-    "AdoracionMeditacion": { name: "Adoración y Meditación", order: 10 },
+    "Comunion": { name: "Comunión", order: 9 },
+    "AdoracionMeditacion": { name: "Meditación y Adoración", order: 10 },
     "EnvioSalida": { name: "Salida y Envío", order: 11 },
     "Marianos": { name: "Marianos", order: 12 },
     "Salesianos": { name: "Salesianos", order: 13 },
     "Cuaresma": { name: "Cuaresma", order: 14 },
     "Pascua": { name: "Pascua", order: 15 },
-    "Adviento": { name: "Adviento y Navidad", order: 16 },
-    "HimnosSalmos": { name: "Himnos y Salmos", order: 17 }
+    "EspirituSanto": { name: "Espíritu Santo", order: 16 },
+    "Adviento": { name: "Adviento y Navidad", order: 17 },
+    "HimnosSalmos": { name: "Himnos y Salmos", order: 18 },
+    "Contemporáneo": { name: "Contemporáneo", order: 19 },
+    "Contemporaneo": { name: "Contemporáneo", order: 19 }
   };
 
   window.abrirIndice = (categoria) => {
@@ -1678,7 +1666,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const autor = song.querySelector(".autor")?.textContent.trim();
       const tipo = song.dataset.type;
       const audio = audioUrl || song.dataset.audio || song.querySelector(".lyrics-btn")?.dataset.audio || "";
-      window.abrirLetra(titulo, lyrics, autor, tipo, audio);
+      const tags = song.dataset.tags || song.querySelector(".lyrics-btn")?.dataset.tags || "";
+      window.abrirLetra(titulo, lyrics, autor, tipo, audio, tags);
       window.cerrarIndice();
     }
   };
