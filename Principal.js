@@ -1157,13 +1157,29 @@ function loadSongs(files) {
 function initSongButtons() {
   document.querySelectorAll(".add-repertorio").forEach(btn => {
     const songSection = btn.closest(".song");
-    // Extraer título considerando ambas estructuras (Inicio y Repertorio)
-    const title = btn.dataset.title ||
-                  songSection?.querySelector(".repertorio-title")?.textContent.trim() || 
-                  songSection?.querySelector("h2")?.childNodes[0]?.textContent.trim() || 
-                  songSection?.querySelector("h2 div")?.childNodes[0]?.textContent.trim() || "";
-    const author = btn.dataset.author ||
-                   songSection?.querySelector(".autor")?.textContent.trim() || "";
+    
+    // Extraer título de forma dinámica y robusta desde el elemento H2
+    const h2 = songSection?.querySelector("h2");
+    let title = "";
+    if (h2) {
+      if (h2.classList.contains("repertorio-title")) {
+        title = h2.textContent.trim();
+      } else {
+        // Clonar el h2 para obtener puramente el nombre quitando autores u otros elementos inline
+        const h2Clone = h2.cloneNode(true);
+        h2Clone.querySelectorAll("small, span, div, p").forEach(el => el.remove());
+        title = h2Clone.textContent.trim();
+      }
+    }
+    // Fallback por si acaso
+    if (!title) {
+      title = songSection?.querySelector("h2")?.childNodes[0]?.textContent.trim() || 
+              btn.dataset.title || "";
+    }
+    
+    // Extraer autor de forma dinámica y limpia
+    const authorElement = songSection?.querySelector(".autor, small.autor, small");
+    const author = authorElement ? authorElement.textContent.trim() : (btn.dataset.author || "");
 
     let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
     const isInRep = rep.some(s => s.title === title && (s.author || "").trim() === author.trim());
@@ -1800,15 +1816,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let title = "";
     if (h2.classList.contains("repertorio-title")) {
         title = h2.textContent.trim();
-    } else if (h2.querySelector("div")) {
-        // Estructura antigua de Repertorio (con div contenedor de título)
-        title = h2.querySelector("div").childNodes[0]?.textContent.trim();
     } else {
-        // Estructura de Inicio (título directo)
-        title = h2.childNodes[0]?.textContent.trim();
+        const h2Clone = h2.cloneNode(true);
+        h2Clone.querySelectorAll("small, span, div, p").forEach(el => el.remove());
+        title = h2Clone.textContent.trim();
     }
     
-    const autor = songSection?.querySelector(".autor")?.textContent.trim();
+    // Fallback
+    if (!title) {
+        title = h2.childNodes[0]?.textContent.trim() || btn.dataset.title || "";
+    }
+    
+    const autorElement = songSection?.querySelector(".autor, small.autor, small");
+    const autor = autorElement ? autorElement.textContent.trim() : (btn.dataset.author || "");
     const tipo = songSection?.dataset.type || btn.dataset.type;
     const audio = songSection?.dataset.audio || btn.dataset.audio;
     const tags = songSection?.dataset.tags || btn.dataset.tags || "";
