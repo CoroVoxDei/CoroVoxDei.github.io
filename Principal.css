@@ -1252,93 +1252,95 @@ body.light-mode #repertorio-list .song:hover {
     align-items: center;
 }
 
-/* Botón Ver Letra en el Repertorio (Estilo Circular/Icono) */
-#repertorio-list .lyrics-btn {
-    width: 45px;
-    height: 45px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    color: transparent; /* Ocultar texto */
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: none;
-}
+@media (max-width: 600px) {
+    /* Botón Ver Letra en el Repertorio (Estilo Circular/Icono de móvil/tablet) */
+    #repertorio-list .lyrics-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: transparent; /* Ocultar texto */
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: none;
+    }
 
-#repertorio-list .lyrics-btn::before {
-    left: 50%;
-    transform: translate(-50%, -50%);
-    stroke: #ffffff;
-}
+    #repertorio-list .lyrics-btn::before {
+        left: 50%;
+        transform: translate(-50%, -50%);
+        stroke: #ffffff;
+    }
 
-#repertorio-list .lyrics-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
+    #repertorio-list .lyrics-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
 
-body.light-mode #repertorio-list .lyrics-btn {
-    background: #f9fafb;
-    border-color: #e5e7eb;
-}
+    body.light-mode #repertorio-list .lyrics-btn {
+        background: #f9fafb;
+        border-color: #e5e7eb;
+    }
 
-body.light-mode #repertorio-list .lyrics-btn::before {
-    stroke: #1f2937;
-}
+    body.light-mode #repertorio-list .lyrics-btn::before {
+        stroke: #1f2937;
+    }
 
-body.light-mode #repertorio-list .lyrics-btn:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
+    body.light-mode #repertorio-list .lyrics-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
 
-/* Botón Quitar en el Repertorio */
-#repertorio-list .remove-button {
-    width: 45px;
-    height: 45px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    transition: all 0.2s ease;
-}
+    /* Botón Quitar en el Repertorio (Estilo Circular/Icono de móvil/tablet) */
+    #repertorio-list .remove-button {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        transition: all 0.2s ease;
+    }
 
-#repertorio-list .remove-button .text {
-    display: none; /* Ocultar texto "Quitar" */
-}
+    #repertorio-list .remove-button .text {
+        display: none; /* Ocultar texto "Quitar" */
+    }
 
-#repertorio-list .remove-button .icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    #repertorio-list .remove-button .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-#repertorio-list .remove-button .icon svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-}
+    #repertorio-list .remove-button .icon svg {
+        width: 20px;
+        height: 20px;
+        display: block;
+    }
 
-#repertorio-list .remove-button:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: #ef4444;
-    transform: scale(1.05);
-}
+    #repertorio-list .remove-button:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+        transform: scale(1.05);
+    }
 
-body.light-mode #repertorio-list .remove-button {
-    background: #fef2f2;
-    border: 1px solid #fee2e2;
-    color: #b91c1c;
-}
+    body.light-mode #repertorio-list .remove-button {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #b91c1c;
+    }
 
-body.light-mode #repertorio-list .remove-button:hover {
-    background: #fee2e2;
-    border-color: #fca5a5;
+    body.light-mode #repertorio-list .remove-button:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+    }
 }
 
 @media (max-width: 480px) {
