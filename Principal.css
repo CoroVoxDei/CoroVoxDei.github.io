@@ -44,9 +44,6 @@ body {
   --text-muted: #a0a0a0;
   --f-sans: 'Inter', sans-serif;
   --f-display: 'Outfit', sans-serif;
-  /* Acento dorado para el borde de las tarjetas de canción (look "lomo de cancionero") */
-  --gold-accent: #D4A853;
-  --song-border-gradient: linear-gradient(180deg, var(--primary) 0%, var(--primary) 55%, var(--gold-accent) 100%);
 }
 
 /* =========================================
@@ -236,6 +233,7 @@ body { padding-top: 78px; }
   opacity: 0.9;
   font-style: italic;
 }
+
 
 /* Animación suave */
 .hero-text { 
@@ -702,9 +700,7 @@ body.light-mode .audio-btn:hover {
   margin-bottom: 30px;
   padding: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-left: 5px solid var(--primary);
-  border-image: var(--song-border-gradient) 1;
-  border-image-slice: 1;
+  border-left: 5px solid #A51E17;
   border-radius: 12px;
 
   background: rgba(30, 30, 30, 0.7);
@@ -718,7 +714,8 @@ body.light-mode .audio-btn:hover {
 .song:hover {
   transform: translateY(-5px);
   background: rgba(40, 40, 40, 0.85);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), -2px 0 10px rgba(212, 168, 83, 0.15);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
 }
 
 /* --- Encabezado de la canción --- */
@@ -889,9 +886,7 @@ body.light-mode .drag-handle:hover {
 #repertorio-list .song {
     background: #1a1a1a;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 6px solid var(--primary);
-    border-image: var(--song-border-gradient) 1;
-    border-image-slice: 1;
+    border-left: 6px solid #A51E17;
     border-radius: 16px;
     padding: 18px 22px;
     margin-bottom: 0; /* El gap del contenedor maneja el espacio */
@@ -902,21 +897,20 @@ body.light-mode .drag-handle:hover {
 #repertorio-list .song:hover {
     transform: translateX(5px);
     background: #222222;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), -2px 0 10px rgba(212, 168, 83, 0.15);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-mode #repertorio-list .song {
     background: #ffffff;
     border: 1px solid #f3f4f6;
-    border-left: 6px solid var(--primary);
-    border-image: var(--song-border-gradient) 1;
-    border-image-slice: 1;
+    border-left: 6px solid #b91c1c;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 body.light-mode #repertorio-list .song:hover {
     background: #fdfdfd;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), -2px 0 10px rgba(212, 168, 83, 0.18);
+    border-color: #e5e7eb;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* Ajuste del autor en el repertorio */
@@ -1045,9 +1039,7 @@ body.light-mode #repertorio-list .remove-button:hover {
   margin-bottom: 12px;
 
   background: rgba(30, 30, 30, 0.7);
-  border-left: 5px solid var(--primary);
-  border-image: var(--song-border-gradient) 1;
-  border-image-slice: 1;
+  border-left: 5px solid #ff4c4c;
   border-radius: 10px;
 
   color: white;
@@ -1147,196 +1139,193 @@ body.light-mode .popup-letra.multi-column {
 }
 
 /* =========================================
-  ESTILOS PARA DESCARGA A4 PROFESIONAL
+  ESTILOS PREMIUM DE CAPTURA DE IMAGEN EN UN SOLO LIENZO (PNG EXPORT DE VOX DEI)
 ========================================= */
-.capture-container {
+.single-capture-sheet {
   position: absolute !important;
-  top: -9999px !important;
-  left: -9999px !important;
-  width: auto !important;
+  top: -15000px !important;
+  left: -15000px !important;
+  width: 800px !important;
   height: auto !important;
-  overflow: visible !important;
-  z-index: -9999 !important;
-  pointer-events: none !important;
-  background: transparent !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+  padding: 55px 65px !important;
+  box-sizing: border-box !important;
+  font-family: 'Poppins', 'Inter', sans-serif !important;
+  border: 1px solid #e2e8f0 !important;
+  display: block !important;
 }
 
-.capture-page {
-  width: 794px;
-  background: white !important;
-  color: black !important;
-  padding: 50px 60px !important; 
-  box-sizing: border-box !important;
+.single-capture-sheet.multi-column-active .capture-card-lyrics {
+  column-count: 2 !important;
+  column-gap: 40px !important;
+  column-rule: 1px dashed #cbd5e1 !important;
+  width: 100% !important;
+  white-space: pre-wrap !important;
+}
+
+.capture-card-inner {
   display: flex !important;
   flex-direction: column !important;
-  visibility: visible !important;
+  height: 100% !important;
+}
+
+.capture-card-header {
+  text-align: center !important;
+  margin-bottom: 25px !important;
   position: relative !important;
 }
 
-.capture-page.short-song {
-  height: auto !important;
-}
-
-.capture-header-v2 {
-  text-align: center !important;
-  margin-bottom: 25px !important;
-  width: 100% !important;
-}
-
-.header-line {
-  height: 1px !important;
-  background: #ddd !important;
-  width: 120px !important;
-  margin: 6px auto !important;
-}
-
-.capture-title-v2 {
-  font-family: 'Raleway', sans-serif !important;
-  font-size: 30px !important;
-  font-weight: 700 !important;
-  margin: 4px 0 !important;
-  color: #a51e17 !important; 
+.choir-branding {
+  display: block !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #a51e17 !important;
+  letter-spacing: 3px !important;
   text-transform: uppercase !important;
+  margin-bottom: 12px !important;
 }
 
-.capture-author-v2 {
+.capture-card-title {
+  font-family: 'Outfit', 'Raleway', sans-serif !important;
+  font-size: 34px !important;
+  font-weight: 800 !important;
+  color: #111111 !important;
+  margin: 0 0 4px 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.capture-card-author {
   font-family: 'Inter', sans-serif !important;
   font-size: 16px !important;
-  color: #333 !important;
-  margin: 0 !important;
+  color: #4b5563 !important;
+  margin: 4px 0 !important;
   font-style: italic !important;
 }
 
-.capture-transp-v2 {
+.capture-card-badge {
+  display: inline-block !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
+  margin-top: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+.capture-card-transp {
   font-family: 'Inter', sans-serif !important;
   font-size: 13px !important;
-  color: #666 !important;
-  margin-top: 6px !important;
+  color: #b91c1c !important;
+  font-weight: 600 !important;
+  margin-top: 8px !important;
 }
 
-.capture-content {
-  flex: 1 !important;
+.capture-card-divider {
   width: 100% !important;
+  height: 2px !important;
+  background: linear-gradient(to right, transparent, #a51e17 20%, #a51e17 80%, transparent) !important;
+  margin: 15px 0 25px 0 !important;
 }
 
-.capture-column {
-  font-family: 'Roboto Mono', monospace !important;
+.capture-card-lyrics {
+  font-family: 'Roboto Mono', 'Consolas', monospace !important;
   font-weight: 400 !important;
-  white-space: pre !important; 
-  word-break: normal !important;
-  color: #000 !important;
-  display: block !important;
-  box-sizing: border-box !important;
+  color: #1a1a1a !important;
+  white-space: pre !important;
   margin: 0 !important;
   padding: 0 !important;
+  display: block !important;
 }
 
-.capture-column.sin-acordes {
+.capture-card-lyrics.sin-acordes {
   white-space: pre-wrap !important;
   word-break: break-word !important;
 }
 
-.capture-column .chord {
-  color: #b45309 !important; 
+.capture-card-lyrics .chord {
+  color: #a51e17 !important;
   font-weight: 700 !important;
   background: transparent !important;
 }
 
-.capture-footer {
-  margin-top: 15px !important;
-  padding-top: 10px !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 10px !important;
-  color: #999 !important;
+.capture-card-footer {
+  margin-top: 50px !important;
+  border-top: 1px solid #edf2f7 !important;
+  padding-top: 15px !important;
   text-align: center !important;
-  border-top: 1px solid #eee !important;
 }
 
-/* --- Acordes dentro de <pre> --- */
-.chord {
-  font-weight: 700;
-  color: #ffd369;
-  text-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+.capture-card-footer span {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  color: #718096 !important;
+  font-style: italic !important;
+  font-weight: 600 !important;
+}
+
+.capture-card-footer .copyright {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 10px !important;
+  color: #a0aec0 !important;
+  margin-top: 4px !important;
 }
 
 /* =========================================
-  ETIQUETAS DE TIPO DE CANCIÓN (Litúrgico / No Litúrgico)
+  ETIQUETAS DE TIPO DE CANCIÓN (Litúrgico / No Litúrgico / Tags)
 ========================================= */
 .song-tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.5px;
   vertical-align: middle;
   white-space: nowrap;
-  background: transparent !important;
-  border: 2px solid transparent;
+  background: rgba(165, 30, 23, 0.12) !important;
+  border: 1px solid rgba(165, 30, 23, 0.45);
+  color: #ff8a80 !important;
+  margin-top: 8px;
 }
 
-.tag-liturgico {
-  border-color: #22c55e !important;
-  color: #22c55e !important;
+body.light-mode .song-tag {
+  background: #fdf2f2 !important;
+  border: 1px solid rgba(165, 30, 23, 0.25);
+  color: #a51e17 !important;
 }
 
-.tag-no-liturgico {
-  border-color: #3b82f6 !important; /* Azul para uso personal/devocional */
-  color: #3b82f6 !important;
+/* Badge de Tag en las tarjetas principales y repertorio */
+.song-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: rgba(165, 30, 23, 0.08) !important;
+  border: 1px solid rgba(165, 30, 23, 0.3);
+  color: #ff8a80 !important;
+  margin: 4px 0 0 0;
+  width: fit-content;
 }
 
-.tag-semana-santa {
-  border-color: #7c3aed !important; /* Violeta para Semana Santa */
-  color: #7c3aed !important;
-}
-
-.tag-navidad {
-  border-color: #ef4444 !important; /* Rojo para Navidad */
-  color: #ef4444 !important;
-}
-
-.tag-misa {
-  border-color: #f59e0b !important; /* Ámbar para partes de la misa */
-  color: #f59e0b !important;
-}
-
-.tag-generic {
-  border-color: #9ca3af !important; /* Gris para etiquetas desconocidas */
-  color: #9ca3af !important;
-}
-
-/* Ajuste para modo claro */
-.light-mode .tag-liturgico {
-  background: transparent !important;
-  border-color: #15803d !important;
-  color: #15803d !important;
-}
-
-.light-mode .tag-no-liturgico {
-  background: transparent !important;
-  border-color: #2563eb !important;
-  color: #2563eb !important;
-}
-
-.light-mode .tag-semana-santa {
-  background: transparent !important;
-  border-color: #6d28d9 !important;
-  color: #6d28d9 !important;
-}
-
-.light-mode .tag-navidad {
-  background: transparent !important;
-  border-color: #dc2626 !important;
-  color: #dc2626 !important;
-}
-
-.light-mode .tag-misa {
-  background: transparent !important;
-  border-color: #d97706 !important;
-  color: #d97706 !important;
+body.light-mode .song-tag-badge {
+  background: #fdf2f2 !important;
+  border: 1px solid rgba(165, 30, 23, 0.2);
+  color: #a51e17 !important;
 }
 
 /* =========================================
@@ -2233,9 +2222,7 @@ body.light-mode .sidebar > nav > ul > li:nth-child(4) {
 body.light-mode .song {
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-left: 5px solid var(--primary);
-  border-image: var(--song-border-gradient) 1;
-  border-image-slice: 1;
+  border-left: 5px solid #A51E17;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2244,7 +2231,8 @@ body.light-mode .song {
 body.light-mode .song:hover {
   background: #ffffff;
   transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12), -2px 0 10px rgba(212, 168, 83, 0.2);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
 }
 
 /* TÍTULOS DE CANCIONES EN ROJO (PROFESIONAL) */
@@ -2497,6 +2485,11 @@ body.light-mode .pagination button.active {
   .hero-text p {
     font-size: 1.1rem;
   }
+  
+  .hero-liturgical-purpose {
+    font-size: 0.85rem !important;
+    max-width: 90% !important;
+  }
 
   /*CATEGORIA DE LAS CANCIONES*/
   .category-btn {
@@ -2567,6 +2560,10 @@ body.light-mode .pagination button.active {
   
   .hero-text p {
     font-size: 0.9rem;
+  }
+  
+  .hero-liturgical-purpose {
+    display: none !important;
   }
 
   /*CATEGORIA DE LAS CANCIONES*/
