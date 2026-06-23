@@ -535,7 +535,7 @@ body.light-mode .search-filter-btn.active {
 
 @media (max-width: 768px) {
   #view-home, #view-repertorio {
-    padding-bottom: 300px; /* Espacio extra al final para que la barra se deslice sin problemas al escribir */
+    padding-bottom: 20px; /* Reducido para eliminar el espacio vacío gigante sobre el footer */
   }
 
   .search-filters-container {
