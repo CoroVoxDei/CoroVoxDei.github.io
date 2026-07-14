@@ -5713,9 +5713,9 @@ body.light-mode .song-header h2 .autor {
 .category-btn {
   border-radius: 9px !important;
   font-family: 'Poppins', sans-serif !important;
-  font-size: 1.05rem !important;
+  font-size: 0.88rem !important;
   font-weight: 400 !important;
-  padding: 11px 22px !important;
+  padding: 7px 15px !important;
   transition: all 0.2s ease !important;
 }
 
