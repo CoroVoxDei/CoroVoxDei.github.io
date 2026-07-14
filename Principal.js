@@ -137,6 +137,7 @@ function switchView(view) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
+window.switchView = switchView;
 
 menuBtn?.addEventListener("click", () => {
   sidebar?.classList.add("active");
@@ -1484,6 +1485,117 @@ window.abrirVerRepertorio = function(id) {
   if (window.lucide) window.lucide.createIcons();
 };
 
+window.compartirRepertorioId = function(id) {
+  const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+  const target = saved.find(r => r.id === id);
+  if (!target) return;
+  
+  if (target.songs.length === 0) {
+    alert("Este repertorio está vacío. Agrega canciones antes de compartirlo.");
+    return;
+  }
+  
+  // Nuevo formato ultra compacto: NombreRepertorio|Cancion1|Cancion2...
+  const plainText = [target.name, ...target.songs.map(s => s.title)].join('|');
+  
+  try {
+    // Base64 robusto con soporte Unicode
+    const base64 = btoa(encodeURIComponent(plainText).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+      return String.fromCharCode('0x' + p1);
+    }));
+    
+    const shareUrl = `${window.location.origin}${window.location.pathname}#import=${base64}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert(`¡Enlace del repertorio "${target.name}" copiado al portapapeles!\n\nEnvía este link por WhatsApp o redes sociales. Al abrirlo, la otra persona podrá guardarlo y cargarlo automáticamente.`);
+      }).catch(err => {
+        prompt("Copia este enlace para compartir el repertorio:", shareUrl);
+      });
+    } else {
+      prompt("Copia este enlace para compartir el repertorio:", shareUrl);
+    }
+  } catch (err) {
+    console.error("Error al generar enlace de compartir:", err);
+    alert("No se pudo generar el enlace de compartir.");
+  }
+};
+
+window.importarRepertorioCompartido = function(base64) {
+  try {
+    const plainText = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    
+    const parts = plainText.split('|');
+    if (parts.length < 2) {
+      throw new Error("Formato de importación inválido");
+    }
+    
+    const name = parts[0];
+    const songTitles = parts.slice(1);
+    
+    const globalSongs = getGlobalSongsList();
+    const resolvedSongs = [];
+    const missingTitles = [];
+    
+    songTitles.forEach(title => {
+      const matched = globalSongs.find(gs => gs.title.toLowerCase().trim() === title.toLowerCase().trim());
+      if (matched) {
+        resolvedSongs.push(matched);
+      } else {
+        missingTitles.push(title);
+      }
+    });
+    
+    if (resolvedSongs.length === 0) {
+      alert("No se pudieron encontrar las canciones de este repertorio en el catálogo local.");
+      return;
+    }
+    
+    // Cambiar de inmediato vistas a la pestaña Activo para que vea la carga del repertorio de inmediato
+    if (window.switchRepertorioTab) {
+      window.switchRepertorioTab("activo");
+    }
+    switchView("repertorio");
+    
+    // Cargar siempre primero en el repertorio activo actual
+    localStorage.setItem("repertorio", JSON.stringify(resolvedSongs));
+    if (typeof renderizarRepertorio === "function") {
+      renderizarRepertorio(resolvedSongs);
+    }
+    
+    // Actualizar botones de estado de canciones en la lista
+    if (typeof window.initSongButtons === "function") {
+      window.initSongButtons();
+    }
+    
+    // Limpiar el hash de la URL de inmediato para evitar loops de carga o refrescos molestos
+    window.location.hash = "";
+    
+    alert(`¡Se han cargado las ${resolvedSongs.length} canciones de "${name}" en tu Repertorio Activo!`);
+    
+    if (missingTitles.length > 0) {
+      alert(`Nota: No se encontraron ${missingTitles.length} canciones en el catálogo local:\n- ${missingTitles.join("\n- ")}`);
+    }
+  } catch (e) {
+    console.error("Error al importar:", e);
+    alert("Hubo un problema al procesar el enlace del repertorio compartido.");
+  }
+};
+
+window.chequearImportacionCompartida = function() {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith("#import=")) {
+    const base64 = hash.replace("#import=", "");
+    if (base64) {
+      setTimeout(() => {
+        window.importarRepertorioCompartido(base64);
+      }, 600);
+    }
+  }
+};
+
 window.eliminarRepertorioGuardado = function(id) {
   const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
   const target = saved.find(r => r.id === id);
@@ -1606,6 +1718,16 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("btnConfirmarGuardarRepertorio")?.click();
     }
   });
+
+  // Eventos para cargar y compartir repertorios guardados
+  document.getElementById("btnCompartirRepertorio")?.addEventListener("click", () => {
+    if (window.currentSavedRepertorioId) {
+      window.compartirRepertorioId(window.currentSavedRepertorioId);
+    }
+  });
+
+  // Revisar si se accedió por un link de importación compartida
+  window.chequearImportacionCompartida();
 });
 
 /* ========================
@@ -1890,7 +2012,7 @@ document.addEventListener("DOMContentLoaded", () => {
    11. POPUP DE LETRAS & AJUSTES
 =============================== */
 (function(){
-  window.tamañoFuente = parseInt(localStorage.getItem("fontSize")) || 16;
+  window.tamañoFuente = localStorage.getItem("fontSize") ? parseInt(localStorage.getItem("fontSize")) : (window.innerWidth < 600 ? 14 : 16);
   window.espaciadoLinea = parseFloat(localStorage.getItem("lineSpacing")) || 1.6;
   window.originalPopupLyrics = "";
   let hideTimer = null;
