@@ -1814,6 +1814,14 @@ body.light-mode .popup-action-btn {
     display: flex;
     align-items: center;
     gap: 10px;
+    position: relative; /* Para el correcto posicionamiento de los tool-panels absolutos en móviles */
+    z-index: 1; /* Valor base */
+}
+
+/* Asegurar que la herramienta activa esté siempre por encima de las demás para evitar solapamientos táctiles */
+.menu-item-container:has(.tool-panel.active),
+.menu-item-container.active-container {
+    z-index: 1010 !important;
 }
 
 .menu-fab {
@@ -1912,6 +1920,8 @@ body.light-mode .popup-action-btn {
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
+  z-index: 1020 !important;
+  pointer-events: auto !important;
 }
 
 .tool-label {
@@ -1930,6 +1940,7 @@ body.light-mode .popup-action-btn {
   background: rgba(255,255,255,0.2);
   border-radius: 5px;
   outline: none;
+  touch-action: none !important;
 }
 
 .tool-panel input[type="range"]::-webkit-slider-thumb {
@@ -5700,12 +5711,36 @@ body.light-mode .song-header h2 .autor {
 }
 
 .category-btn {
-  border-radius: 8px !important;
+  border-radius: 9px !important;
   font-family: 'Poppins', sans-serif !important;
-  font-size: 0.9rem !important;
-  font-weight: 500 !important;
-  padding: 8px 16px !important;
+  font-size: 1.05rem !important;
+  font-weight: 400 !important;
+  padding: 11px 22px !important;
   transition: all 0.2s ease !important;
+}
+
+@media (max-width: 800px) {
+  .category-btn {
+    font-size: 0.98rem !important;
+    padding: 9px 18px !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .category-btn {
+    font-size: 0.92rem !important;
+    padding: 8px 15px !important;
+    border-radius: 8px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .category-btn {
+    font-size: 0.86rem !important;
+    padding: 7px 12px !important;
+    border-radius: 7px !important;
+  }
 }
 
 body.light-mode .category-btn {
@@ -5779,7 +5814,7 @@ body.light-mode .category-btn.active {
     max-width: none !important;
     display: inline-block !important; /* Mantiene el flujo natural de líneas y acordes sin colapsar saltos */
     margin: 0 auto !important;
-    font-size: 14px !important; /* Tamaño estándar óptimo para celulares */
+    font-size: 14px; /* Tamaño estándar óptimo para celulares */
   }
 }
 
@@ -5800,7 +5835,7 @@ body.light-mode .category-btn.active {
   }
   
   .popup-letra {
-    font-size: 13px !important; /* Reducción para evitar overflows horizontales de acordes */
+    font-size: 13px; /* Reducción para evitar overflows horizontales de acordes */
   }
 }
 
@@ -5820,7 +5855,7 @@ body.light-mode .category-btn.active {
   }
   
   .popup-letra {
-    font-size: 12px !important;
+    font-size: 12px;
   }
 }
 
