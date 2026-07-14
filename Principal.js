@@ -1167,10 +1167,16 @@ window.currentSavedRepertorioId = null;
 window.editSavedRepertorioMode = false;
 
 function getGlobalSongsList() {
-  if (!window.allSongs || window.allSongs.length === 0) {
-    window.allSongs = Array.from(document.querySelectorAll(".song"));
+  // Intentar usar primero la lista cargada de canciones en la variable global o en window
+  let source = (typeof allSongs !== "undefined" && allSongs && allSongs.length > 0) ? allSongs : window.allSongs;
+  if (!source || source.length === 0) {
+    source = Array.from(document.querySelectorAll(".song"));
+    // Evitar guardar un array vacío en window.allSongs de forma permanente si aún no se han cargado las canciones
+    if (source.length > 0) {
+      window.allSongs = source;
+    }
   }
-  return window.allSongs.map(songSection => {
+  return source.map(songSection => {
     const info = window.getSongInfo(songSection);
     const lyrics = songSection.querySelector(".lyrics-hidden, .lyrics, .lyrics1")?.innerHTML.trim() || "";
     const type = songSection.dataset.type || "";
@@ -1482,16 +1488,22 @@ window.compartirRepertorioId = function(id) {
   }
   
   const globalSongs = getGlobalSongsList();
-  // Crear una lista ordenada alfabéticamente para que los índices sean fijos e independientes del barajeo aleatorio
-  const sortedSongs = [...globalSongs].sort((a, b) => a.title.localeCompare(b.title));
-  
-  // Map songs to their index in sortedSongs if found, otherwise fallback to title
-  const songIdentifiers = target.songs.map(s => {
-    const idx = sortedSongs.findIndex(gs => gs.title.toLowerCase().trim() === s.title.toLowerCase().trim());
-    return idx !== -1 ? idx.toString() : s.title;
+  // Crear una lista ordenada alfabéticamente estable, independiente de la configuración regional (locale) del navegador
+  const sortedSongs = [...globalSongs].sort((a, b) => {
+    const titleA = a.title.toLowerCase().trim();
+    const titleB = b.title.toLowerCase().trim();
+    if (titleA < titleB) return -1;
+    if (titleA > titleB) return 1;
+    return 0;
   });
   
-  // Nuevo formato ultra compacto: NombreRepertorio|Id1|Id2...
+  // Map songs to their index in sortedSongs if found, prefixed with 'i' to stay ultra-short and avoid title collision
+  const songIdentifiers = target.songs.map(s => {
+    const idx = sortedSongs.findIndex(gs => gs.title.toLowerCase().trim() === s.title.toLowerCase().trim());
+    return idx !== -1 ? `i${idx}` : s.title;
+  });
+  
+  // Nuevo formato ultra compacto: NombreRepertorio|iId1|iId2...
   const plainText = [target.name, ...songIdentifiers].join('|');
   
   try {
@@ -1532,15 +1544,21 @@ window.importarRepertorioCompartido = function(base64) {
     const songIdentifiers = parts.slice(1);
     
     const globalSongs = getGlobalSongsList();
-    // Crear la misma lista ordenada alfabéticamente para resolver correctamente los índices estables
-    const sortedSongs = [...globalSongs].sort((a, b) => a.title.localeCompare(b.title));
+    // Crear la misma lista ordenada alfabéticamente estable, independiente del locale
+    const sortedSongs = [...globalSongs].sort((a, b) => {
+      const titleA = a.title.toLowerCase().trim();
+      const titleB = b.title.toLowerCase().trim();
+      if (titleA < titleB) return -1;
+      if (titleA > titleB) return 1;
+      return 0;
+    });
     const resolvedSongs = [];
     const missingTitles = [];
     
     songIdentifiers.forEach(identifier => {
-      // Check if identifier is an index (all digits)
-      if (/^\d+$/.test(identifier)) {
-        const idx = parseInt(identifier, 10);
+      // Check if identifier is an index prefixed with 'i' (e.g. i45)
+      if (/^i\d+$/.test(identifier)) {
+        const idx = parseInt(identifier.slice(1), 10);
         if (idx >= 0 && idx < sortedSongs.length) {
           resolvedSongs.push(sortedSongs[idx]);
         } else {
@@ -1597,9 +1615,7 @@ window.chequearImportacionCompartida = function() {
   if (hash && hash.startsWith("#import=")) {
     const base64 = hash.replace("#import=", "");
     if (base64) {
-      setTimeout(() => {
-        window.importarRepertorioCompartido(base64);
-      }, 600);
+      window.importarRepertorioCompartido(base64);
     }
   }
 };
@@ -1733,9 +1749,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.compartirRepertorioId(window.currentSavedRepertorioId);
     }
   });
-
-  // Revisar si se accedió por un link de importación compartida
-  window.chequearImportacionCompartida();
 });
 
 /* ========================
@@ -1887,6 +1900,11 @@ function loadSongs(files) {
       showPage(1);
       updateChordsVisibility();
       if (window.lucide) window.lucide.createIcons();
+      
+      // Revisar si se accedió por un link de importación compartida ahora que todas las canciones están cargadas
+      if (typeof window.chequearImportacionCompartida === "function") {
+        window.chequearImportacionCompartida();
+      }
     });
 }
 
