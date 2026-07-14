@@ -90,7 +90,6 @@ window.toggleAudio = function(url, btn) {
 };
 
 const homeBtn = document.getElementById("homeBtn");
-const pageTitle = document.getElementById("pageTitle");
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const sidebarClose = document.getElementById("sidebarClose");
@@ -119,13 +118,11 @@ function switchView(view) {
     if (viewRepertorio) viewRepertorio.style.display = "none";
     navInicio?.classList.add("active");
     navRepertorio?.classList.remove("active");
-    updateTitle("CANCIONERO DIGITAL");
   } else if (view === "repertorio") {
     if (viewHome) viewHome.style.display = "none";
     if (viewRepertorio) viewRepertorio.style.display = "block";
     navInicio?.classList.remove("active");
     navRepertorio?.classList.add("active");
-    updateTitle("Mi Repertorio");
     renderizarRepertorio(JSON.parse(localStorage.getItem("repertorio")) || []);
     if (window.renderizarRepertoriosGuardados) {
       window.renderizarRepertoriosGuardados();
@@ -159,17 +156,6 @@ toggleSubmenu?.addEventListener("click", e => {
   e.preventDefault();
   submenu?.classList.toggle("open");
 });
-
-/* ========================
-   2. TÍTULO DINÁMICO
-======================== */
-function updateTitle(newTitle) {
-  if (!pageTitle) return;
-  pageTitle.textContent = newTitle;
-  pageTitle.style.animation = "none";
-  pageTitle.offsetHeight;
-  pageTitle.style.animation = "fadeIn 2s ease forwards";
-}
 
 
 /* ========================
@@ -936,7 +922,7 @@ window.renderPopupLyrics = function() {
     }
     
     if(window.tamañoFuente) {
-        textoElem.style.fontSize = window.tamañoFuente + "px";
+        textoElem.style.setProperty("font-size", window.tamañoFuente + "px", "important");
     }
     if(window.espaciadoLinea) {
         textoElem.style.lineHeight = window.espaciadoLinea;
@@ -1495,8 +1481,18 @@ window.compartirRepertorioId = function(id) {
     return;
   }
   
-  // Nuevo formato ultra compacto: NombreRepertorio|Cancion1|Cancion2...
-  const plainText = [target.name, ...target.songs.map(s => s.title)].join('|');
+  const globalSongs = getGlobalSongsList();
+  // Crear una lista ordenada alfabéticamente para que los índices sean fijos e independientes del barajeo aleatorio
+  const sortedSongs = [...globalSongs].sort((a, b) => a.title.localeCompare(b.title));
+  
+  // Map songs to their index in sortedSongs if found, otherwise fallback to title
+  const songIdentifiers = target.songs.map(s => {
+    const idx = sortedSongs.findIndex(gs => gs.title.toLowerCase().trim() === s.title.toLowerCase().trim());
+    return idx !== -1 ? idx.toString() : s.title;
+  });
+  
+  // Nuevo formato ultra compacto: NombreRepertorio|Id1|Id2...
+  const plainText = [target.name, ...songIdentifiers].join('|');
   
   try {
     // Base64 robusto con soporte Unicode
@@ -1533,18 +1529,30 @@ window.importarRepertorioCompartido = function(base64) {
     }
     
     const name = parts[0];
-    const songTitles = parts.slice(1);
+    const songIdentifiers = parts.slice(1);
     
     const globalSongs = getGlobalSongsList();
+    // Crear la misma lista ordenada alfabéticamente para resolver correctamente los índices estables
+    const sortedSongs = [...globalSongs].sort((a, b) => a.title.localeCompare(b.title));
     const resolvedSongs = [];
     const missingTitles = [];
     
-    songTitles.forEach(title => {
-      const matched = globalSongs.find(gs => gs.title.toLowerCase().trim() === title.toLowerCase().trim());
-      if (matched) {
-        resolvedSongs.push(matched);
+    songIdentifiers.forEach(identifier => {
+      // Check if identifier is an index (all digits)
+      if (/^\d+$/.test(identifier)) {
+        const idx = parseInt(identifier, 10);
+        if (idx >= 0 && idx < sortedSongs.length) {
+          resolvedSongs.push(sortedSongs[idx]);
+        } else {
+          missingTitles.push(`Canción #${idx}`);
+        }
       } else {
-        missingTitles.push(title);
+        const matched = sortedSongs.find(gs => gs.title.toLowerCase().trim() === identifier.toLowerCase().trim());
+        if (matched) {
+          resolvedSongs.push(matched);
+        } else {
+          missingTitles.push(identifier);
+        }
       }
     });
     
@@ -2046,6 +2054,55 @@ document.addEventListener("DOMContentLoaded", () => {
   const popupBody = document.getElementById("captureArea");
   const popupLetraEl = document.getElementById("popupLetra");
 
+  const deactivateAllPanels = () => {
+    panelSize?.classList.remove("active");
+    panelSpacing?.classList.remove("active");
+    panelTranspose?.classList.remove("active");
+    panelAudio?.classList.remove("active");
+    btnToolSize?.classList.remove("active");
+    btnToolSpacing?.classList.remove("active");
+    btnToolTranspose?.classList.remove("active");
+    btnToolAudio?.classList.remove("active");
+    document.querySelectorAll(".menu-item-container").forEach(c => c.classList.remove("active-container"));
+  };
+
+  // Helper de eventos táctiles optimizado para evitar retrasos de 300ms y resolver conflictos de eventos en móviles
+  function addTapListener(element, callback) {
+    if (!element) return;
+    let touchMoved = false;
+    let touchStartTime = 0;
+    let lastTriggerTime = 0;
+
+    const handleAction = (e) => {
+      const now = Date.now();
+      if (now - lastTriggerTime < 300) return;
+      lastTriggerTime = now;
+      callback(e);
+    };
+
+    element.addEventListener("touchstart", (e) => {
+      touchMoved = false;
+      touchStartTime = Date.now();
+    }, { passive: true });
+
+    element.addEventListener("touchmove", (e) => {
+      touchMoved = true;
+    }, { passive: true });
+
+    element.addEventListener("touchend", (e) => {
+      if (!touchMoved && (Date.now() - touchStartTime < 350)) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleAction(e);
+      }
+    });
+
+    element.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleAction(e);
+    });
+  }
+
   window.adjustPopupWidth = () => {
     // Width is now handled statically and beautifully by CSS media queries
   };
@@ -2131,12 +2188,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     settingsMenu?.classList.remove("active");
     settingsBtn?.classList.remove("active");
-    panelSize?.classList.remove("active");
-    panelSpacing?.classList.remove("active");
-    panelTranspose?.classList.remove("active");
-    btnToolSize?.classList.remove("active");
-    btnToolSpacing?.classList.remove("active");
-    btnToolTranspose?.classList.remove("active");
+    deactivateAllPanels();
     btnToolColumns?.classList.remove("active");
     const popupTextoEl = document.getElementById("popupTexto");
     popupTextoEl?.classList.remove("multi-column");
@@ -2175,78 +2227,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  settingsBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
+  addTapListener(settingsBtn, (e) => {
     const isActive = settingsBtn.classList.toggle("active");
     settingsMenu?.classList.toggle("active");
     if (!isActive) {
-        panelSize?.classList.remove("active");
-        panelSpacing?.classList.remove("active");
-        panelTranspose?.classList.remove("active");
-        panelAudio?.classList.remove("active");
-        btnToolSize?.classList.remove("active");
-        btnToolSpacing?.classList.remove("active");
-        btnToolTranspose?.classList.remove("active");
+        deactivateAllPanels();
         btnToolColumns?.classList.remove("active");
-        btnToolAudio?.classList.remove("active");
         resetHideTimer();
     } else clearTimeout(hideTimer);
   });
 
-  btnToolSize?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    btnToolSize.classList.toggle("active");
-    panelSize?.classList.toggle("active");
-    panelSpacing?.classList.remove("active");
-    panelTranspose?.classList.remove("active");
-    btnToolSpacing?.classList.remove("active");
-    btnToolTranspose?.classList.remove("active");
+  addTapListener(btnToolSize, (e) => {
+    const wasActive = btnToolSize.classList.contains("active");
+    deactivateAllPanels();
+    if (!wasActive) {
+      btnToolSize.classList.add("active");
+      panelSize?.classList.add("active");
+      btnToolSize.closest(".menu-item-container")?.classList.add("active-container");
+    }
   });
 
-  btnToolSpacing?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    btnToolSpacing.classList.toggle("active");
-    panelSpacing?.classList.toggle("active");
-    panelSize?.classList.remove("active");
-    panelTranspose?.classList.remove("active");
-    btnToolSize?.classList.remove("active");
-    btnToolTranspose?.classList.remove("active");
+  addTapListener(btnToolSpacing, (e) => {
+    const wasActive = btnToolSpacing.classList.contains("active");
+    deactivateAllPanels();
+    if (!wasActive) {
+      btnToolSpacing.classList.add("active");
+      panelSpacing?.classList.add("active");
+      btnToolSpacing.closest(".menu-item-container")?.classList.add("active-container");
+    }
   });
 
-  btnToolTranspose?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    btnToolTranspose.classList.toggle("active");
-    panelTranspose?.classList.toggle("active");
-    panelSize?.classList.remove("active");
-    panelSpacing?.classList.remove("active");
-    btnToolSize?.classList.remove("active");
-    btnToolSpacing?.classList.remove("active");
+  addTapListener(btnToolTranspose, (e) => {
+    const wasActive = btnToolTranspose.classList.contains("active");
+    deactivateAllPanels();
+    if (!wasActive) {
+      btnToolTranspose.classList.add("active");
+      panelTranspose?.classList.add("active");
+      btnToolTranspose.closest(".menu-item-container")?.classList.add("active-container");
+    }
   });
 
-  btnTransposeUp?.addEventListener("click", (e) => {
-    e.stopPropagation();
+  addTapListener(btnTransposeUp, (e) => {
     window.transposeOffset++;
     if (transposeValueDisplay) transposeValueDisplay.textContent = (window.transposeOffset > 0 ? "+" : "") + window.transposeOffset;
     window.renderPopupLyrics();
   });
 
-  btnTransposeDown?.addEventListener("click", (e) => {
-    e.stopPropagation();
+  addTapListener(btnTransposeDown, (e) => {
     window.transposeOffset--;
     if (transposeValueDisplay) transposeValueDisplay.textContent = (window.transposeOffset > 0 ? "+" : "") + window.transposeOffset;
     window.renderPopupLyrics();
   });
 
-  btnToolNotation?.addEventListener("click", (e) => {
-      e.stopPropagation();
+  addTapListener(btnToolNotation, (e) => {
       window.chordNotation = window.chordNotation === "english" ? "latin" : "english";
       localStorage.setItem("chordNotation", window.chordNotation);
       btnToolNotation.textContent = window.chordNotation === "english" ? "C" : "Do";
       window.renderPopupLyrics();
   });
 
-  btnToolColumns?.addEventListener("click", (e) => {
-    e.stopPropagation();
+  addTapListener(btnToolColumns, (e) => {
     const popupTexto = document.getElementById("popupTexto");
     if (popupTexto) {
       const isMulti = popupTexto.classList.toggle("multi-column");
@@ -2256,22 +2296,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  btnToolAudio?.addEventListener("click", (e) => {
-    e.stopPropagation();
+  addTapListener(btnToolAudio, (e) => {
     // Si el panel ya está activo, solo toggleamos el audio
     if (panelAudio?.classList.contains("active")) {
         // El toggle ya se maneja en el onclick dinámico de abrirLetra
     } else {
-        // Si no está activo, lo mostramos y ocultamos los demás
+        deactivateAllPanels();
         panelAudio?.classList.add("active");
         btnToolAudio.classList.add("active");
-        
-        panelSize?.classList.remove("active");
-        panelSpacing?.classList.remove("active");
-        panelTranspose?.classList.remove("active");
-        btnToolSize?.classList.remove("active");
-        btnToolSpacing?.classList.remove("active");
-        btnToolTranspose?.classList.remove("active");
+        btnToolAudio.closest(".menu-item-container")?.classList.add("active-container");
     }
   });
 
@@ -2286,7 +2319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("fontSize", window.tamañoFuente);
     const textoElem = document.getElementById("popupTexto");
     if (textoElem) {
-        textoElem.style.fontSize = window.tamañoFuente + "px";
+        textoElem.style.setProperty("font-size", window.tamañoFuente + "px", "important");
     }
   });
 
@@ -2498,12 +2531,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (settingsMenu?.classList.contains("active") && !settingsWrapper.contains(e.target)) {
       settingsMenu.classList.remove("active");
       settingsBtn.classList.remove("active");
-      panelSize?.classList.remove("active");
-      panelSpacing?.classList.remove("active");
-      panelTranspose?.classList.remove("active");
-      btnToolSize?.classList.remove("active");
-      btnToolSpacing?.classList.remove("active");
-      btnToolTranspose?.classList.remove("active");
+      deactivateAllPanels();
       resetHideTimer();
     }
   });
