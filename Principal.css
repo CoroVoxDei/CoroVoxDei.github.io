@@ -5004,6 +5004,76 @@ body.light-mode .saved-repertorio-detail-badge {
   color: #047857;
 }
 
+/* ======= Botones de acción del detalle de repertorio ======= */
+.saved-repertorio-actions-bar {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 15px !important;
+  margin-bottom: 5px !important;
+  flex-wrap: wrap !important;
+}
+
+.btn-action-repertorio {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 8px 16px !important;
+  border-radius: 10px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Botón Cargar en Repertorio Activo (Fondo rojo de la app) */
+.btn-load-repertorio {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+}
+
+.btn-load-repertorio:hover {
+  background: var(--primary-hover) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Botón Compartir (Fondo dorado cálido sutil) */
+.btn-share-repertorio {
+  background: rgba(184, 134, 11, 0.15) !important; /* dorado apagado */
+  color: #ffca28 !important; /* Dorado claro vibrante */
+  border: 1px solid rgba(184, 134, 11, 0.3) !important;
+}
+
+.btn-share-repertorio:hover {
+  background: rgba(184, 134, 11, 0.25) !important;
+  border-color: rgba(184, 134, 11, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Modo Claro */
+body.light-mode .btn-load-repertorio {
+  background: #b91c1c !important; /* Rojo vivo */
+  color: #ffffff !important;
+}
+
+body.light-mode .btn-load-repertorio:hover {
+  background: #991b1b !important;
+}
+
+body.light-mode .btn-share-repertorio {
+  background: rgba(184, 134, 11, 0.1) !important;
+  color: #855c00 !important; /* Dorado oscuro legible */
+  border: 1px solid rgba(184, 134, 11, 0.2) !important;
+}
+
+body.light-mode .btn-share-repertorio:hover {
+  background: rgba(184, 134, 11, 0.18) !important;
+  border-color: rgba(184, 134, 11, 0.4) !important;
+}
+
 .saved-repertorio-detail-actions {
   margin-top: 5px;
 }
@@ -5075,6 +5145,31 @@ body.light-mode .btn-rename-saved-rep {
 }
 body.light-mode .btn-rename-saved-rep:hover {
   color: #b91c1c;
+}
+
+/* Botón Compartir Repertorio Guardado (Icono) */
+.btn-share-saved-rep-icon {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-share-saved-rep-icon:hover {
+  color: #ffca28;
+  transform: scale(1.1);
+}
+body.light-mode .btn-share-saved-rep-icon {
+  background: none;
+  border: none;
+  color: #6b7280;
+}
+body.light-mode .btn-share-saved-rep-icon:hover {
+  color: #855c00;
 }
 
 /* Botón Editar Cantos */
@@ -5629,8 +5724,8 @@ body.light-mode .category-btn.active {
 /* Media Query de adaptación extrema para móviles */
 @media (max-width: 600px) {
   .song {
-    padding: 10px 14px !important;
-    margin-bottom: 12px !important;
+    padding: 8px 12px !important; /* Más compacto y elegante */
+    margin-bottom: 10px !important;
   }
   
   .song-icon-badge {
@@ -5641,32 +5736,33 @@ body.light-mode .category-btn.active {
   }
   
   .song-icon-badge .music-icon {
-    width: 18px !important;
-    height: 18px !important;
+    width: 16px !important;
+    height: 16px !important;
   }
   
   .repertorio-title,
   .song-header h2 {
-    font-size: 1.05rem !important;
+    font-size: 0.92rem !important; /* Adaptado al tamaño estándar de dispositivos móviles, igual a los cantos guardados */
     flex-direction: column !important;
     align-items: flex-start !important;
     justify-content: flex-start !important;
-    gap: 3px !important;
+    gap: 2px !important;
   }
   
   .autor,
   .song-header h2 .autor {
-    font-size: 0.78rem !important; /* Ligeramente más pequeño en móviles para mayor elegancia */
+    font-size: 0.76rem !important; /* Ligeramente más pequeño en móviles para mayor elegancia */
     margin-left: 0 !important; /* Alinear debajo del título en móviles */
     font-style: normal !important;
+    opacity: 0.8 !important;
   }
   
   .add-repertorio {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
     border-radius: 8px !important;
-    font-size: 1.3rem !important;
+    font-size: 1.2rem !important;
   }
 
   /* Ajustes responsivos para evitar desbordes en el popup */
@@ -5683,6 +5779,48 @@ body.light-mode .category-btn.active {
     max-width: none !important;
     display: inline-block !important; /* Mantiene el flujo natural de líneas y acordes sin colapsar saltos */
     margin: 0 auto !important;
+    font-size: 14px !important; /* Tamaño estándar óptimo para celulares */
+  }
+}
+
+/* Adaptación aún más refinada para celulares muy pequeños */
+@media (max-width: 420px) {
+  .song {
+    padding: 7px 10px !important;
+  }
+  
+  .repertorio-title,
+  .song-header h2 {
+    font-size: 0.88rem !important; /* Reducción proporcional fluida */
+  }
+  
+  .autor,
+  .song-header h2 .autor {
+    font-size: 0.72rem !important;
+  }
+  
+  .popup-letra {
+    font-size: 13px !important; /* Reducción para evitar overflows horizontales de acordes */
+  }
+}
+
+@media (max-width: 350px) {
+  .song {
+    padding: 6px 8px !important;
+  }
+  
+  .repertorio-title,
+  .song-header h2 {
+    font-size: 0.82rem !important;
+  }
+  
+  .autor,
+  .song-header h2 .autor {
+    font-size: 0.68rem !important;
+  }
+  
+  .popup-letra {
+    font-size: 12px !important;
   }
 }
 
