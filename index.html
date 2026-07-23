@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cancionero Digital del Coro Juvenil Vox Dei - letras y acordes para músicos y cantantes. Movimiento Juvenil Salesiano.">
+  <meta name="author" content="Coro Juvenil Vox Dei">
+  <meta name="theme-color" content="#A51E17">
+  <!-- Open Graph -->
+  <meta property="og:title" content="Cancionero Digital - Vox Dei">
+  <meta property="og:description" content="Letras y acordes del Coro Juvenil Salesiano Vox Dei.">
+  <meta property="og:type" content="website">
+  <title>Cancionero Digital | Coro Juvenil Vox Dei</title>
+  <!-- Preconnect para carga rápida de fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&family=Poppins:wght@400;600&family=Raleway:wght@700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Principal.css?v=3.5">
+  <!-- Librería para convertir HTML a Imagen -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
+  <!-- Librería para Arrastrar y Soltar (SortableJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" defer></script>
+</head>
+
+<body>
+
+  <!-- ==============================
+       SPLASH LAUNCH SCREEN
+  =============================== -->
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-content">
+      <div class="splash-logo-container">
+        <img src="Principal/LogoBlanco.png" alt="Vox Dei Logo" class="splash-logo" id="splashRoundLogo">
+        <div class="splash-ripple"></div>
+      </div>
+      <div class="splash-brand">
+        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="splash-brand-text" id="splashBrandText">
+        <span class="splash-subtitle">CANCIONERO DIGITAL</span>
+      </div>
+      <div class="splash-loader-bar">
+        <div class="splash-progress"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme !== "dark") {
+          document.body.classList.add("light-mode");
+          const roundLogo = document.getElementById("splashRoundLogo");
+          const brandText = document.getElementById("splashBrandText");
+          const authLogo = document.getElementById("authModalLogo");
+          if (roundLogo) roundLogo.src = "Principal/Logo.png";
+          if (brandText) brandText.src = "Principal/VoxDei.png";
+          if (authLogo) authLogo.src = "Principal/Logocompleto.png";
+        }
+      } catch (e) {
+        document.body.classList.add("light-mode");
+      }
+    })();
+  </script>
+
+  <!-- ==============================
+       1. ENCABEZADO SUPERIOR
+  =============================== -->
+  <header class="topbar">
+    <div class="top-left">
+      <button id="menuBtn" class="icon-btn menu-btn" aria-label="Abrir menú">☰</button>
+      <div class="logo-left">
+        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="logo" data-light="Principal/VoxDei.png">
+      </div>
+    </div>
+    <div class="top-right">
+      <button id="homeBtn" class="icon-btn" aria-label="Inicio">
+        <img src="Principal/Inicio.png" alt="Inicio" class="icon">
+      </button>
+      <div class="logo-right">
+        <img src="Principal/LogoBlanco.png" alt="Logo Música" class="logo" data-light="Principal/Logo.png">
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       2. VISTA INICIO (HOME)
+  ========================================================== -->
+  <div id="view-home" class="page-view">
+    <section id="homeHero" class="hero">
+      <div class="hero-card">
+        <img src="Principal/Santuario.png" alt="Santuario María Auxiliadora" class="hero-img" loading="eager" fetchpriority="high">
+        <div class="hero-text">
+          <h1>CANCIONERO <span>DIGITAL</span></h1>
+          <p>Coro Juvenil Vox Dei</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-bar">
+      <img src="Principal/Buscar.png" alt="Buscar" class="icon">
+      <input type="text" id="searchInput" placeholder="Buscar canción...">
+      <button type="button" class="search-filter-toggle-btn" id="toggleSearchFilters" title="Filtros de búsqueda">
+        <i data-lucide="sliders-horizontal"></i>
+      </button>
+    </section>
+
+    <div class="search-filters-container">
+      <span class="search-filters-label">Buscar por:</span>
+      <div class="search-filters-group">
+        <button class="search-filter-btn active" data-filter="title">
+          <i data-lucide="music" class="btn-icon"></i>
+          Título
+        </button>
+        <button class="search-filter-btn" data-filter="author">
+          <i data-lucide="user" class="btn-icon"></i>
+          Autor
+        </button>
+        <button class="search-filter-btn" data-filter="lyrics">
+          <i data-lucide="file-text" class="btn-icon"></i>
+          Letra
+        </button>
+        <button class="search-filter-btn" data-filter="category">
+          <i data-lucide="tag" class="btn-icon"></i>
+          Categoría
+        </button>
+      </div>
+    </div>
+
+    <div class="categories-wrapper">
+      <button class="cat-arrow left" id="catLeftBtn">‹</button>
+      <section class="search-categories" id="catScroll">
+        <button class="category-btn active" data-category="todos">Todos</button>
+        <button class="category-btn" data-category="Entrada">Entrada</button>
+        <button class="category-btn" data-category="Penitencial">Penitencial</button>
+        <button class="category-btn" data-category="Gloria">Gloria</button>
+        <button class="category-btn" data-category="Aclamacion">Aclamación</button>
+        <button class="category-btn" data-category="Ofertorio">Ofertorio</button>
+        <button class="category-btn" data-category="Santo">Santo</button>
+        <button class="category-btn" data-category="PadreNuestro">Padre Nuestro</button>
+        <button class="category-btn" data-category="Cordero">Cordero</button>
+        <button class="category-btn" data-category="Comunión">Comunión</button>
+        <button class="category-btn" data-category="AdoracionMeditacion">Meditación y Adoración</button>
+        <button class="category-btn" data-category="EnvioSalida">Salida y Envío</button>
+        <button class="category-btn" data-category="Marianos">Marianos</button>
+        <button class="category-btn" data-category="Salesianos">Salesianos</button>
+        <button class="category-btn" data-category="Cuaresma">Cuaresma</button>
+        <button class="category-btn" data-category="Pascua">Pascua</button>
+        <button class="category-btn" data-category="EspirituSanto">Espíritu Santo</button>
+        <button class="category-btn" data-category="Adviento">Adviento y Navidad</button>
+        <button class="category-btn" data-category="HimnosSalmos">Himnos y Salmos</button>
+        <button class="category-btn" data-category="Contemporáneo">Contemporáneo</button>
+      </section>
+      <button class="cat-arrow right" id="catRightBtn">›</button>
+    </div>
+
+    <main class="content" id="songsContainer">
+      <!-- Carga dinámica de canciones -->
+    </main>
+    <div id="pagination" class="pagination"></div>
+  </div>
+
+  <!-- =========================================================
+       3. VISTA REPERTORIO
+  ========================================================== -->
+  <div id="view-repertorio" class="page-view" style="display:none;">
+    <section class="hero">
+      <div class="hero-card">
+        <img src="Principal/Santisimo.png" alt="Repertorio Vox Dei" class="hero-img" loading="lazy">
+        <div class="hero-text">
+          <h1>Repertorio <span>Digital</span></h1>
+          <p>Coro Juvenil Salesiano Vox Dei</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestañas de Navegación del Repertorio -->
+    <div class="repertorio-tabs">
+      <button id="tabRepertorioActivo" class="repertorio-tab-btn active">
+        <i data-lucide="music-4"></i>Activo
+      </button>
+      <button id="tabRepertoriosGuardados" class="repertorio-tab-btn">
+        <i data-lucide="folder-heart"></i>Guardados
+      </button>
+    </div>
+
+    <!-- Contenedor del Repertorio Activo -->
+    <div id="section-repertorio-activo" class="repertorio-section-content">
+      <section class="search-bar">
+        <img src="Principal/Buscar.png" alt="Buscar" class="icon">
+        <input type="text" id="searchRepertorioInput" placeholder="Buscar en mi repertorio...">
+      </section>
+
+      <main class="content">
+        <div class="actions-bar">
+          <span id="contador-canciones" class="counter-text">0 canciones elegidas</span>
+          <div class="repertorio-actions-group">
+            <button id="btnGuardarRepertorio" class="btn-guardar" title="Guardar lista de cantos">
+              <span class="icon"><i data-lucide="save"></i></span>
+              <span class="text">Guardar Repertorio</span>
+            </button>
+            <button id="btnLimpiarRepertorio" class="btn-limpiar" title="Limpiar lista de cantos">
+              <span class="icon"><i data-lucide="trash-2"></i></span>
+              <span class="text">Limpiar Repertorio</span>
+            </button>
+          </div>
+        </div>
+        <div id="repertorio-list"></div>
+        <p id="empty-message">Aún no has añadido ninguna canción al repertorio.</p>
+      </main>
+    </div>
+
+    <!-- Contenedor de Repertorios Guardados -->
+    <div id="section-repertorios-guardados" class="repertorio-section-content" style="display: none;">
+      <main class="content">
+        <div id="saved-repertorios-main">
+          <div id="saved-repertorios-list" class="saved-repertorios-list">
+            <!-- Carga dinámica de repertorios guardados -->
+          </div>
+        </div>
+        
+        <!-- Detalle de un repertorio guardado -->
+        <div id="saved-repertorio-detail" class="saved-repertorio-detail-section" style="display: none;">
+          <div class="saved-repertorio-detail-header">
+            <button id="btnVolverRepertorios" class="btn-back-repertorio">
+              <i data-lucide="arrow-left"></i> Volver a la lista
+            </button>
+            <div class="saved-repertorio-title-row">
+              <h2 id="saved-repertorio-detail-title" class="saved-repertorio-title-detail">Repertorio Seleccionado</h2>
+              <button id="btnRenameSavedRepertorio" class="btn-rename-saved-rep" title="Renombrar repertorio">
+                <i data-lucide="edit-3"></i>
+              </button>
+              <button id="btnCompartirRepertorio" class="btn-share-saved-rep-icon" title="Compartir por link">
+                <i data-lucide="share-2"></i>
+              </button>
+            </div>
+            <div class="saved-repertorio-subtitle-row" style="margin-top: 6px; margin-bottom: 12px;">
+              <span id="saved-repertorio-detail-count" class="saved-repertorio-detail-badge">0 cantos</span>
+            </div>
+          </div>
+          <div id="saved-repertorio-detail-list" class="saved-repertorio-songs-list">
+            <!-- Carga dinámica de los cantos del repertorio seleccionado -->
+          </div>
+          
+          <!-- Sección para agregar cantos en Modo Edición -->
+          <div id="saved-repertorio-add-section" class="saved-repertorio-add-section" style="display: none; margin-top: 25px;">
+            <div class="search-bar" style="margin: 0 auto 15px auto; width: 100%; max-width: 100%;">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="savedRepSongSearchInput" placeholder="Buscar canciones para agregar..." autocomplete="off">
+            </div>
+            <div id="savedRepSongSearchResults" class="saved-rep-search-results">
+              <!-- Resultados de búsqueda rápidos con botón añadir (+) -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       3.5. VISTA MI PERFIL / MI CUENTA
+  ========================================================== -->
+  <div id="view-profile" class="page-view" style="display:none;">
+    
+    <!-- ESTADO LOGGED IN: HERO Y DASHBOARD DE MÚSICO -->
+    <div id="authLoggedInContent" style="display: none;" class="profile-dashboard-wrapper">
+      
+      <!-- Hero Banner del Perfil -->
+      <section class="profile-hero-card">
+        <div class="profile-hero-bg-waves"></div>
+        <div class="profile-hero-inner">
+          <div class="profile-hero-left">
+            <div id="profileAvatarCircle" class="profile-avatar-main" style="position: relative;">
+              <img id="profileAvatarImg" src="" class="profile-avatar-img" style="display: none;" alt="Foto de perfil">
+              <span id="profileAvatarInitials">U</span>
+              <button type="button" id="btnQuickChangePhoto" class="profile-avatar-edit-badge" title="Cambiar foto de perfil">
+                <i data-lucide="camera"></i>
+              </button>
+            </div>
+            <div class="profile-hero-info">
+              <h1 id="profileGreeting" class="profile-greeting-title">¡Hola! 👋</h1>
+              <p id="profileSubRoleGroup" class="profile-sub-role">Músico del coro</p>
+              <div class="profile-email-row">
+                <i data-lucide="mail"></i>
+                <span id="profileUserEmail">Cargando...</span>
+              </div>
+              <div class="profile-badges-row">
+                <span class="profile-badge-pill role-pill"><i data-lucide="music" style="width: 14px; height: 14px;"></i> <span id="profileRoleBadge">Músico</span></span>
+                <span class="profile-badge-pill sync-pill"><i data-lucide="cloud" style="width: 14px; height: 14px;"></i> <span id="profileSyncBadge">Sincronizado en la nube</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-hero-right">
+            <button id="btnEditProfile" type="button" class="btn-edit-profile-action">
+              <i data-lucide="edit-3"></i>
+              <span>Editar Perfil</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="content profile-content-container">
+        
+        <!-- VISTA DE DETALLES DEL PERFIL -->
+        <div id="profileCardOverview">
+          
+          <!-- Fila de Estadísticas Dinámicas (3 métricas reales) -->
+          <div class="profile-stats-grid-3">
+            <div class="profile-stat-card">
+              <div class="stat-icon-wrapper red-icon"><i data-lucide="music-4"></i></div>
+              <div class="stat-meta">
+                <span id="profileActiveRepSongsCount" class="stat-val">0</span>
+                <span class="stat-tit">Canciones en Repertorio Activo</span>
+              </div>
+            </div>
+            
+            <div class="profile-stat-card">
+              <div class="stat-icon-wrapper red-icon"><i data-lucide="folder"></i></div>
+              <div class="stat-meta">
+                <span id="profileSavedRepsCount" class="stat-val">0</span>
+                <span class="stat-tit">Repertorios Guardados</span>
+              </div>
+            </div>
+
+            <div class="profile-stat-card sync-status-card">
+              <div class="stat-icon-wrapper green-icon"><i data-lucide="cloud"></i></div>
+              <div class="stat-meta">
+                <span id="profileSyncStatusVal" class="stat-val sync-text">Sincronizado</span>
+                <span class="stat-tit">En la nube</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estructura de Dos Columnas: Información Personal y Configuración -->
+          <div class="profile-two-columns">
+            
+            <!-- Columna Izquierda: Información personal -->
+            <div class="profile-info-section">
+              <div class="section-title-bar">
+                <h3 class="section-title"><i data-lucide="user"></i> Información personal</h3>
+              </div>
+
+              <div class="profile-details-cards-grid">
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="church"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">PARROQUIA</span>
+                    <strong id="profileParishVal" class="info-card-value">Sin especificar</strong>
+                  </div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="users"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">MINISTERIO / CORO</span>
+                    <strong id="profileGroupVal" class="info-card-value">Coro</strong>
+                  </div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="phone"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">TELÉFONO / CELULAR</span>
+                    <strong id="profilePhoneVal" class="info-card-value">Sin especificar</strong>
+                  </div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="map-pin"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">CIUDAD / UBICACIÓN</span>
+                    <strong id="profileCityVal" class="info-card-value">Sin especificar</strong>
+                  </div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="calendar"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">FECHA DE NACIMIENTO</span>
+                    <strong id="profileDobVal" class="info-card-value">Sin especificar</strong>
+                  </div>
+                </div>
+
+                <div class="info-card-item">
+                  <div class="info-card-icon"><i data-lucide="mail"></i></div>
+                  <div class="info-card-body">
+                    <span class="info-card-label">CORREO ELECTRÓNICO</span>
+                    <strong id="profileEmailVal" class="info-card-value">Sin correo</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna Derecha: Configuración -->
+            <div class="profile-settings-section">
+              <div class="section-title-bar">
+                <h3 class="section-title"><i data-lucide="settings"></i> Configuración</h3>
+              </div>
+
+              <div class="profile-settings-list">
+                <button type="button" id="btnProfileChangePass" class="settings-option-item">
+                  <div class="settings-option-left">
+                    <i data-lucide="lock"></i>
+                    <span>Cambiar contraseña</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="settings-chevron"></i>
+                </button>
+
+                <button type="button" id="btnProfileTheme" class="settings-option-item">
+                  <div class="settings-option-left">
+                    <i data-lucide="palette"></i>
+                    <span>Tema (Claro / Oscuro)</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="settings-chevron"></i>
+                </button>
+
+                <button type="button" id="btnLogout" class="settings-option-item logout-option">
+                  <div class="settings-option-left">
+                    <i data-lucide="log-out"></i>
+                    <span class="logout-text">Cerrar sesión</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- FORMULARIO DE EDICIÓN DEL PERFIL -->
+        <div id="profileCardEditor" style="display: none;" class="profile-info-section">
+          <div class="section-title-bar" style="margin-bottom: 20px;">
+            <h3 class="section-title"><i data-lucide="edit-3"></i> Editar Información Personal</h3>
+          </div>
+
+          <form id="editProfileForm" onsubmit="return false;" class="profile-edit-form">
+            <!-- Selector de Foto de Perfil -->
+            <div class="auth-field-group full-width" style="margin-bottom: 24px;">
+              <label class="auth-field-label">Foto de Perfil</label>
+              <div class="profile-photo-upload-row">
+                <div class="profile-photo-preview-wrapper">
+                  <img id="editProfilePhotoPreview" src="" alt="Vista previa" style="display:none;" class="profile-preview-thumb">
+                  <div id="editProfilePhotoInitials" class="profile-preview-initials">U</div>
+                </div>
+                <div class="profile-photo-upload-controls">
+                  <label for="editProfilePhotoFile" class="btn-upload-photo-label">
+                    <i data-lucide="camera" style="width: 16px; height: 16px;"></i>
+                    <span>Subir o Cambiar Foto</span>
+                  </label>
+                  <input type="file" id="editProfilePhotoFile" accept="image/*" style="display: none;">
+                  <button type="button" id="btnRemoveProfilePhoto" class="btn-remove-photo-label" style="display: none;">
+                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                    <span>Quitar foto</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-grid-two-cols">
+              <div class="auth-field-group">
+                <label for="editProfileName" class="auth-field-label">Nombre Completo</label>
+                <input type="text" id="editProfileName" class="auth-field-input" placeholder="Ingresa tu nombre y apellido">
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfilePhone" class="auth-field-label">Teléfono / Celular</label>
+                <input type="tel" id="editProfilePhone" class="auth-field-input" placeholder="Tu número de teléfono">
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfileParish" class="auth-field-label">Parroquia</label>
+                <input type="text" id="editProfileParish" class="auth-field-input" placeholder="Nombre de tu parroquia">
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfileGroup" class="auth-field-label">Grupo / Coro / Ministerio</label>
+                <input type="text" id="editProfileGroup" class="auth-field-input" placeholder="Nombre de tu coro o ministerio">
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfileRole" class="auth-field-label">Rol / Voz Principal</label>
+                <select id="editProfileRole" class="auth-field-input auth-select">
+                  <option value="Músico">Músico</option>
+                  <option value="Director / Músico">Director / Músico</option>
+                  <option value="Cantante / Solista">Cantante / Solista</option>
+                  <option value="Soprano">Soprano</option>
+                  <option value="Alto">Alto</option>
+                  <option value="Tenor">Tenor</option>
+                  <option value="Bajo">Bajo</option>
+                  <option value="Guitarrista / Instrumentista">Guitarrista / Instrumentista</option>
+                  <option value="Corista">Corista</option>
+                </select>
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfileCity" class="auth-field-label">Ciudad / Ubicación</label>
+                <input type="text" id="editProfileCity" class="auth-field-input" placeholder="Tu ciudad o país">
+              </div>
+
+              <div class="auth-field-group">
+                <label for="editProfileDob" class="auth-field-label">Fecha de Nacimiento</label>
+                <input type="text" id="editProfileDob" class="auth-field-input" placeholder="Ej. 15 de Enero de 2000">
+              </div>
+            </div>
+
+            <div class="profile-editor-buttons">
+              <button id="btnSaveProfile" type="button" class="btn-primary-auth">
+                <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                <span>Guardar Cambios</span>
+              </button>
+              <button id="btnCancelEditProfile" type="button" class="btn-cancel-profile">
+                <span>Cancelar</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- ESTADO LOGGED OUT: TARJETA DE BIENVENIDA Y BOTÓN DE INICIO DE SESIÓN -->
+    <div id="authLoggedOutContent" class="profile-logged-out-wrapper">
+      <main class="content profile-content-container">
+        <div class="auth-welcome-hero-card">
+          <div class="auth-logo-center" style="margin-bottom: 12px;">
+            <img src="Principal/LogocompletoBlanco.png" class="logo auth-brand-logo" data-light="Principal/Logocompleto.png" data-dark="Principal/LogocompletoBlanco.png" alt="Vox Dei Logo" style="max-height: 56px;">
+          </div>
+          <h2 class="auth-panel-title">Bienvenido a Vox Dei Cloud</h2>
+          <p class="auth-panel-sub" style="max-width: 440px; margin: 0 auto 24px;">Sincroniza tus cantos, esquemas de misa y tonos preferidos en la nube para acceder desde cualquier dispositivo.</p>
+          <button id="btnTriggerAuthModal" class="btn-primary-auth" style="max-width: 280px; margin: 0 auto;">
+            <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+            <span>Iniciar Sesión / Crear Cuenta</span>
+          </button>
+          <div class="auth-quote-footer" style="margin-top: 28px;">
+            <p class="quote-text">"El que canta bien, ora dos veces." — <span class="quote-author">San Agustín</span></p>
+            <span id="communityStatsLabel" class="community-stats-text">Comunidad: Cargando datos...</span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+  </div>
+
+  <!-- ==============================
+       4. MENÚ LATERAL & OVERLAY
+  =============================== -->
+  <aside id="sidebar" class="sidebar" aria-hidden="true">
+    <button id="sidebarClose" class="sidebar-close"><i data-lucide="x"></i></button>
+    <nav>
+      <ul>
+        <li><a href="#" id="nav-inicio" class="active"><i data-lucide="home"></i> Inicio</a></li>
+        <li><a href="#" id="nav-repertorio"><i data-lucide="list-music"></i> Mi repertorio</a></li>
+        <li><a href="#" id="nav-auth"><i data-lucide="user"></i> <span id="navAuthLabel">Iniciar Sesión</span> <span id="authBadge" class="auth-badge-dot" style="display: none; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 6px; vertical-align: middle;"></span></a></li>
+        <li class="sidebar-divider"></li>
+        <li><a href="#" id="toggleChordsBtn"><i data-lucide="music-2"></i> Ocultar acordes</a></li>
+        <li><a href="#" id="themeToggle"><i data-lucide="sun"></i> Modo Claro</a></li>
+        <li class="has-submenu">
+          <a href="#" id="toggleSubmenu"><i data-lucide="book-open"></i> Indice ▼</a>
+          <ul id="submenu" class="submenu">
+            <li><a href="#" data-category="todos">Todos</a></li>
+            <li><a href="#" data-category="Entrada">Entrada</a></li>
+            <li><a href="#" data-category="Penitencial">Penitencial</a></li>
+            <li><a href="#" data-category="Gloria">Gloria</a></li>
+            <li><a href="#" data-category="Aclamacion">Aclamación</a></li>
+            <li><a href="#" data-category="Ofertorio">Ofertorio</a></li>
+            <li><a href="#" data-category="Santo">Santo</a></li>
+            <li><a href="#" data-category="PadreNuestro">Padre Nuestro</a></li>
+            <li><a href="#" data-category="Cordero">Cordero</a></li>
+            <li><a href="#" data-category="Comunión">Comunión</a></li>
+            <li><a href="#" data-category="AdoracionMeditacion">Meditación y Adoración</a></li>
+            <li><a href="#" data-category="EnvioSalida">Salida y Envío</a></li>
+            <li><a href="#" data-category="Marianos">Marianos</a></li>
+            <li><a href="#" data-category="Salesianos">Salesianos</a></li>
+            <li><a href="#" data-category="Cuaresma">Cuaresma</a></li>
+            <li><a href="#" data-category="Pascua">Pascua</a></li>
+            <li><a href="#" data-category="EspirituSanto">Espíritu Santo</a></li>
+            <li><a href="#" data-category="Adviento">Adviento y Navidad</a></li>
+            <li><a href="#" data-category="HimnosSalmos">Himnos y Salmos</a></li>
+            <li><a href="#" data-category="Contemporáneo">Contemporáneo</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+  <div id="overlay" class="overlay"></div>
+
+  <!-- ==============================
+       5. PIE DE PÁGINA
+  =============================== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Coro Juvenil Vox Dei</h3>
+        <a href="https://www.instagram.com/coro_salesiano_voxdei/" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+      </div>
+      <div class="footer-section">
+        <h3>Movimiento Juvenil Salesiano</h3>
+        <a href="https://www.facebook.com/MJSChosica" target="_blank" rel="noopener noreferrer"><img src="Principal/facebook-new.png" class="icon"> Facebook</a>
+        <a href="https://www.instagram.com/mjschosica?igsh=MThyMzh0MmI0cjBiNg==" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+      </div>
+      <div class="footer-section">
+        <h3>Ubícanos</h3>
+        <a href="https://maps.app.goo.gl/9pRLaTpgSZsEbyni6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon"> Parroquia San Juan Bosco</a>
+        <a href="https://maps.app.goo.gl/uaJVAUvCpM1ivJog6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon"> Santuario María Auxiliadora</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 <strong>Cancionero Digital</strong> | Coro Juvenil Vox Dei | Desarrollado con <span>❤</span></p>
+    </div>
+  </footer>
+
+  <!-- POPUP DE INDICE -->
+  <div id="popupIndice" class="popup-overlay">
+    <div class="popup-content index-popup">
+      <button onclick="cerrarIndice()" class="popup-cerrar index-floating-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
+      <div class="popup-header">
+        <h2 id="indexTitle" class="popup-title">Índice General</h2>
+      </div>
+      <div id="indexBody" class="index-body">
+        <!-- Contenido dinámico del índice -->
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP DE GUARDAR REPERTORIO -->
+  <div id="popupGuardarRepertorio" class="popup-overlay">
+    <div class="popup-content save-repertorio-popup">
+      <button onclick="window.cerrarGuardarRepertorio()" class="popup-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
+      <div class="save-repertorio-header">
+        <h2 class="save-repertorio-title">Guardar Repertorio</h2>
+      </div>
+      <div class="popup-body save-repertorio-body">
+        
+        <div class="save-repertorio-summary">
+          <span id="saveRepertorioCountBadge" class="save-repertorio-badge">0 cantos seleccionados</span>
+        </div>
+
+        <div class="input-group">
+          <label for="repertorioNameInput">Nombre del Repertorio</label>
+          <input type="text" id="repertorioNameInput" placeholder="Ej. Domingo 24 - Pascua Joven..." maxlength="50" autocomplete="off">
+        </div>
+        <div class="popup-actions-buttons">
+          <button onclick="window.cerrarGuardarRepertorio()" class="btn-cancel">Cancelar</button>
+          <button id="btnConfirmarGuardarRepertorio" class="btn-confirm">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP DE LETRAS -->
+  <div id="popupLetra" class="popup-overlay">
+    <div class="popup-content">
+      
+      <div id="captureArea" class="popup-body">
+        <div class="doc-header">
+           <!-- Botón Descargar (Izquierda) -->
+           <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+           </button>
+
+           <!-- Título y Autor (Centro) -->
+           <div class="header-text">
+             <h2 id="popupTitulo" class="popup-title"></h2>
+             <p id="popupAutor" class="popup-autor"></p>
+             <div id="popupTagContainer" style="margin-top: 8px;"></div>
+             <p id="popupTranspInfo" class="popup-transp-info"></p>
+           </div>
+
+           <!-- Botón Cerrar (Derecha) -->
+           <button onclick="cerrarLetra()" class="popup-cerrar popup-action-btn" title="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        
+        <pre id="popupTexto" class="popup-letra"></pre>
+      </div>
+
+      <!-- SISTEMA DE AJUSTES MULTI-BOTÓN -->
+      <div id="popupSettingsWrapper" class="popup-settings-wrapper">
+          
+          <!-- Menú de Herramientas (aparece al abrir engranaje) -->
+          <div id="settingsMenu" class="settings-menu">
+            
+            <!-- Opción Tamaño -->
+            <div class="menu-item-container">
+              <div id="panelSize" class="tool-panel">
+                <span class="tool-label">Tamaño</span>
+                <input type="range" id="fontSizeSlider" min="8" max="24" step="1" value="16">
+              </div>
+              <button class="menu-fab" id="btnToolSize" title="Tamaño de letra">
+                <span class="tool-icon-text">T</span>
+              </button>
+            </div>
+
+            <!-- Opción Espaciado -->
+            <div class="menu-item-container">
+              <div id="panelSpacing" class="tool-panel">
+                <span class="tool-label">Espaciado</span>
+                <input type="range" id="lineSpacingSlider" min="1" max="2.5" step="0.1" value="1.6">
+              </div>
+              <button class="menu-fab" id="btnToolSpacing" title="Espaciado de línea">
+                <div class="tool-icon-spacing">
+                  <span>T</span>
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 7l5-5 5 5M7 17l5 5 5-5"/></svg>
+                </div>
+              </button>
+            </div>
+
+            <!-- Opción Transposición (NUEVA) -->
+            <div class="menu-item-container">
+              <div id="panelTranspose" class="tool-panel">
+                <span class="tool-label">Tono</span>
+                <div class="transpose-controls">
+                  <button id="btnTransposeDown" class="trans-btn">-</button>
+                  <span id="transposeValue">0</span>
+                  <button id="btnTransposeUp" class="trans-btn">+</button>
+                </div>
+              </div>
+              <button class="menu-fab" id="btnToolTranspose" title="Transponer">
+                <span class="tool-icon-text">#</span>
+              </button>
+            </div>
+
+            <!-- Opción Notación -->
+            <div class="menu-item-container">
+              <button class="menu-fab" id="btnToolNotation" title="Cambiar Notación (C / Do)">
+                <span class="tool-icon-text">C</span>
+              </button>
+            </div>
+
+            <!-- Opción Columnas (Solo PC/Tablet) -->
+            <div class="menu-item-container multi-column-only">
+              <button class="menu-fab" id="btnToolColumns" title="Alternar 2 Columnas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                  <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+                  <path d="M7 7h3M7 11h3M7 15h3M14 7h3M14 11h3M14 15h3"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Opción Audio (NUEVA) -->
+            <div id="menuItemAudio" class="menu-item-container" style="display:none;">
+              <div id="panelAudio" class="tool-panel">
+                <span id="audioTime" class="tool-label" style="min-width: 40px; font-size: 10px;">0:00</span>
+                <input type="range" id="audioProgress" min="0" max="100" value="0" style="width: 100px;">
+              </div>
+              <button class="menu-fab" id="btnToolAudio" title="Escuchar audio">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display: block;"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Botón Principal (Engranaje) -->
+          <button id="popupSettingsBtn" class="settings-fab main-gear" title="Ajustes" aria-label="Ajustes">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <!-- Botón Flotante de Sugerencias/Correcciones -->
+  <div id="feedbackContainer" class="feedback-container">
+    <button id="feedbackToggle" class="feedback-toggle" title="Sugerencias">
+      <i data-lucide="chevron-right"></i>
+    </button>
+    <button id="feedbackFab" class="feedback-fab" title="Enviar Sugerencia">
+      <i data-lucide="message-square"></i>
+    </button>
+  </div>
+
+  <!-- =========================================================
+       MODAL EMERGENTE DE AUTENTICACIÓN (LOGIN / SIGN UP POPUP)
+  ========================================================== -->
+  <div id="authModal" class="modal-overlay auth-modal-overlay">
+    <div class="modal-content auth-split-card">
+      <button id="closeAuthModal" class="close-modal auth-modal-close" aria-label="Cerrar">&times;</button>
+      
+      <!-- HERO PANEL IZQUIERDO (Visible en PC/Laptop/Tablet) -->
+      <div class="auth-hero-panel">
+        <!-- Contenido Hero del Panel Izquierdo -->
+        <div class="auth-hero-content">
+          <div class="auth-brand-badge">
+            <img src="Principal/LogoverticalBlanco.png" class="auth-brand-logo" data-light="Principal/Logovertical.png" data-dark="Principal/LogoverticalBlanco.png" alt="Vox Dei Logo">
+          </div>
+
+          <h1 class="auth-hero-title">
+            CANCIONERO <span class="highlight-red">DIGITAL</span>
+            <div class="red-line-accent"></div>
+          </h1>
+
+          <p class="auth-hero-sub">Tu espacio para alabar, adorar y servir con alegría.</p>
+
+          <!-- Lista de Beneficios con Iconos Circulares -->
+          <div class="auth-features-list">
+            <div class="auth-feature-item">
+              <div class="feature-icon-circle">
+                <i data-lucide="music"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Accede a todas tus canciones</h4>
+                <p>Letras, acordes y más, siempre a tu alcance.</p>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="feature-icon-circle">
+                <i data-lucide="heart"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Crea tu repertorio personal</h4>
+                <p>Guarda tus favoritas y organízalas.</p>
+              </div>
+            </div>
+
+            <div class="auth-feature-item">
+              <div class="feature-icon-circle">
+                <i data-lucide="users"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Conecta con tu coro</h4>
+                <p>Unidos para alabar mejor cada día.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cita Inspiradora al Pie -->
+          <div class="auth-hero-quote">
+            <span class="quote-mark">“</span>
+            <p>Alabemos juntos con alegría y desde el corazón.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL DERECHO DE FORMULARIO -->
+      <div class="auth-form-panel">
+        <!-- Logo Header para Pantallas Móviles -->
+        <div class="auth-mobile-header">
+          <img src="Principal/LogoverticalBlanco.png" class="auth-mobile-logo" data-light="Principal/Logovertical.png" data-dark="Principal/LogoverticalBlanco.png" alt="Vox Dei Logo">
+        </div>
+
+        <div class="auth-panel-header">
+          <h2 id="authModalTitle" class="auth-panel-title">¡Bienvenido!</h2>
+          <p id="authModalSub" class="auth-panel-sub">Inicia sesión para continuar</p>
+        </div>
+
+        <!-- Pestañas ocultas/compatibilidad JS -->
+        <div class="auth-tabs-segmented" style="display: none;">
+          <button id="authTabLogin" class="auth-tab-btn active">Iniciar Sesión</button>
+          <button id="authTabRegister" class="auth-tab-btn">Crear Cuenta</button>
+        </div>
+
+        <!-- Formulario con Iconos Internos y Ojo para Contraseña -->
+        <form id="authForm" onsubmit="return false;" class="auth-form-body">
+          <div id="authFullNameGroup" class="auth-field-group hidden" style="display: none;">
+            <label for="authFullName" class="auth-field-label">Nombre Completo</label>
+            <div class="input-with-icon">
+              <i data-lucide="user" class="input-icon"></i>
+              <input type="text" id="authFullName" class="auth-field-input" placeholder="Ingresa tu nombre y apellido">
+            </div>
+          </div>
+
+          <div class="auth-field-group">
+            <label for="authEmail" class="auth-field-label">Correo electrónico</label>
+            <div class="input-with-icon">
+              <i data-lucide="mail" class="input-icon"></i>
+              <input type="email" id="authEmail" class="auth-field-input" required placeholder="Ingresa tu correo electrónico">
+            </div>
+          </div>
+          
+          <div id="authPasswordGroup" class="auth-field-group">
+            <label for="authPassword" class="auth-field-label">Contraseña</label>
+            <div class="input-with-icon">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="authPassword" class="auth-field-input" required placeholder="Ingresa tu contraseña">
+              <button type="button" id="togglePasswordVisibility" class="btn-toggle-eye" aria-label="Mostrar u ocultar contraseña">
+                <i data-lucide="eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div id="authOptionsRow" class="auth-options-row">
+            <label class="auth-remember-me">
+              <input type="checkbox" id="authRememberCheck" checked>
+              <span>Recordarme</span>
+            </label>
+            <a href="#" id="authForgotPass" class="auth-forgot-link">¿Olvidaste tu contraseña?</a>
+          </div>
+          
+          <button id="btnSubmitAuth" class="btn-primary-auth" type="submit">
+            <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+            <span id="btnSubmitAuthText">Iniciar sesión</span>
+          </button>
+        </form>
+
+        <!-- Divisor con Texto -->
+        <div id="authDivider" class="auth-divider-clean">
+          <div class="divider-line"></div>
+          <span class="divider-text">o continúa con</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <!-- Botón Social Google -->
+        <div id="authSocialGroup" class="social-login-wrapper">
+          <button id="btnGoogleAuth" class="btn-social-google">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 18px; height: 18px; display: block; flex-shrink: 0;">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22-.03-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continuar con Google</span>
+          </button>
+        </div>
+
+        <!-- Cambio entre Login y Registro -->
+        <div class="auth-switch-prompt">
+          <span id="authSwitchPromptText" class="auth-switch-text">¿No tienes una cuenta?</span>
+          <button type="button" id="authSwitchBtn" class="auth-switch-button">Crear cuenta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Feedback -->
+  <div id="feedbackModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Sugerencias o Correcciones</h3>
+        <button id="closeFeedback" class="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-intro">¿Encontraste un error o tienes una idea? Cuéntanos para seguir mejorando.</p>
+        <form id="feedbackForm" action="https://formspree.io/f/xojyangr" method="POST">
+          <div class="form-group">
+            <label for="fbName">Nombre</label>
+            <input type="text" id="fbName" name="nombre" placeholder="Tu nombre" required>
+          </div>
+          <div class="form-group">
+            <label for="fbEmail">Correo Electrónico</label>
+            <input type="email" id="fbEmail" name="email" placeholder="tu@correo.com" required>
+          </div>
+          <div class="form-group">
+            <label for="fbType">Tipo de mensaje</label>
+            <select id="fbType" name="tipo">
+              <option value="Sugerencia">Sugerencia General</option>
+              <option value="Corrección">Corrección de Canción</option>
+            </select>
+          </div>
+          <div id="fbSongGroup" class="form-group" style="display:none;">
+            <label for="fbSong">Nombre de la Canción</label>
+            <input type="text" id="fbSong" name="cancion" placeholder="Ej: Pescador de Hombres">
+          </div>
+          <div class="form-group">
+            <label for="fbMessage">Mensaje / Corrección</label>
+            <textarea id="fbMessage" name="mensaje" rows="5" placeholder="Escribe aquí los detalles. Si es una corrección, especifica qué parte está mal y cómo debería ser." required></textarea>
+          </div>
+          <!-- Campo oculto para el asunto del correo -->
+          <input type="hidden" name="_subject" value="Nueva sugerencia/corrección desde la App Vox Dei">
+          <p class="fb-note">Se enviará directamente. La primera vez, revisa tu correo para confirmar la recepción.</p>
+          <button type="submit" class="submit-btn">Enviar Mensaje</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Compartir Repertorio -->
+  <div id="shareModal" class="modal-overlay share-modal-overlay">
+    <div class="modal-content share-modal-content" style="max-width: 440px;">
+      <div class="modal-header share-modal-header">
+        <h3 id="shareModalTitle" class="share-modal-title">Compartir</h3>
+        <button id="closeShareModal" class="share-close-modal">&times;</button>
+      </div>
+      <div class="modal-body share-modal-body">
+        
+        <!-- Fila de Botones Circulares Estilo YouTube/Instagram con SVGs directos -->
+        <div class="share-circles-wrapper">
+          <a id="shareWhatsApp" href="#" target="_blank" class="share-circle-item">
+            <div class="share-circle-btn whatsapp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+            </div>
+            <span class="share-circle-label">WhatsApp</span>
+          </a>
+          
+          <a id="shareFacebook" href="#" target="_blank" class="share-circle-item">
+            <div class="share-circle-btn facebook">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </div>
+            <span class="share-circle-label">Facebook</span>
+          </a>
+          
+          <a id="shareTelegram" href="#" target="_blank" class="share-circle-item">
+            <div class="share-circle-btn telegram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </div>
+            <span class="share-circle-label">Telegram</span>
+          </a>
+          
+          <a id="shareEmail" href="#" target="_blank" class="share-circle-item">
+            <div class="share-circle-btn email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <span class="share-circle-label">Correo</span>
+          </a>
+        </div>
+
+        <!-- Copiar Enlace Directo Estilo YouTube -->
+        <div class="share-link-section">
+          <div class="share-pill-group">
+            <div class="share-pill-input-wrapper">
+              <i data-lucide="link" class="share-link-icon"></i>
+              <input type="text" id="shareUrlInput" readonly onclick="this.select();" placeholder="Generando enlace...">
+            </div>
+            <button id="btnCopyShareUrl" class="share-pill-copy-btn">
+              <span>Copiar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón de compartir nativo si está disponible -->
+        <div id="nativeShareWrapper" style="display: none; margin-top: 16px;">
+          <button id="btnNativeShare" class="share-system-btn">
+            <i data-lucide="share-2" style="width: 16px; height: 16px;"></i>
+            <span>Compartir usando el sistema</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script type="module" src="Principal.js?v=3.5"></script>
+</body>
+</html>
+
