@@ -1098,6 +1098,21 @@ function centerCategoryButton(button) {
 }
 window.centerCategoryButton = centerCategoryButton;
 
+function scrollToCategoryHeader() {
+  const searchBarSec = document.querySelector(".search-bar");
+  if (!searchBarSec) return;
+  const topbar = document.querySelector(".topbar");
+  const topbarHeight = topbar ? topbar.offsetHeight : 75;
+  const elementPosition = searchBarSec.getBoundingClientRect().top + window.pageYOffset;
+  const offsetPosition = Math.max(0, elementPosition - topbarHeight - 8);
+
+  window.scrollTo({
+    top: offsetPosition,
+    behavior: "smooth"
+  });
+}
+window.scrollToCategoryHeader = scrollToCategoryHeader;
+
 const categoryButtons = document.querySelectorAll(".category-btn");
 categoryButtons.forEach(button => {
   button.addEventListener("click", () => {
@@ -1107,6 +1122,7 @@ categoryButtons.forEach(button => {
     const selectedCategory = button.dataset.category?.toLowerCase();
     if (viewHome && viewHome.style.display === "none") switchView("home");
     filterByCategory(selectedCategory);
+    scrollToCategoryHeader();
   });
 });
 
@@ -1170,7 +1186,6 @@ categoryButtons.forEach(button => {
         if (currentIndex + 1 < categoryButtonsList.length) {
           const nextBtn = categoryButtonsList[currentIndex + 1];
           nextBtn.click();
-          window.scrollTo({ top: 0, behavior: "smooth" });
         }
       } else {
         // Deslizar a la derecha -> Categoría anterior
@@ -1179,7 +1194,6 @@ categoryButtons.forEach(button => {
           const prevCategory = prevBtn.dataset.category?.toLowerCase();
           if (prevCategory !== "todos") {
             prevBtn.click();
-            window.scrollTo({ top: 0, behavior: "smooth" });
           }
         }
       }
@@ -2743,6 +2757,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentAuthTab = "login"; // "login" o "register"
 
   const openAuthModal = () => {
+    closeSidebar();
     if (authModal) {
       authModal.style.display = "flex";
       authModal.classList.add("active");
@@ -2756,6 +2771,8 @@ document.addEventListener("DOMContentLoaded", () => {
       authModal.style.display = "none";
       authModal.classList.remove("active");
     }
+    const topbar = document.querySelector(".topbar");
+    if (topbar) topbar.classList.remove("hidden");
   };
 
   btnTriggerAuthModal?.addEventListener("click", () => {
@@ -2774,16 +2791,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   navAuth?.addEventListener("click", (e) => {
     e.preventDefault();
+    closeSidebar();
     const user = AuthEngine.getCurrentUser();
     if (user) {
       switchView("profile");
     } else {
       openAuthModal();
     }
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    if (sidebar) sidebar.classList.remove("active");
-    if (overlay) overlay.classList.remove("active");
   });
 
   const authFullNameGroup = document.getElementById("authFullNameGroup");
