@@ -1565,6 +1565,68 @@ body.light-mode .song-tag-badge {
   opacity: 1;
 }
 
+/* FLECHAS DE NAVEGACIÓN DE CANCIONES (VISIBLES EN PC/DESKTOP, OCULTAS EN MÓVIL/TÁCTIL) */
+.popup-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(165, 30, 23, 0.92);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1050;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  padding: 0 0 4px 0;
+}
+
+.popup-nav-arrow.prev {
+  left: -23px;
+}
+
+.popup-nav-arrow.next {
+  right: -23px;
+}
+
+.popup-nav-arrow:hover {
+  background: #A51E17;
+  transform: translateY(-50%) scale(1.12);
+  box-shadow: 0 8px 24px rgba(165, 30, 23, 0.7);
+}
+
+.popup-nav-arrow:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.popup-nav-arrow.disabled {
+  opacity: 0.18;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+body.light-mode .popup-nav-arrow {
+  background: rgba(165, 30, 23, 0.92);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Ocultar completamente las flechas en dispositivos táctiles o pantallas móviles */
+@media (max-width: 768px), (pointer: coarse) {
+  .popup-nav-arrow {
+    display: none !important;
+  }
+}
+
 @media(min-width: 640px) {
     .popup-content {
         width: 90%;
@@ -2277,13 +2339,7 @@ body.light-mode .topbar .icon {
 }
 
 /* LOGOS */
-body.light-mode .logo-left img {
-  content: url("Principal/VoxDei.png");
-}
-
-body.light-mode .logo-right {
-  content: url("Principal/Logo.png");
-}
+/* Handled dynamically via JavaScript updateLogos and data-light/data-dark attributes */
 
 /* ========================
   2. SECCIÓN HERO (PORTADA CON OVERLAY)
