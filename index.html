@@ -30,11 +30,11 @@
   <div id="splashScreen" class="splash-screen">
     <div class="splash-content">
       <div class="splash-logo-container">
-        <img src="Principal/LogoBlanco.png" alt="Vox Dei Logo" class="splash-logo" id="splashRoundLogo">
+        <img src="Principal/LogoBlanco.png" alt="Vox Dei Logo" class="splash-logo" id="splashRoundLogo" data-light="Principal/Logo.png" data-dark="Principal/LogoBlanco.png">
         <div class="splash-ripple"></div>
       </div>
       <div class="splash-brand">
-        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="splash-brand-text" id="splashBrandText">
+        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="splash-brand-text" id="splashBrandText" data-light="Principal/VoxDei.png" data-dark="Principal/VoxDeiBlanco.png">
         <span class="splash-subtitle">CANCIONERO DIGITAL</span>
       </div>
       <div class="splash-loader-bar">
@@ -43,20 +43,31 @@
     </div>
   </div>
   <script>
+    window.updateLogos = function updateLogos() {
+      const isLight = document.body.classList.contains("light-mode");
+      document.querySelectorAll("img[data-light]").forEach(function(logo) {
+        const lightSrc = logo.getAttribute("data-light");
+        const darkSrc = logo.getAttribute("data-dark");
+        if (isLight && lightSrc) {
+          logo.setAttribute("src", lightSrc);
+        } else if (!isLight && darkSrc) {
+          logo.setAttribute("src", darkSrc);
+        }
+      });
+    };
+
     (function() {
       try {
         const savedTheme = localStorage.getItem("theme");
-        if (savedTheme !== "dark") {
+        if (savedTheme === "light") {
           document.body.classList.add("light-mode");
-          const roundLogo = document.getElementById("splashRoundLogo");
-          const brandText = document.getElementById("splashBrandText");
-          const authLogo = document.getElementById("authModalLogo");
-          if (roundLogo) roundLogo.src = "Principal/Logo.png";
-          if (brandText) brandText.src = "Principal/VoxDei.png";
-          if (authLogo) authLogo.src = "Principal/Logocompleto.png";
         }
+        document.addEventListener("DOMContentLoaded", function() {
+          if (typeof window.updateLogos === "function") {
+            window.updateLogos();
+          }
+        });
       } catch (e) {
-        document.body.classList.add("light-mode");
       }
     })();
   </script>
@@ -68,7 +79,7 @@
     <div class="top-left">
       <button id="menuBtn" class="icon-btn menu-btn" aria-label="Abrir menú">☰</button>
       <div class="logo-left">
-        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="logo" data-light="Principal/VoxDei.png">
+        <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="logo" data-light="Principal/VoxDei.png" data-dark="Principal/VoxDeiBlanco.png">
       </div>
     </div>
     <div class="top-right">
@@ -76,7 +87,7 @@
         <img src="Principal/Inicio.png" alt="Inicio" class="icon">
       </button>
       <div class="logo-right">
-        <img src="Principal/LogoBlanco.png" alt="Logo Música" class="logo" data-light="Principal/Logo.png">
+        <img src="Principal/LogoBlanco.png" alt="Logo Música" class="logo" data-light="Principal/Logo.png" data-dark="Principal/LogoBlanco.png">
       </div>
     </div>
   </header>
@@ -652,6 +663,10 @@
   <div id="popupLetra" class="popup-overlay">
     <div class="popup-content">
       
+      <!-- Botones de Navegación Lateral (Visibles solo en PC / Escritorio) -->
+      <button id="btnPopupPrevSong" class="popup-nav-arrow prev" title="Anterior canción (←)" aria-label="Anterior canción">‹</button>
+      <button id="btnPopupNextSong" class="popup-nav-arrow next" title="Siguiente canción (→)" aria-label="Siguiente canción">›</button>
+
       <div id="captureArea" class="popup-body">
         <div class="doc-header">
            <!-- Botón Descargar (Izquierda) -->
