@@ -1083,16 +1083,109 @@ function initSearch() {
 /* ========================
    4. FILTRO POR CATEGORÍAS
 ======================== */
+function centerCategoryButton(button) {
+  if (!button) return;
+  const container = document.getElementById("catScroll");
+  if (!container) return;
+  const containerWidth = container.clientWidth;
+  const buttonLeft = button.offsetLeft;
+  const buttonWidth = button.offsetWidth;
+  const targetScrollLeft = buttonLeft - (containerWidth / 2) + (buttonWidth / 2);
+  container.scrollTo({
+    left: Math.max(0, targetScrollLeft),
+    behavior: "smooth"
+  });
+}
+window.centerCategoryButton = centerCategoryButton;
+
 const categoryButtons = document.querySelectorAll(".category-btn");
 categoryButtons.forEach(button => {
   button.addEventListener("click", () => {
     categoryButtons.forEach(btn => btn.classList.remove("active"));
     button.classList.add("active");
+    centerCategoryButton(button);
     const selectedCategory = button.dataset.category?.toLowerCase();
     if (viewHome && viewHome.style.display === "none") switchView("home");
     filterByCategory(selectedCategory);
   });
 });
+
+/* ========================
+   DESLIZAMIENTO ENTRE CATEGORÍAS (SWIPE TÁCTIL)
+======================== */
+(function setupCategorySwipe() {
+  const songsContainer = document.getElementById("songsContainer") || document.getElementById("viewHome");
+  if (!songsContainer) return;
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+  let isIgnored = false;
+
+  songsContainer.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      if (e.target.closest("input, textarea, select, audio, .audio-player, .volume-slider, .seekbar, button")) {
+        isIgnored = true;
+        return;
+      }
+      isIgnored = false;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchEndX = touchStartX;
+      touchEndY = touchStartY;
+    }
+  }, { passive: true });
+
+  songsContainer.addEventListener("touchmove", (e) => {
+    if (!isIgnored && e.touches.length === 1) {
+      touchEndX = e.touches[0].clientX;
+      touchEndY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  songsContainer.addEventListener("touchend", () => {
+    if (isIgnored) return;
+    const viewHome = document.getElementById("viewHome");
+    if (viewHome && viewHome.style.display === "none") return;
+    if (document.querySelector(".modal.active, .popup.active")) return;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      const activeBtn = document.querySelector(".category-btn.active");
+      if (!activeBtn) return;
+
+      const currentCategory = activeBtn.dataset.category?.toLowerCase();
+      if (currentCategory === "todos") return;
+
+      const categoryButtonsList = Array.from(document.querySelectorAll(".category-btn"));
+      const currentIndex = categoryButtonsList.indexOf(activeBtn);
+
+      if (currentIndex === -1) return;
+
+      if (deltaX < 0) {
+        // Deslizar a la izquierda -> Siguiente categoría
+        if (currentIndex + 1 < categoryButtonsList.length) {
+          const nextBtn = categoryButtonsList[currentIndex + 1];
+          nextBtn.click();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      } else {
+        // Deslizar a la derecha -> Categoría anterior
+        if (currentIndex - 1 >= 0) {
+          const prevBtn = categoryButtonsList[currentIndex - 1];
+          const prevCategory = prevBtn.dataset.category?.toLowerCase();
+          if (prevCategory !== "todos") {
+            prevBtn.click();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }
+      }
+    }
+  });
+})();
 
 const catScroll = document.getElementById("catScroll");
 const catLeft = document.getElementById("catLeftBtn");
@@ -1996,7 +2089,7 @@ window.renderVerRepertorioDetalle = function() {
       infoA.onclick = (e) => {
         e.preventDefault();
         const latestSong = window.resolveSong(song) || song;
-        window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags);
+        window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags, target.songs, idx);
       };
 
       // Limpiar doble paréntesis en el autor si existieran
@@ -2654,7 +2747,7 @@ document.addEventListener("DOMContentLoaded", () => {
       authModal.style.display = "flex";
       authModal.classList.add("active");
       authTabLogin?.click();
-      updateLogos();
+      if (typeof window.updateLogos === "function") window.updateLogos();
     }
   };
 
@@ -3242,7 +3335,7 @@ document.addEventListener("DOMContentLoaded", () => {
       themeToggle.innerHTML = isLight ? `${SVG_MOON} Modo Oscuro` : `${SVG_SUN} Modo Claro`;
     }
 
-    if (typeof updateLogos === "function") updateLogos();
+    if (typeof window.updateLogos === "function") window.updateLogos();
     if (window.lucide) window.lucide.createIcons();
 
     if (showToastMsg && typeof showToast === "function") {
@@ -3602,19 +3695,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateLogos() {
-    const isLight = document.body.classList.contains("light-mode");
-    document.querySelectorAll(".logo, [data-light]").forEach(logo => {
-      const lightSrc = logo.getAttribute("data-light");
-      const darkSrc = logo.getAttribute("data-dark") || logo.dataset.dark || logo.getAttribute("src");
-      if (!logo.dataset.dark && darkSrc) logo.dataset.dark = darkSrc;
-
-      if (isLight && lightSrc) {
-        logo.setAttribute("src", lightSrc);
-      } else if (!isLight && (logo.dataset.dark || darkSrc)) {
-        logo.setAttribute("src", logo.dataset.dark || darkSrc);
-      }
-    });
+    if (typeof window.updateLogos === "function") {
+      window.updateLogos();
+    } else {
+      const isLight = document.body.classList.contains("light-mode");
+      document.querySelectorAll("img[data-light]").forEach(logo => {
+        const lightSrc = logo.getAttribute("data-light");
+        const darkSrc = logo.getAttribute("data-dark");
+        if (isLight && lightSrc) {
+          logo.setAttribute("src", lightSrc);
+        } else if (!isLight && darkSrc) {
+          logo.setAttribute("src", darkSrc);
+        }
+      });
+    }
   }
+  window.updateAppLogos = updateLogos;
   updateLogos();
 
   loadSongs([
@@ -3734,10 +3830,199 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   }
 
-  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl, tags) {
+  /* =========================================================
+     SISTEMA DE NAVEGACIÓN SECUENCIAL DE CANCIONES (SWIPE / FLECHAS)
+  ========================================================== */
+  window.currentSongSequence = [];
+  window.currentSongIndex = -1;
+
+  window.normalizeSongData = function(item) {
+    if (!item) return null;
+    
+    // Si es un elemento HTML (.song o .saved-rep-song-item)
+    if (item instanceof HTMLElement || (item && item.nodeType === 1)) {
+      const h2 = item.querySelector("h2, .song-title-text, .saved-rep-song-title");
+      let title = item.dataset.title || "";
+      if (!title && h2) {
+        const titleTextEl = h2.querySelector(".song-title-text");
+        if (titleTextEl) {
+          title = titleTextEl.textContent.trim();
+        } else {
+          const h2Clone = h2.cloneNode(true);
+          h2Clone.querySelectorAll("small, span, div, p, .autor").forEach(el => el.remove());
+          title = h2Clone.textContent.trim();
+        }
+      }
+
+      const autorElement = item.querySelector(".autor, small.autor, small, .saved-rep-song-author");
+      let author = item.dataset.author || "";
+      if (!author && autorElement) {
+        author = autorElement.textContent.trim().replace(/^\(|\)$/g, "").trim();
+      }
+
+      const lyricsEl = item.querySelector(".lyrics-hidden, .lyrics, .lyrics1");
+      let lyrics = item.dataset.lyrics || "";
+      if (!lyrics && lyricsEl) {
+        lyrics = lyricsEl.innerHTML.trim();
+      }
+
+      let type = item.dataset.type || "";
+      let audio = item.dataset.audio || "";
+      let tags = item.dataset.tags || (typeof window.getSongTag === "function" ? window.getSongTag(item) : "");
+
+      // Si falta la letra o info, buscar en allSongs como fallback de precisión
+      if ((!lyrics || !author) && title && window.allSongs) {
+        const match = window.allSongs.find(s => {
+          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
+          return info && info.title.toLowerCase().trim() === title.toLowerCase().trim();
+        });
+        if (match) {
+          const matchInfo = window.getSongInfo(match);
+          if (!lyrics) lyrics = matchInfo.lyrics;
+          if (!author) author = matchInfo.author;
+          if (!type) type = matchInfo.type;
+          if (!audio) audio = matchInfo.audio;
+          if (!tags) tags = matchInfo.tags;
+        }
+      }
+
+      return { title, lyrics, author, type, audio, tags };
+    } 
+    // Si es un objeto JS (canción de repertorio guardado o activo)
+    else if (typeof item === "object") {
+      const resolved = (typeof window.resolveSong === "function" ? window.resolveSong(item) : item) || item;
+      return {
+        title: resolved.title || "",
+        lyrics: resolved.lyrics || "",
+        author: resolved.author || "",
+        type: resolved.type || "",
+        audio: resolved.audio || "",
+        tags: resolved.tags || "",
+        category: resolved.category || ""
+      };
+    }
+    return null;
+  };
+
+  window.updateSongNavigationUI = function() {
+    const btnPrev = document.getElementById("btnPopupPrevSong");
+    const btnNext = document.getElementById("btnPopupNextSong");
+
+    const seq = window.currentSongSequence || [];
+    const idx = window.currentSongIndex;
+
+    if (seq.length > 1 && idx >= 0) {
+      if (btnPrev) {
+        btnPrev.style.display = "";
+        btnPrev.classList.toggle("disabled", idx <= 0);
+      }
+      if (btnNext) {
+        btnNext.style.display = "";
+        btnNext.classList.toggle("disabled", idx >= seq.length - 1);
+      }
+    } else {
+      if (btnPrev) btnPrev.style.display = "none";
+      if (btnNext) btnNext.style.display = "none";
+    }
+  };
+
+  window.navigatePopupSong = function(direction) {
+    if (!window.currentSongSequence || window.currentSongSequence.length <= 1) return;
+    const newIndex = window.currentSongIndex + direction;
+    if (newIndex < 0 || newIndex >= window.currentSongSequence.length) return;
+
+    // Detener audio actual si está sonando al cambiar de canto
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        if (currentAudioBtn) {
+          currentAudioBtn.classList.remove("playing");
+          if (currentAudioBtn.id === "btnToolAudio") currentAudioBtn.innerHTML = SVG_PLAY;
+        }
+        currentAudio = null;
+        currentAudioBtn = null;
+      } catch (err) {}
+    }
+
+    const item = window.currentSongSequence[newIndex];
+    const songData = window.normalizeSongData(item);
+
+    if (songData) {
+      window.abrirLetra(
+        songData.title,
+        songData.lyrics,
+        songData.author,
+        songData.type,
+        songData.audio,
+        songData.tags,
+        window.currentSongSequence,
+        newIndex
+      );
+
+      // Desplazar suavemente el popup al inicio superior
+      const popupTexto = document.getElementById("popupTexto");
+      const captureArea = document.getElementById("captureArea");
+      if (popupTexto) popupTexto.scrollTop = 0;
+      if (captureArea) captureArea.scrollTop = 0;
+    }
+  };
+
+  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl, tags, sequence, index) {
     const popup = document.getElementById("popupLetra");
     if (!popup) return;
     
+    // Determinar secuencia de canciones
+    if (Array.isArray(sequence) && sequence.length > 0 && typeof index === "number") {
+      window.currentSongSequence = sequence;
+      window.currentSongIndex = index;
+    } else {
+      const savedDetail = document.getElementById("saved-repertorio-detail");
+      const viewRepertorio = document.getElementById("viewRepertorio");
+      
+      if (savedDetail && savedDetail.style.display !== "none" && window.currentSavedRepertorioId) {
+        const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+        const target = saved.find(r => r.id === window.currentSavedRepertorioId);
+        if (target && target.songs && target.songs.length > 0) {
+          window.currentSongSequence = target.songs;
+          window.currentSongIndex = target.songs.findIndex(s => {
+            const res = (typeof window.resolveSong === "function" ? window.resolveSong(s) : s) || s;
+            return res.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim();
+          });
+          if (window.currentSongIndex === -1) window.currentSongIndex = 0;
+        }
+      } else if (viewRepertorio && viewRepertorio.style.display !== "none") {
+        const repActiveTab = document.getElementById("tabRepertorioActivo");
+        if (repActiveTab && repActiveTab.classList.contains("active")) {
+          const activeRep = JSON.parse(localStorage.getItem("repertorio")) || [];
+          if (activeRep.length > 0) {
+            window.currentSongSequence = activeRep;
+            window.currentSongIndex = activeRep.findIndex(s => {
+              const res = (typeof window.resolveSong === "function" ? window.resolveSong(s) : s) || s;
+              return res.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim();
+            });
+            if (window.currentSongIndex === -1) window.currentSongIndex = 0;
+          }
+        }
+      } else {
+        const visibleSongs = Array.from(document.querySelectorAll("#songsContainer .song")).filter(s => {
+          return s.offsetWidth > 0 || s.offsetHeight > 0 || getComputedStyle(s).display !== "none";
+        });
+        if (visibleSongs.length > 0) {
+          window.currentSongSequence = visibleSongs;
+          window.currentSongIndex = visibleSongs.findIndex(s => {
+            const h2 = s.querySelector("h2");
+            const songTitle = h2 ? (h2.querySelector(".song-title-text")?.textContent.trim() || h2.textContent.trim()) : "";
+            return songTitle.toLowerCase().trim() === (titulo || "").toLowerCase().trim();
+          });
+          if (window.currentSongIndex === -1) window.currentSongIndex = 0;
+        }
+      }
+    }
+
+    // Actualizar UI de navegación lateral
+    window.updateSongNavigationUI();
+
     // Obtener la etiqueta visual de forma unificada y premium
     let displayTag = tags || "";
     const sElem = Array.from(document.querySelectorAll(".song")).find(s => {
@@ -4147,6 +4432,81 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Event listeners para los botones de navegación lateral en PC
+  document.getElementById("btnPopupPrevSong")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    window.navigatePopupSong(-1);
+  });
+
+  document.getElementById("btnPopupNextSong")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    window.navigatePopupSong(1);
+  });
+
+  // Navegación con teclado (Flechas izquierda / derecha)
+  document.addEventListener("keydown", (e) => {
+    const popup = document.getElementById("popupLetra");
+    if (!popup || !popup.classList.contains("active")) return;
+    if (e.target.closest("input, textarea, select")) return;
+
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      window.navigatePopupSong(-1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      window.navigatePopupSong(1);
+    }
+  });
+
+  // Gestos táctiles de deslizamiento (Swipe horizontal para cambiar de canto)
+  (function setupPopupSwipe() {
+    const popup = document.getElementById("popupLetra");
+    if (!popup) return;
+
+    let startX = 0;
+    let startY = 0;
+    let endX = 0;
+    let endY = 0;
+    let isIgnored = false;
+
+    popup.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        if (e.target.closest("input, textarea, select, audio, .audio-player, .volume-slider, .seekbar, button, .settings-fab, .menu-fab, .tool-panel")) {
+          isIgnored = true;
+          return;
+        }
+        isIgnored = false;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        endX = startX;
+        endY = startY;
+      }
+    }, { passive: true });
+
+    popup.addEventListener("touchmove", (e) => {
+      if (!isIgnored && e.touches.length === 1) {
+        endX = e.touches[0].clientX;
+        endY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    popup.addEventListener("touchend", () => {
+      if (isIgnored) return;
+      if (!popup.classList.contains("active")) return;
+
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+
+      if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+        if (deltaX < 0) {
+          window.navigatePopupSong(1);
+        } else {
+          window.navigatePopupSong(-1);
+        }
+      }
+    });
+  })();
+
   // LISTENER PARA HACER CLIC EN TODA LA TARJETA CANCIÓN (ABRE LA LETRA DIRECTAMENTE)
   document.addEventListener("click", e => {
     const isInteractive = e.target.closest(".add-repertorio, .audio-btn, .remove-button, .drag-handle, .btn-remove-saved-song");
@@ -4178,7 +4538,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const audio = songSection.dataset.audio || "";
       const tags = songSection.dataset.tags || "";
 
-      window.abrirLetra(title, lyrics, autor, tipo, audio, tags);
+      // Determinar la lista de canciones y la posición actual según el contenedor activo
+      let seq = null;
+      let songIdx = -1;
+
+      const activeRepContainer = songSection.closest("#repertorio-list");
+      if (activeRepContainer) {
+        const items = Array.from(activeRepContainer.querySelectorAll(".song"));
+        seq = items;
+        songIdx = items.indexOf(songSection);
+      } else {
+        const songsContainer = songSection.closest("#songsContainer");
+        if (songsContainer) {
+          const items = Array.from(songsContainer.querySelectorAll(".song")).filter(s => {
+            return s.offsetWidth > 0 || s.offsetHeight > 0 || getComputedStyle(s).display !== "none";
+          });
+          seq = items;
+          songIdx = items.indexOf(songSection);
+        }
+      }
+
+      window.abrirLetra(title, lyrics, autor, tipo, audio, tags, seq, songIdx);
     }
   });
 
@@ -4342,6 +4722,7 @@ document.addEventListener("DOMContentLoaded", () => {
           document.querySelectorAll(".category-btn").forEach(btn => {
             if (btn.dataset.category?.toLowerCase() === targetCategory.toLowerCase()) {
               btn.classList.add("active");
+              if (typeof centerCategoryButton === "function") centerCategoryButton(btn);
             } else {
               btn.classList.remove("active");
             }
