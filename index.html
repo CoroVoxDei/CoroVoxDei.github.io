@@ -83,9 +83,26 @@
       </div>
     </div>
     <div class="top-right">
-      <button id="homeBtn" class="icon-btn" aria-label="Inicio">
-        <img src="Principal/Inicio.png" alt="Inicio" class="icon">
+      <button id="homeBtn" class="icon-btn" aria-label="Mi repertorio" title="Mi repertorio">
+        <i data-lucide="list-music" class="icon"></i>
       </button>
+
+      <!-- Botón Perfil / Iniciar Sesión en Encabezado -->
+      <button id="topbarAuthBtn" class="topbar-auth-btn" aria-label="Mi Cuenta / Iniciar Sesión" title="Iniciar Sesión">
+        <div id="topbarUserLoggedOut" class="topbar-user-logged-out">
+          <svg viewBox="0 0 128 128" class="default-avatar-svg">
+            <circle cx="64" cy="64" r="64" fill="#BDC1C6" />
+            <circle cx="64" cy="48" r="23" fill="#F1F3F4" />
+            <path d="M 26 108 C 26 80, 43 72, 64 72 C 85 72, 102 80, 102 108 Z" fill="#F1F3F4" />
+          </svg>
+        </div>
+        <div id="topbarUserLoggedIn" class="topbar-user-logged-in" style="display: none;">
+          <img id="topbarUserAvatarImg" class="topbar-user-avatar" src="" alt="Perfil" style="display: none;">
+          <span id="topbarUserInitials" class="topbar-user-initials">U</span>
+          <span class="topbar-user-status-dot" title="En línea"></span>
+        </div>
+      </button>
+
       <div class="logo-right">
         <img src="Principal/LogoBlanco.png" alt="Logo Música" class="logo" data-light="Principal/Logo.png" data-dark="Principal/LogoBlanco.png">
       </div>
@@ -770,7 +787,131 @@
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
         </div>
+
+        <!-- BOTÓN FLOTANTE DE NOTAS Y CUADERNO DE ENSAYO (IZQUIERDA) -->
+        <div id="popupNotesWrapper" class="popup-notes-wrapper">
+          <button id="btnNotesFab" class="notes-fab" title="Cuaderno de Ensayo y Notas" aria-label="Cuaderno de Ensayo y Notas">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+            <span id="notesBadgeDot" class="notes-badge-dot" style="display:none;" title="Anotaciones guardadas"></span>
+          </button>
+        </div>
       </div>
+    </div>
+
+  <!-- MODAL DE CUADERNO DE ENSAYO Y NOTAS (ESTILO BLOCK DE NOTAS MINIMALISTA Y PROFESIONAL) -->
+  <div id="popupSongNotesModal" class="modal-overlay song-notes-modal-overlay">
+    <div class="modal-content song-notes-card minimal-notes-theme">
+      
+      <!-- Encabezado Estilo Cuaderno Digital (Elegante & Limpio) -->
+      <div class="song-notes-header-minimal">
+        <div class="notes-header-top-row">
+          <div class="notes-title-container">
+            <h2 id="songNotesModalTitle" class="song-notes-main-heading">TE OFRECEMOS SEÑOR</h2>
+            <span class="song-notes-sub-label">cuaderno de ensayo</span>
+          </div>
+          <div class="notes-header-actions">
+            <button type="button" id="btnToggleReadOnlyNotes" class="btn-read-only-icon read-only-off" title="Alternar Modo Lectura / Edición">
+              <i data-lucide="book-open"></i>
+            </button>
+            <button type="button" id="closeNotesModalBtn" class="btn-close-notes-icon" aria-label="Cerrar Cuaderno">&times;</button>
+          </div>
+        </div>
+
+        <div class="notes-key-bar-minimal">
+          <span class="lbl-tonalidad">Tonalidad:</span>
+          <input type="text" id="notesKeyInput" placeholder="Ej: Do Mayor" maxlength="40" class="notes-key-input-minimal">
+          <button type="button" id="btnSyncCurrentTranspose" class="btn-sync-key-minimal" title="Copiar el tono que tiene la canción en pantalla">
+            <i data-lucide="refresh-cw"></i> <span>Copiar tono de pantalla</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lienzo Principal / Hoja en Blanco -->
+      <div class="song-notes-editor-wrapper">
+        <div id="notesRichEditor" class="notes-rich-editor" contenteditable="true" data-placeholder="Escribe aquí tus anotaciones personales, acordes corregidos o indicaciones para el grupo de música..."></div>
+      </div>
+
+      <!-- Popovers Flotantes (Aparecen sobre el lienzo, justo encima de la barra de herramientas) -->
+      <div class="notes-popovers-container">
+        <!-- 1. Color de fuente (Imagen 1) -->
+        <div id="notesColorPopover" class="notes-floating-panel notes-color-popover" style="display: none;">
+          <div class="color-popover-header">
+            <span>Color de fuente</span>
+            <div class="color-popover-header-actions">
+              <label class="color-picker-custom-label" title="Color personalizado">
+                <input type="color" id="notesCustomColorInput" value="#3b82f6" style="display:none;">
+                <span class="color-three-dots">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-blue"></span>
+                </span>
+              </label>
+              <button type="button" id="btnCloseColorPopover" class="color-popover-close" aria-label="Cerrar">&times;</button>
+            </div>
+          </div>
+          <div class="color-popover-swatches">
+            <button type="button" class="btn-fmt-color color-black" data-color="#000000" title="Negro"></button>
+            <button type="button" class="btn-fmt-color color-white" data-color="#ffffff" title="Blanco"></button>
+            <button type="button" class="btn-fmt-color color-red" data-color="#ef4444" title="Rojo"></button>
+            <button type="button" class="btn-fmt-color color-orange" data-color="#f97316" title="Naranja"></button>
+            <button type="button" class="btn-fmt-color color-yellow" data-color="#d97706" title="Amarillo"></button>
+            <button type="button" class="btn-fmt-color color-green" data-color="#10b981" title="Verde"></button>
+            <button type="button" class="btn-fmt-color color-blue" data-color="#3b82f6" title="Azul"></button>
+          </div>
+        </div>
+
+        <!-- 2. Etiquetas de voces (Imagen 2) -->
+        <div id="notesTagsPopover" class="notes-floating-panel tags-floating-panel" style="display: none;">
+          <button type="button" class="tag-insert-btn tag-todos" data-tag="[Todos] ">[Todos]</button>
+          <button type="button" class="tag-insert-btn tag-hombres" data-tag="[Hombres] ">[Hombres]</button>
+          <button type="button" class="tag-insert-btn tag-mujeres" data-tag="[Mujeres] ">[Mujeres]</button>
+          <button type="button" class="tag-insert-btn tag-solista" data-tag="[Solista] ">[Solista]</button>
+        </div>
+
+        <!-- 3. Opciones de inserción (Imagen 3) -->
+        <div id="notesInsertPopover" class="notes-floating-panel insert-floating-panel" style="display: none;">
+          <button type="button" id="btnInsertOnlyLyrics" class="btn-toolbar-action btn-insert-only-lyrics">
+            <i data-lucide="file-text"></i> Insertar Letra
+          </button>
+          <button type="button" id="btnInsertLyricsAndChords" class="btn-toolbar-action btn-insert-chords">
+            <i data-lucide="music"></i> Letra + Acordes
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de Herramientas Inferior Minimalista (Exacta a las Imágenes) -->
+      <div class="song-notes-toolbar-minimal" id="songNotesToolbar">
+        <button type="button" class="btn-fmt-mini" id="btnFmtBold" title="Negrita"><b>B</b></button>
+        <button type="button" class="btn-fmt-mini" id="btnFmtItalic" title="Cursiva"><i>I</i></button>
+        <button type="button" class="btn-fmt-mini" id="btnFmtUnderline" title="Subrayado"><u>U</u></button>
+        <button type="button" class="btn-fmt-mini btn-fmt-color-trigger" id="btnToggleColorPopover" title="Color de Fuente">
+          <span class="color-icon-t" id="currentColorIconT" style="border-bottom: 2px solid #3b82f6;">T</span>
+        </button>
+        <button type="button" class="btn-fmt-mini" id="btnFmtSizePlus" title="Aumentar tamaño">+A</button>
+        <button type="button" class="btn-fmt-mini" id="btnFmtSizeMinus" title="Reducir tamaño">-A</button>
+        <button type="button" class="btn-fmt-text-trigger" id="btnToggleTagsPopover">Etiqueta</button>
+        <button type="button" class="btn-fmt-text-trigger" id="btnToggleInsertPopover">Insertar</button>
+      </div>
+
+      <!-- Pie del Cuaderno -->
+      <div class="song-notes-footer-minimal">
+        <button type="button" id="btnClearNotes" class="btn-clear-notes" title="Limpiar todo el cuaderno">
+          <i data-lucide="trash-2"></i> <span>Limpiar</span>
+        </button>
+        <div class="footer-actions-right">
+          <button type="button" id="btnCloseNotesModal" class="btn-cancel-notes" title="Cancelar">
+            <i data-lucide="x"></i> <span>Cancelar</span>
+          </button>
+          <button type="button" id="btnSaveNotes" class="btn-save-notes" title="Guardar Cuaderno">
+            <i data-lucide="save"></i> <span>Guardar Cuaderno</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
     </div>
 
   <!-- Botón Flotante de Sugerencias/Correcciones -->
