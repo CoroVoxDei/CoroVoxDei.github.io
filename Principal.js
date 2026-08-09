@@ -4691,6 +4691,93 @@ document.addEventListener("DOMContentLoaded", () => {
     resetHideTimer();
   });
 
+  /* =========================================================
+     MANEJO DE TECLADO MÓVIL EN CUADERNO DE NOTAS
+     Ajusta la posición para que la barra de herramientas quede pegada al teclado (Imagen 2)
+  ========================================================== */
+  function updateNotesMobileKeyboardLayout() {
+    if (!popupSongNotesModal || !popupSongNotesModal.classList.contains("active")) return;
+
+    const card = popupSongNotesModal.querySelector(".song-notes-card");
+    if (!card) return;
+
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+    const vv = window.visualViewport;
+    const activeEl = document.activeElement;
+    const isEditing = activeEl && (activeEl === notesRichEditor || activeEl === notesKeyInput || card.contains(activeEl));
+
+    // Si está en móvil y se detecta reducción de altura por el teclado o foco activo en editor
+    const keyboardDetected = isMobile && (isEditing || (vv && window.innerHeight - vv.height > 100));
+
+    if (keyboardDetected && vv) {
+      popupSongNotesModal.classList.add("keyboard-open");
+      card.classList.add("keyboard-open");
+
+      // Posicionar el modal acorde al área visible del visualViewport
+      popupSongNotesModal.style.position = "fixed";
+      popupSongNotesModal.style.top = `${vv.offsetTop}px`;
+      popupSongNotesModal.style.left = `${vv.offsetLeft}px`;
+      popupSongNotesModal.style.width = `${vv.width}px`;
+      popupSongNotesModal.style.height = `${vv.height}px`;
+
+      card.style.maxHeight = `${vv.height}px`;
+      card.style.height = `${vv.height}px`;
+
+      // Scroll para mantener el cursor visible
+      if (notesRichEditor && activeEl === notesRichEditor) {
+        try {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            const editorRect = notesRichEditor.getBoundingClientRect();
+            if (rect && (rect.bottom > editorRect.bottom || rect.top < editorRect.top)) {
+              const targetNode = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+              targetNode?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+          }
+        } catch (e) {}
+      }
+    } else {
+      resetNotesMobileKeyboardLayout();
+    }
+  }
+
+  function resetNotesMobileKeyboardLayout() {
+    if (!popupSongNotesModal) return;
+    const card = popupSongNotesModal.querySelector(".song-notes-card");
+    
+    popupSongNotesModal.classList.remove("keyboard-open");
+    if (card) card.classList.remove("keyboard-open");
+
+    popupSongNotesModal.style.position = "";
+    popupSongNotesModal.style.top = "";
+    popupSongNotesModal.style.left = "";
+    popupSongNotesModal.style.width = "";
+    popupSongNotesModal.style.height = "";
+
+    if (card) {
+      card.style.maxHeight = "";
+      card.style.height = "";
+    }
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateNotesMobileKeyboardLayout);
+    window.visualViewport.addEventListener("scroll", updateNotesMobileKeyboardLayout);
+  }
+  window.addEventListener("resize", updateNotesMobileKeyboardLayout);
+
+  [notesRichEditor, notesKeyInput].forEach(elem => {
+    elem?.addEventListener("focus", () => {
+      setTimeout(updateNotesMobileKeyboardLayout, 50);
+      setTimeout(updateNotesMobileKeyboardLayout, 250);
+    });
+    elem?.addEventListener("blur", () => {
+      setTimeout(updateNotesMobileKeyboardLayout, 100);
+    });
+  });
+
   const hideAllPopovers = () => {
     if (notesColorPopover) notesColorPopover.style.display = "none";
     if (notesTagsPopover) notesTagsPopover.style.display = "none";
@@ -4699,6 +4786,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const closeNotesModal = () => {
     popupSongNotesModal?.classList.remove("active");
+    resetNotesMobileKeyboardLayout();
     hideAllPopovers();
     resetHideTimer();
   };
@@ -5111,6 +5199,38 @@ document.addEventListener("DOMContentLoaded", () => {
     checkSongNotesBadge(songTitle);
     closeNotesModal();
   });
+
+  // Auto-guardado de notas al escribir
+  let autoSaveTimeout = null;
+  const triggerAutoSaveNotes = () => {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      const songTitle = window.currentOpenedSongTitle;
+      if (!songTitle) return;
+      const key = getSongNotesStorageKey(songTitle);
+      if (!key) return;
+
+      const keyVal = notesKeyInput ? notesKeyInput.value : "";
+      const richVal = notesRichEditor ? notesRichEditor.innerHTML : "";
+      const textVal = notesRichEditor ? notesRichEditor.innerText : "";
+
+      if (!keyVal.trim() && !textVal.trim()) {
+        localStorage.removeItem(key);
+      } else {
+        const dataToSave = {
+          keyNotes: keyVal,
+          richNotes: richVal,
+          textNotes: textVal,
+          updatedAt: Date.now()
+        };
+        localStorage.setItem(key, JSON.stringify(dataToSave));
+      }
+      checkSongNotesBadge(songTitle);
+    }, 600);
+  };
+
+  notesRichEditor?.addEventListener("input", triggerAutoSaveNotes);
+  notesKeyInput?.addEventListener("input", triggerAutoSaveNotes);
 
   // Limpiar cuaderno de notas
   btnClearNotes?.addEventListener("click", () => {
