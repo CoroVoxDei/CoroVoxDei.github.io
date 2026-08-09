@@ -118,13 +118,18 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   cursor: pointer;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  color: #ffffff;
+}
+
+body.light-mode .top-right .icon-btn {
+  color: #374151;
 }
 
 .top-right .icon-btn:hover {
@@ -133,14 +138,129 @@ body {
 }
 
 .top-right .icon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: block;
   transition: filter 0.2s ease;
 }
 
+.top-right .icon-btn svg.icon,
+.top-right .icon-btn i.icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  transition: color 0.2s ease, stroke 0.2s ease;
+}
+
 .top-right .icon-btn:hover .icon {
   filter: brightness(0) saturate(100%) invert(20%) sepia(90%) saturate(2000%) hue-rotate(345deg);
+}
+
+.top-right .icon-btn:hover svg.icon,
+.top-right .icon-btn:hover i.icon {
+  color: #a51e17;
+  stroke: #a51e17;
+}
+
+/* ======= Botón Perfil / Auth en Header (Topbar) ======= */
+.topbar-auth-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  outline: none;
+  flex-shrink: 0;
+}
+
+body.light-mode .topbar-auth-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1f2937;
+}
+
+.topbar-auth-btn:hover {
+  transform: scale(1.08);
+  border-color: rgba(165, 30, 23, 0.6);
+  box-shadow: 0 4px 14px rgba(165, 30, 23, 0.3);
+}
+
+.topbar-user-logged-out {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.default-avatar-svg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.topbar-user-logged-in {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(165, 30, 23, 0.8);
+}
+
+.topbar-user-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a51e17 0%, #d32f2f 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.topbar-user-status-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 9px;
+  height: 9px;
+  background-color: #10b981;
+  border: 1.5px solid #121212;
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+}
+
+body.light-mode .topbar-user-status-dot {
+  border-color: #ffffff;
 }
 
 /* ======= Logo redondo derecho ======= */
@@ -1818,6 +1938,1287 @@ body.light-mode .popup-action-btn {
   visibility: hidden;
   transform: translateY(10px);
   pointer-events: none;
+}
+
+/* =========================================
+   6.3 CUADERNO DE ENSAYO Y NOTAS POR CANCIÓN
+========================================= */
+.popup-notes-wrapper {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+}
+
+.popup-notes-wrapper.hidden-fab {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.notes-fab {
+  position: relative;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: rgba(18, 18, 18, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+body.light-mode .notes-fab {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1f2937;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.notes-fab:hover {
+  transform: scale(1.08);
+  border-color: rgba(165, 30, 23, 0.6);
+  box-shadow: 0 8px 25px rgba(165, 30, 23, 0.35);
+}
+
+.notes-badge-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 13px;
+  height: 13px;
+  background-color: #10b981;
+  border: 2.5px solid #121212;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.9);
+}
+
+body.light-mode .notes-badge-dot {
+  border-color: #ffffff;
+}
+
+/* Modal del Cuaderno de Ensayo */
+.song-notes-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 99999 !important; /* Garantizar abrir delante de la canción siempre */
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.song-notes-modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.song-notes-card {
+  position: relative;
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  width: 95%;
+  max-width: 860px;
+  height: 90vh;
+  max-height: 850px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
+  color: #f3f4f6;
+  animation: modalPopUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.light-mode .song-notes-card {
+  background: #ffffff;
+  color: #111827;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+
+.song-notes-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #9ca3af;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+body.light-mode .song-notes-close {
+  background: rgba(0, 0, 0, 0.05);
+  color: #4b5563;
+}
+
+.song-notes-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+/* Encabezado */
+.song-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px 14px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+body.light-mode .song-notes-header {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.song-notes-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.song-notes-icon-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(165, 30, 23, 0.85) 0%, rgba(211, 47, 47, 0.95) 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(165, 30, 23, 0.35);
+}
+
+.song-notes-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: inherit;
+}
+
+.song-notes-sub {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  margin: 2px 0 0 0;
+}
+
+/* ==========================================
+   ESTILO MINIMALISTA CUADERNO DE ENSAYO (EXACTO A IMÁGENES DE REFERENCIA)
+   ========================================== */
+
+/* Modal Content Container */
+.modal-content.song-notes-card.minimal-notes-theme {
+  padding: 0 !important;
+  border-radius: 16px;
+  background: #ffffff !important;
+  color: #000000 !important;
+  overflow: hidden;
+  width: 100%;
+  max-width: 650px;
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  margin: auto;
+}
+
+/* Header Encabezado Elegante & Profesional */
+.song-notes-header-minimal {
+  padding: 18px 22px 14px 22px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.notes-header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.notes-title-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.song-notes-main-heading {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--primary, #A51E17); /* Rojo característico de la app */
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  word-break: break-word;
+}
+
+.song-notes-sub-label {
+  font-size: 0.88rem;
+  color: #6b7280;
+  display: block;
+  margin-top: 3px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Botones de acción en el encabezado (Modo lectura y X para cerrar) */
+.notes-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-read-only-icon {
+  width: 38px;
+  height: 38px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-read-only-icon:hover {
+  background: #e5e7eb;
+  color: #111827;
+  transform: scale(1.05);
+}
+
+.btn-read-only-icon.read-only-on {
+  background: #10b981;
+  border-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.btn-read-only-icon.read-only-off {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #6b7280;
+}
+
+.btn-read-only-icon.read-only-off:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-close-notes-icon {
+  width: 38px;
+  height: 38px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 1.3rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-close-notes-icon:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: scale(1.05);
+}
+
+/* Barra de Tonalidad Limpia y Profesional (Sin fondo gris feo) */
+.notes-key-bar-minimal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 4px 0 0 0;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.lbl-tonalidad {
+  font-size: 0.9rem;
+  color: #111827;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notes-key-input-minimal {
+  flex: 1;
+  min-width: 80px;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 0.9rem;
+  font-weight: 400; /* Texto normal, no negrita */
+  color: #111827;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.notes-key-input-minimal:focus {
+  border-color: var(--primary, #A51E17);
+  box-shadow: 0 0 0 3px rgba(165, 30, 23, 0.12);
+}
+
+.btn-sync-key-minimal {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-sync-key-minimal i,
+.btn-sync-key-minimal svg {
+  color: var(--primary, #A51E17);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.btn-sync-key-minimal:hover {
+  background: #fef2f2;
+  border-color: rgba(165, 30, 23, 0.4);
+  color: var(--primary, #A51E17);
+  box-shadow: 0 2px 6px rgba(165, 30, 23, 0.1);
+}
+
+/* Lienzo Blanco / Editor */
+.song-notes-card.minimal-notes-theme .song-notes-editor-wrapper {
+  background: #ffffff !important;
+  flex: 1;
+  min-height: 180px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.song-notes-card.minimal-notes-theme .notes-rich-editor {
+  color: #000000 !important;
+  font-size: 1rem;
+}
+
+/* Popovers Flotantes sobre la barra de herramientas */
+.notes-popovers-container {
+  position: relative;
+  width: 100%;
+}
+
+.notes-floating-panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  animation: popoverSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  overflow-x: auto;
+}
+
+.notes-floating-panel.tags-floating-panel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+}
+
+.notes-floating-panel.insert-floating-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ffffff;
+}
+
+/* Barra de Herramientas Inferior Minimalista */
+.song-notes-toolbar-minimal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #ffffff;
+  border-top: 1px solid #d1d5db;
+  border-bottom: 1px solid #d1d5db;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.song-notes-toolbar-minimal::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-fmt-mini {
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  letter-spacing: 0;
+  min-width: 30px;
+  line-height: 1;
+}
+
+.btn-fmt-mini:hover {
+  background: #f3f4f6;
+  color: #000000;
+}
+
+.btn-fmt-mini.active,
+.btn-fmt.active {
+  background: var(--primary, #A51E17) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 6px rgba(165, 30, 23, 0.25) !important;
+}
+
+.color-icon-t {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.btn-fmt-text-trigger {
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap !important;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-fmt-text-trigger:hover {
+  background: #f3f4f6;
+  color: #a51e17;
+}
+
+/* Pie del Cuaderno Minimalista */
+.song-notes-footer-minimal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #ffffff;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+body.light-mode .song-notes-sub {
+  color: #6b7280;
+}
+
+/* Tono de Ensayo Pill y Contenedor Superior */
+.song-notes-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.song-notes-key-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+/* Botón Modo Solo Lectura (Bloqueo de Teclado en Celulares) */
+.btn-readonly-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-readonly-toggle.read-only-on {
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+}
+
+.btn-readonly-toggle.read-only-off {
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
+}
+
+.btn-readonly-toggle:hover {
+  transform: scale(1.03);
+  filter: brightness(1.2);
+}
+
+/* Banner Indicador de Solo Lectura */
+.read-only-banner {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px dashed rgba(59, 130, 246, 0.35);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: #93c5fd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+body.light-mode .read-only-banner {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1e40af;
+}
+
+.notes-rich-editor.read-only-mode {
+  cursor: default;
+  user-select: text;
+}
+
+body.light-mode .song-notes-key-pill {
+  background: #f3f4f6;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.key-pill-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #d1d5db;
+  white-space: nowrap;
+}
+
+body.light-mode .key-pill-label {
+  color: #374151;
+}
+
+.notes-key-input {
+  width: 110px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  outline: none;
+}
+
+body.light-mode .notes-key-input {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #111827;
+}
+
+.btn-sync-key {
+  background: rgba(165, 30, 23, 0.18);
+  border: 1px solid rgba(165, 30, 23, 0.4);
+  color: #f87171;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-sync-key:hover {
+  background: rgba(165, 30, 23, 0.35);
+  color: #ffffff;
+}
+
+/* Barra de Herramientas Estilo Word / Block de Notas Minimalista */
+.song-notes-toolbar-full {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  background: rgba(0, 0, 0, 0.22);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Popover Flotante de Color de Fuente (Estilo Samsung Notes) */
+.notes-color-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: popoverSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 270px;
+}
+
+body.light-mode .notes-color-popover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes popoverSlideUp {
+  from { opacity: 0; transform: translate(-50%, 8px) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.color-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111827;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 6px;
+}
+
+.color-popover-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-popover-close {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.color-popover-swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-color-popover-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f3f4f6;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+body.light-mode .btn-color-popover-trigger {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+}
+
+.btn-color-popover-trigger:hover {
+  background: rgba(165, 30, 23, 0.25);
+  border-color: #a51e17;
+  color: #ffffff;
+}
+
+.color-dot-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  display: inline-block;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.color-picker-custom-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.color-picker-custom-label:hover {
+  transform: scale(1.2);
+}
+
+.color-rainbow-circle {
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.light-mode .song-notes-toolbar-full {
+  background: #f3f4f6;
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Botones de Inserción */
+.btn-toolbar-action {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-insert-only-lyrics {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.btn-insert-only-lyrics:hover {
+  background: rgba(16, 185, 129, 0.25);
+  color: #ffffff;
+}
+
+.btn-insert-chords {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.btn-insert-chords:hover {
+  background: rgba(59, 130, 246, 0.25);
+  color: #ffffff;
+}
+
+/* Botones de Formato Texto */
+.format-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-fmt {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3f4f6;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+body.light-mode .btn-fmt {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #1f2937;
+}
+
+.btn-fmt:hover {
+  background: rgba(165, 30, 23, 0.3);
+  border-color: #a51e17;
+  color: #ffffff;
+}
+
+.fmt-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 4px;
+}
+
+body.light-mode .fmt-divider {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Paleta de Colores de Texto */
+.btn-fmt-color {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.btn-fmt-color:hover {
+  transform: scale(1.2);
+  border-color: #ffffff;
+}
+
+.color-black { background: #000000; border: 1.5px solid #3f3f46; }
+.color-white { background: #ffffff; border: 1.5px solid #d1d5db; }
+.color-red { background: #ef4444; border: 1.5px solid #dc2626; }
+.color-orange { background: #f97316; border: 1.5px solid #ea580c; }
+.color-yellow { background: #d97706; border: 1.5px solid #b45309; }
+.color-green { background: #10b981; border: 1.5px solid #059669; }
+.color-blue { background: #3b82f6; border: 1.5px solid #2563eb; }
+.color-reset { background: #e5e7eb; color: #374151; border: 1.5px solid #d1d5db; }
+
+.color-three-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color-three-dots:hover {
+  transform: scale(1.15);
+  border-color: #a51e17;
+}
+
+.color-three-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.color-three-dots .dot-red { background: #ef4444; }
+.color-three-dots .dot-yellow { background: #d97706; }
+.color-three-dots .dot-blue { background: #3b82f6; }
+
+/* Etiquetas de Voces Simplificadas */
+.tags-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag-insert-btn {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.tag-insert-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
+}
+
+.tag-todos { background: #4c1d95; color: #ddd6fe; }
+.tag-hombres { background: #1e3a8a; color: #93c5fd; }
+.tag-mujeres { background: #831843; color: #f472b6; }
+.tag-solista { background: #7c2d12; color: #fdba74; }
+
+/* Lienzo Principal Editor (Contenteditable / Block de Notas) */
+.song-notes-editor-wrapper {
+  flex: 1;
+  min-height: 280px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.28);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+body.light-mode .song-notes-editor-wrapper {
+  background: #ffffff;
+}
+
+.notes-rich-editor {
+  flex: 1;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #f3f4f6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  min-height: 240px;
+}
+
+body.light-mode .notes-rich-editor {
+  color: #111827;
+}
+
+/* Placeholder para div contenteditable */
+.notes-rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #6b7280;
+  font-style: italic;
+  pointer-events: none;
+  display: block;
+}
+
+body.light-mode .notes-rich-editor:empty::before {
+  color: #9ca3af;
+}
+
+/* Estilos de Acordes dentro del Editor */
+.notes-rich-editor .chord,
+.notes-rich-editor .acorde,
+.inserted-song-block .chord,
+.inserted-song-block .acorde {
+  color: #d97706 !important;
+  font-weight: 700 !important;
+  font-family: 'Roboto Mono', 'Consolas', monospace !important;
+  display: inline !important;
+}
+
+.inserted-song-block {
+  margin: 10px 0;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  font-family: 'Roboto Mono', 'Consolas', monospace;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #1e293b;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* Estilos de Etiquetas dentro del Editor */
+.note-voice-tag {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin: 0 4px;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.note-voice-tag.tag-todos { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+.note-voice-tag.tag-hombres { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.note-voice-tag.tag-mujeres { background: #fce7f3; color: #9d174d; border: 1px solid #fbcfe8; }
+.note-voice-tag.tag-solista { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+
+/* Pie del Cuaderno */
+.song-notes-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .song-notes-footer {
+  border-top-color: rgba(0, 0, 0, 0.08);
+  background: #f9fafb;
+}
+
+.footer-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-clear-notes {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 0.8rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-clear-notes:hover {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.btn-cancel-notes {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+body.light-mode .btn-cancel-notes {
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #4b5563;
+}
+
+.btn-cancel-notes:hover {
+  background: #f3f4f6;
+}
+
+.btn-save-notes {
+  background: linear-gradient(135deg, #a51e17 0%, #d32f2f 100%);
+  color: #ffffff;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(165, 30, 23, 0.4);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-save-notes:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(165, 30, 23, 0.5);
+}
+
+@media (max-width: 1024px) {
+  .popup-notes-wrapper {
+    bottom: 20px;
+    left: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .song-notes-modal-overlay {
+    padding: 6px;
+  }
+
+  .modal-content.song-notes-card.minimal-notes-theme {
+    max-height: calc(100vh - 12px);
+    max-height: calc(100dvh - 12px);
+    height: calc(100dvh - 12px);
+    border-radius: 12px;
+  }
+
+  .song-notes-header-minimal {
+    padding: 12px 14px 10px 14px;
+    gap: 8px;
+  }
+
+  .song-notes-main-heading {
+    font-size: 1.25rem;
+  }
+
+  /* Ocultar texto largo en botón "Copiar tono de pantalla" en celulares */
+  .btn-sync-key-minimal span {
+    display: none !important;
+  }
+
+  .btn-sync-key-minimal {
+    padding: 7px 10px;
+    gap: 0;
+    justify-content: center;
+    min-width: 36px;
+  }
+
+  /* Pie del cuaderno en celulares: sustituir textos por íconos limpios */
+  .btn-clear-notes span,
+  .btn-cancel-notes span,
+  .btn-save-notes span {
+    display: none !important;
+  }
+
+  .btn-clear-notes,
+  .btn-cancel-notes,
+  .btn-save-notes {
+    padding: 8px 12px;
+    gap: 0;
+    justify-content: center;
+    min-width: 40px;
+    border-radius: 8px;
+  }
+
+  .btn-clear-notes i,
+  .btn-clear-notes svg,
+  .btn-cancel-notes i,
+  .btn-cancel-notes svg,
+  .btn-save-notes i,
+  .btn-save-notes svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .song-notes-footer-minimal {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .song-notes-toolbar-minimal {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .popup-notes-wrapper {
+    bottom: 25px;
+    left: 25px;
+  }
+  .notes-fab {
+    width: 50px;
+    height: 50px;
+  }
+  .song-notes-card {
+    border-radius: 16px;
+    max-height: 94vh;
+  }
+  .song-notes-header, .song-notes-body, .song-notes-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .popup-notes-wrapper {
+    bottom: 15px;
+    left: 15px;
+  }
 }
 
 /* Botón principal (GEAR) */
