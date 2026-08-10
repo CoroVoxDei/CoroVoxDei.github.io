@@ -534,6 +534,12 @@ function updateIcon(el, iconName) {
     }
 }
 
+window.isYouTubeUrl = function(url) {
+    if (!url || typeof url !== "string") return false;
+    const lower = url.toLowerCase().trim();
+    return lower.includes("youtube.com") || lower.includes("youtu.be");
+};
+
 window.toggleAudio = function(url, btn) {
     const audioProgress = document.getElementById("audioProgress");
     const audioTime = document.getElementById("audioTime");
@@ -1696,6 +1702,7 @@ function renderizarRepertorio(lista, esBusqueda = false) {
       section.classList.add("song");
       section.dataset.index = index;
       if (resolvedSong.audio) section.dataset.audio = resolvedSong.audio;
+      if (resolvedSong.youtube) section.dataset.youtube = resolvedSong.youtube;
       if (resolvedSong.tags) section.dataset.tags = resolvedSong.tags;
       if (resolvedSong.category) section.dataset.category = resolvedSong.category;
       if (resolvedSong.type) section.dataset.type = resolvedSong.type;
@@ -1915,10 +1922,16 @@ function getGlobalSongsList() {
     const info = window.getSongInfo(songSection);
     const lyrics = songSection.querySelector(".lyrics-hidden, .lyrics, .lyrics1")?.innerHTML.trim() || "";
     const type = songSection.dataset.type || "";
-    const audio = songSection.dataset.audio || "";
+    const rawAudio = songSection.dataset.audio || "";
+    let youtube = songSection.dataset.youtube || "";
+    let audio = rawAudio;
+    if (!youtube && window.isYouTubeUrl(rawAudio)) {
+      youtube = rawAudio;
+      audio = "";
+    }
     const tags = songSection.dataset.tags || window.getSongTag(songSection) || "";
     const category = songSection.dataset.category || "";
-    return { id: info.id, title: info.title, author: info.author, lyrics, type, audio, tags, category };
+    return { id: info.id, title: info.title, author: info.author, lyrics, type, audio, youtube, tags, category };
   }).filter(s => s.title);
 }
 
@@ -2172,7 +2185,7 @@ window.renderVerRepertorioDetalle = function() {
       infoA.onclick = (e) => {
         e.preventDefault();
         const latestSong = window.resolveSong(song) || song;
-        window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags, target.songs, idx);
+        window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags, target.songs, idx, latestSong.youtube);
       };
 
       // Limpiar doble paréntesis en el autor si existieran
@@ -2328,6 +2341,25 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
 
   const emailEl = document.getElementById("shareEmail");
   if (emailEl) emailEl.href = `mailto:?subject=${encodeURIComponent(`Repertorio de cantos: ${nombreRepertorio}`)}&body=${encodedText}`;
+
+  // Configurar botón de Código QR
+  const qrBtn = document.getElementById("shareQrCode");
+  const qrContainer = document.getElementById("shareQrContainer");
+  const qrImg = document.getElementById("shareQrImg");
+
+  if (qrContainer) qrContainer.style.display = "none";
+
+  if (qrBtn && qrImg && qrContainer) {
+    qrBtn.onclick = (e) => {
+      e.preventDefault();
+      if (qrContainer.style.display === "none" || !qrContainer.style.display) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(shareUrl)}`;
+        qrContainer.style.display = "block";
+      } else {
+        qrContainer.style.display = "none";
+      }
+    };
+  }
 
   // Configurar botón de compartir nativo del sistema (Web Share API)
   const nativeBtn = document.getElementById("btnNativeShare");
@@ -3161,11 +3193,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (topbarUserInitials) topbarUserInitials.style.display = "none";
       } else {
-        if (topbarUserAvatarImg) topbarUserAvatarImg.style.display = "none";
-        if (topbarUserInitials) {
-          topbarUserInitials.style.display = "flex";
-          topbarUserInitials.textContent = initials;
+        if (topbarUserAvatarImg) {
+          topbarUserAvatarImg.src = "Principal/usuario.png";
+          topbarUserAvatarImg.style.display = "block";
         }
+        if (topbarUserInitials) topbarUserInitials.style.display = "none";
       }
 
       topbarAuthBtn.title = `Mi Perfil (${displayName})`;
@@ -3271,11 +3303,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (initialsEl) initialsEl.style.display = "none";
     } else {
-      if (avatarImgEl) avatarImgEl.style.display = "none";
-      if (initialsEl) {
-        initialsEl.style.display = "block";
-        initialsEl.textContent = initials;
+      if (avatarImgEl) {
+        avatarImgEl.src = "Principal/usuario.png";
+        avatarImgEl.style.display = "block";
       }
+      if (initialsEl) initialsEl.style.display = "none";
     }
 
     if (parishValEl) parishValEl.textContent = (profile && profile.parish) || "Sin especificar";
@@ -3897,6 +3929,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnToolColumns = document.getElementById("btnToolColumns");
   const btnToolAudio = document.getElementById("btnToolAudio");
   const menuItemAudio = document.getElementById("menuItemAudio");
+  const btnToolYoutube = document.getElementById("btnToolYoutube");
+  const menuItemYoutube = document.getElementById("menuItemYoutube");
   
   const panelSize = document.getElementById("panelSize");
   const panelSpacing = document.getElementById("panelSpacing");
@@ -3924,6 +3958,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnToolSpacing?.classList.remove("active");
     btnToolTranspose?.classList.remove("active");
     btnToolAudio?.classList.remove("active");
+    btnToolYoutube?.classList.remove("active");
     document.querySelectorAll(".menu-item-container").forEach(c => c.classList.remove("active-container"));
   };
 
@@ -4053,7 +4088,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       let type = item.dataset.type || "";
-      let audio = item.dataset.audio || "";
+      let rawAudio = item.dataset.audio || "";
+      let youtube = item.dataset.youtube || "";
+      let audio = rawAudio;
+      if (!youtube && window.isYouTubeUrl(rawAudio)) {
+        youtube = rawAudio;
+        audio = "";
+      }
       let tags = item.dataset.tags || (typeof window.getSongTag === "function" ? window.getSongTag(item) : "");
 
       // Si falta la letra o info, buscar en allSongs como fallback de precisión
@@ -4068,21 +4109,30 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!author) author = matchInfo.author;
           if (!type) type = matchInfo.type;
           if (!audio) audio = matchInfo.audio;
+          if (!youtube) youtube = matchInfo.youtube;
           if (!tags) tags = matchInfo.tags;
         }
       }
 
-      return { title, lyrics, author, type, audio, tags };
+      return { title, lyrics, author, type, audio, youtube, tags };
     } 
     // Si es un objeto JS (canción de repertorio guardado o activo)
     else if (typeof item === "object") {
       const resolved = (typeof window.resolveSong === "function" ? window.resolveSong(item) : item) || item;
+      let rawAudio = resolved.audio || "";
+      let youtube = resolved.youtube || "";
+      let audio = rawAudio;
+      if (!youtube && window.isYouTubeUrl(rawAudio)) {
+        youtube = rawAudio;
+        audio = "";
+      }
       return {
         title: resolved.title || "",
         lyrics: resolved.lyrics || "",
         author: resolved.author || "",
         type: resolved.type || "",
-        audio: resolved.audio || "",
+        audio: audio,
+        youtube: youtube,
         tags: resolved.tags || "",
         category: resolved.category || ""
       };
@@ -4143,7 +4193,8 @@ document.addEventListener("DOMContentLoaded", () => {
         songData.audio,
         songData.tags,
         window.currentSongSequence,
-        newIndex
+        newIndex,
+        songData.youtube
       );
 
       // Desplazar suavemente el popup al inicio superior
@@ -4154,7 +4205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl, tags, sequence, index) {
+  window.abrirLetra = function(titulo, letraHtml, autor, tipo, audioUrl, tags, sequence, index, youtubeUrl) {
     const popup = document.getElementById("popupLetra");
     if (!popup) return;
     
@@ -4232,18 +4283,26 @@ document.addEventListener("DOMContentLoaded", () => {
       tagContainer.innerHTML = tagHtml;
     }
 
+    let effectiveAudio = audioUrl || "";
+    let effectiveYoutube = youtubeUrl || "";
+
+    if (!effectiveYoutube && window.isYouTubeUrl(effectiveAudio)) {
+      effectiveYoutube = effectiveAudio;
+      effectiveAudio = "";
+    }
+
     if (menuItemAudio && btnToolAudio) {
         const audioProgress = document.getElementById("audioProgress");
         const audioTime = document.getElementById("audioTime");
 
-        if (audioUrl) {
+        if (effectiveAudio && !window.isYouTubeUrl(effectiveAudio)) {
             menuItemAudio.style.display = "flex";
             btnToolAudio.onclick = (e) => {
                 e.stopPropagation();
-                window.toggleAudio(audioUrl, btnToolAudio);
+                window.toggleAudio(effectiveAudio, btnToolAudio);
             };
             // Reset icon if it was playing another song
-            if (currentAudio && currentAudio.dataset.url === audioUrl) {
+            if (currentAudio && currentAudio.dataset.url === effectiveAudio) {
                 if (!currentAudio.paused) {
                     btnToolAudio.classList.add("playing");
                     btnToolAudio.innerHTML = SVG_PAUSE;
@@ -4260,6 +4319,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } else {
             menuItemAudio.style.display = "none";
+        }
+    }
+
+    if (menuItemYoutube && btnToolYoutube) {
+        if (effectiveYoutube) {
+            menuItemYoutube.style.display = "flex";
+            btnToolYoutube.title = "Ver / Escuchar en YouTube";
+            btnToolYoutube.setAttribute("aria-label", "Ver / Escuchar en YouTube");
+            btnToolYoutube.onclick = (e) => {
+                e.stopPropagation();
+                window.open(effectiveYoutube, "_blank");
+            };
+        } else {
+            menuItemYoutube.style.display = "none";
         }
     }
 
@@ -4646,6 +4719,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const songNotesModalTitle = document.getElementById("songNotesModalTitle");
     if (songNotesModalTitle) songNotesModalTitle.textContent = songTitle.toUpperCase();
 
+    const autorText = document.getElementById("popupAutor")?.textContent?.trim() || "";
+    const notesSongAuthorSub = document.getElementById("notesSongAuthorSub");
+    const notesSongSubDot = document.getElementById("notesSongSubDot");
+
+    if (notesSongAuthorSub) {
+      if (autorText) {
+        notesSongAuthorSub.textContent = autorText;
+        notesSongAuthorSub.style.display = "inline";
+        if (notesSongSubDot) notesSongSubDot.style.display = "inline";
+      } else {
+        notesSongAuthorSub.textContent = "";
+        notesSongAuthorSub.style.display = "none";
+        if (notesSongSubDot) notesSongSubDot.style.display = "none";
+      }
+    }
+
     const notesSongTitleSub = document.getElementById("notesSongTitleSub");
     if (notesSongTitleSub) notesSongTitleSub.textContent = "cuaderno de ensayo";
 
@@ -4669,6 +4758,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (notesRichEditor) notesRichEditor.innerHTML = "";
       }
     }
+
+    window.initialNotesState = {
+      key: notesKeyInput ? notesKeyInput.value : "",
+      rich: notesRichEditor ? notesRichEditor.innerHTML : ""
+    };
 
     // Actualizar indicador de tono actual
     const notesCurrentTransDisplay = document.getElementById("notesCurrentTransDisplay");
@@ -4791,11 +4885,39 @@ document.addEventListener("DOMContentLoaded", () => {
     resetHideTimer();
   };
 
-  closeNotesModalBtn?.addEventListener("click", closeNotesModal);
-  btnCloseNotesModal?.addEventListener("click", closeNotesModal);
+  function hasUnsavedNotesChanges() {
+    if (!notesKeyInput || !notesRichEditor) return false;
+    const currentKey = notesKeyInput ? notesKeyInput.value : "";
+    const currentRich = notesRichEditor ? notesRichEditor.innerHTML : "";
+    const initialKey = window.initialNotesState ? window.initialNotesState.key : "";
+    const initialRich = window.initialNotesState ? window.initialNotesState.rich : "";
+    return currentKey !== initialKey || currentRich !== initialRich;
+  }
+
+  const tryCloseNotesModal = async () => {
+    if (hasUnsavedNotesChanges()) {
+      const confirmed = await showConfirmModal({
+        title: "¿Salir sin guardar?",
+        message: "Tienes modificaciones no guardadas en tu cuaderno de ensayo. ¿Deseas salir y descartar los cambios?",
+        confirmText: "Descartar cambios",
+        cancelText: "Seguir editando",
+        danger: true,
+        icon: "alert-triangle"
+      });
+      if (!confirmed) return;
+
+      // Revertir a la versión inicial
+      if (notesKeyInput) notesKeyInput.value = window.initialNotesState ? window.initialNotesState.key : "";
+      if (notesRichEditor) notesRichEditor.innerHTML = window.initialNotesState ? window.initialNotesState.rich : "";
+    }
+    closeNotesModal();
+  };
+
+  closeNotesModalBtn?.addEventListener("click", tryCloseNotesModal);
+  btnCloseNotesModal?.addEventListener("click", tryCloseNotesModal);
 
   popupSongNotesModal?.addEventListener("click", (e) => {
-    if (e.target === popupSongNotesModal) closeNotesModal();
+    if (e.target === popupSongNotesModal) tryCloseNotesModal();
   });
 
   // Estado de Modo Solo Lectura (Opcional, desactivado por defecto)
@@ -5196,45 +5318,26 @@ document.addEventListener("DOMContentLoaded", () => {
       if (typeof showToast === "function") showToast("¡Cuaderno de ensayo guardado!", "success");
     }
 
+    window.initialNotesState = {
+      key: keyVal,
+      rich: richVal
+    };
+
     checkSongNotesBadge(songTitle);
     closeNotesModal();
   });
 
-  // Auto-guardado de notas al escribir
-  let autoSaveTimeout = null;
-  const triggerAutoSaveNotes = () => {
-    clearTimeout(autoSaveTimeout);
-    autoSaveTimeout = setTimeout(() => {
-      const songTitle = window.currentOpenedSongTitle;
-      if (!songTitle) return;
-      const key = getSongNotesStorageKey(songTitle);
-      if (!key) return;
-
-      const keyVal = notesKeyInput ? notesKeyInput.value : "";
-      const richVal = notesRichEditor ? notesRichEditor.innerHTML : "";
-      const textVal = notesRichEditor ? notesRichEditor.innerText : "";
-
-      if (!keyVal.trim() && !textVal.trim()) {
-        localStorage.removeItem(key);
-      } else {
-        const dataToSave = {
-          keyNotes: keyVal,
-          richNotes: richVal,
-          textNotes: textVal,
-          updatedAt: Date.now()
-        };
-        localStorage.setItem(key, JSON.stringify(dataToSave));
-      }
-      checkSongNotesBadge(songTitle);
-    }, 600);
-  };
-
-  notesRichEditor?.addEventListener("input", triggerAutoSaveNotes);
-  notesKeyInput?.addEventListener("input", triggerAutoSaveNotes);
-
   // Limpiar cuaderno de notas
-  btnClearNotes?.addEventListener("click", () => {
-    if (confirm("¿Seguro que deseas limpiar las anotaciones de esta canción?")) {
+  btnClearNotes?.addEventListener("click", async () => {
+    const confirmed = await showConfirmModal({
+      title: "¿Limpiar cuaderno de ensayo?",
+      message: "¿Estás seguro de que deseas borrar todas las anotaciones de esta canción? Esta acción no se puede deshacer.",
+      confirmText: "Sí, limpiar todo",
+      cancelText: "Cancelar",
+      danger: true,
+      icon: "trash-2"
+    });
+    if (confirmed) {
       if (notesKeyInput) notesKeyInput.value = "";
       if (notesRichEditor) notesRichEditor.innerHTML = "";
       const songTitle = window.currentOpenedSongTitle;
@@ -5243,6 +5346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (key) localStorage.removeItem(key);
         checkSongNotesBadge(songTitle);
       }
+      window.initialNotesState = { key: "", rich: "" };
       if (typeof showToast === "function") showToast("Anotaciones borradas", "info");
     }
   });
@@ -5374,6 +5478,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const tipo = songSection.dataset.type || "";
       const audio = songSection.dataset.audio || "";
+      const youtube = songSection.dataset.youtube || "";
       const tags = songSection.dataset.tags || "";
 
       // Determinar la lista de canciones y la posición actual según el contenedor activo
@@ -5396,7 +5501,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      window.abrirLetra(title, lyrics, autor, tipo, audio, tags, seq, songIdx);
+      window.abrirLetra(title, lyrics, autor, tipo, audio, tags, seq, songIdx, youtube);
     }
   });
 
