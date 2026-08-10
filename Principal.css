@@ -262,19 +262,7 @@ body.light-mode .topbar-auth-btn {
 }
 
 .topbar-user-status-dot {
-  position: absolute;
-  bottom: -1px;
-  right: -1px;
-  width: 9px;
-  height: 9px;
-  background-color: #10b981;
-  border: 1.5px solid #121212;
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
-}
-
-body.light-mode .topbar-user-status-dot {
-  border-color: #ffffff;
+  display: none !important;
 }
 
 /* ======= Logo redondo derecho ======= */
