@@ -4007,20 +4007,34 @@ document.addEventListener("DOMContentLoaded", () => {
     window.adjustPopupWidth && window.adjustPopupWidth();
   });
 
-  function getSongNotesStorageKey(title) {
+  function getSongNotesStorageKey(title, author) {
     if (!title) return null;
-    return "song_notes_" + title.trim().toLowerCase().replace(/\s+/g, "_");
+    if (typeof author === "undefined" || author === null || author === "") {
+      author = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
+    }
+    const cleanTitle = title.trim().toLowerCase().replace(/\s+/g, "_");
+    const cleanAuthor = author ? author.trim().toLowerCase().replace(/\s+/g, "_") : "";
+
+    return cleanAuthor ? ("song_notes_" + cleanTitle + "_" + cleanAuthor) : ("song_notes_" + cleanTitle);
   }
 
-  function checkSongNotesBadge(title) {
+  function checkSongNotesBadge(title, author) {
     const dot = document.getElementById("notesBadgeDot");
     if (!dot) return;
-    const key = getSongNotesStorageKey(title);
+    if (typeof author === "undefined" || author === null || author === "") {
+      author = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
+    }
+    const key = getSongNotesStorageKey(title, author);
     if (!key) {
       dot.style.display = "none";
       return;
     }
-    const raw = localStorage.getItem(key);
+    let raw = localStorage.getItem(key);
+    if (!raw && author) {
+      const legacyKey = "song_notes_" + title.trim().toLowerCase().replace(/\s+/g, "_");
+      const legacyRaw = localStorage.getItem(legacyKey);
+      if (legacyRaw) raw = legacyRaw;
+    }
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
@@ -4356,7 +4370,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.renderPopupLyrics();
     window.currentOpenedSongTitle = titulo;
-    checkSongNotesBadge(titulo);
+    window.currentOpenedSongAuthor = autor || "";
+    checkSongNotesBadge(titulo, autor);
     popup.classList.add("active");
     if (window.lucide) window.lucide.createIcons();
     resetHideTimer();
@@ -4715,11 +4730,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentTitleEl = document.getElementById("popupTitulo");
       window.currentOpenedSongTitle = currentTitleEl ? currentTitleEl.textContent : "";
     }
+    if (!window.currentOpenedSongAuthor) {
+      const currentAuthorEl = document.getElementById("popupAutor");
+      window.currentOpenedSongAuthor = currentAuthorEl ? currentAuthorEl.textContent?.trim() : "";
+    }
     const songTitle = window.currentOpenedSongTitle || document.getElementById("popupTitulo")?.textContent || "TE OFRECEMOS SEÑOR";
+    const songAuthor = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
     const songNotesModalTitle = document.getElementById("songNotesModalTitle");
     if (songNotesModalTitle) songNotesModalTitle.textContent = songTitle.toUpperCase();
 
-    const autorText = document.getElementById("popupAutor")?.textContent?.trim() || "";
+    const autorText = songAuthor;
     const notesSongAuthorSub = document.getElementById("notesSongAuthorSub");
     const notesSongSubDot = document.getElementById("notesSongSubDot");
 
@@ -4739,9 +4759,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (notesSongTitleSub) notesSongTitleSub.textContent = "cuaderno de ensayo";
 
     // Cargar notas guardadas para esta canción
-    const key = getSongNotesStorageKey(songTitle);
+    const key = getSongNotesStorageKey(songTitle, songAuthor);
     if (key) {
-      const savedRaw = localStorage.getItem(key);
+      let savedRaw = localStorage.getItem(key);
+      if (!savedRaw && songAuthor) {
+        const legacyKey = "song_notes_" + songTitle.trim().toLowerCase().replace(/\s+/g, "_");
+        const legacyRaw = localStorage.getItem(legacyKey);
+        if (legacyRaw) savedRaw = legacyRaw;
+      }
       if (savedRaw) {
         try {
           const data = JSON.parse(savedRaw);
@@ -5293,11 +5318,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Guardar cuaderno de notas
   btnSaveNotes?.addEventListener("click", () => {
     const songTitle = window.currentOpenedSongTitle;
+    const songAuthor = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
     if (!songTitle) {
       if (typeof showToast === "function") showToast("No se pudo identificar la canción activa", "error");
       return;
     }
-    const key = getSongNotesStorageKey(songTitle);
+    const key = getSongNotesStorageKey(songTitle, songAuthor);
     if (!key) return;
 
     const keyVal = notesKeyInput ? notesKeyInput.value : "";
@@ -5306,6 +5332,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!keyVal.trim() && !textVal.trim()) {
       localStorage.removeItem(key);
+      if (songAuthor) {
+        const legacyKey = "song_notes_" + songTitle.trim().toLowerCase().replace(/\s+/g, "_");
+        localStorage.removeItem(legacyKey);
+      }
       if (typeof showToast === "function") showToast("Cuaderno de notas vaciado", "info");
     } else {
       const dataToSave = {
@@ -5323,7 +5353,7 @@ document.addEventListener("DOMContentLoaded", () => {
       rich: richVal
     };
 
-    checkSongNotesBadge(songTitle);
+    checkSongNotesBadge(songTitle, songAuthor);
     closeNotesModal();
   });
 
@@ -5341,10 +5371,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (notesKeyInput) notesKeyInput.value = "";
       if (notesRichEditor) notesRichEditor.innerHTML = "";
       const songTitle = window.currentOpenedSongTitle;
+      const songAuthor = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
       if (songTitle) {
-        const key = getSongNotesStorageKey(songTitle);
+        const key = getSongNotesStorageKey(songTitle, songAuthor);
         if (key) localStorage.removeItem(key);
-        checkSongNotesBadge(songTitle);
+        if (songAuthor) {
+          const legacyKey = "song_notes_" + songTitle.trim().toLowerCase().replace(/\s+/g, "_");
+          localStorage.removeItem(legacyKey);
+        }
+        checkSongNotesBadge(songTitle, songAuthor);
       }
       window.initialNotesState = { key: "", rich: "" };
       if (typeof showToast === "function") showToast("Anotaciones borradas", "info");
