@@ -90,11 +90,7 @@
       <!-- Botón Perfil / Iniciar Sesión en Encabezado -->
       <button id="topbarAuthBtn" class="topbar-auth-btn" aria-label="Mi Cuenta / Iniciar Sesión" title="Iniciar Sesión">
         <div id="topbarUserLoggedOut" class="topbar-user-logged-out">
-          <svg viewBox="0 0 128 128" class="default-avatar-svg">
-            <circle cx="64" cy="64" r="64" fill="#BDC1C6" />
-            <circle cx="64" cy="48" r="23" fill="#F1F3F4" />
-            <path d="M 26 108 C 26 80, 43 72, 64 72 C 85 72, 102 80, 102 108 Z" fill="#F1F3F4" />
-          </svg>
+          <img src="Principal/usuario.png" alt="Usuario" class="topbar-user-default-img">
         </div>
         <div id="topbarUserLoggedIn" class="topbar-user-logged-in" style="display: none;">
           <img id="topbarUserAvatarImg" class="topbar-user-avatar" src="" alt="Perfil" style="display: none;">
@@ -769,7 +765,7 @@
               </button>
             </div>
 
-            <!-- Opción Audio (NUEVA) -->
+            <!-- Opción Audio -->
             <div id="menuItemAudio" class="menu-item-container" style="display:none;">
               <div id="panelAudio" class="tool-panel">
                 <span id="audioTime" class="tool-label" style="min-width: 40px; font-size: 10px;">0:00</span>
@@ -777,6 +773,15 @@
               </div>
               <button class="menu-fab" id="btnToolAudio" title="Escuchar audio">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display: block;"><path d="M8 5v14l11-7z"/></svg>
+              </button>
+            </div>
+
+            <!-- Opción YouTube -->
+            <div id="menuItemYoutube" class="menu-item-container" style="display:none;">
+              <button class="menu-fab youtube-fab" id="btnToolYoutube" title="Ver / Escuchar en YouTube" aria-label="Ver / Escuchar en YouTube">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="display: block;">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
               </button>
             </div>
 
@@ -810,7 +815,11 @@
         <div class="notes-header-top-row">
           <div class="notes-title-container">
             <h2 id="songNotesModalTitle" class="song-notes-main-heading">TE OFRECEMOS SEÑOR</h2>
-            <span class="song-notes-sub-label">cuaderno de ensayo</span>
+            <div class="song-notes-sub-info">
+              <span id="notesSongAuthorSub" class="song-notes-author-label"></span>
+              <span id="notesSongSubDot" class="song-notes-sub-dot">•</span>
+              <span id="notesSongTitleSub" class="song-notes-sub-label">cuaderno de ensayo</span>
+            </div>
           </div>
           <div class="notes-header-actions">
             <button type="button" id="btnToggleReadOnlyNotes" class="btn-read-only-icon read-only-off" title="Alternar Modo Lectura / Edición">
@@ -898,15 +907,12 @@
 
       <!-- Pie del Cuaderno -->
       <div class="song-notes-footer-minimal">
-        <button type="button" id="btnClearNotes" class="btn-clear-notes" title="Limpiar todo el cuaderno">
-          <i data-lucide="trash-2"></i> <span>Limpiar</span>
+        <button type="button" id="btnClearNotes" class="btn-clear-notes" title="Limpiar todo el cuaderno" aria-label="Limpiar todo el cuaderno">
+          <i data-lucide="trash-2"></i>
         </button>
         <div class="footer-actions-right">
-          <button type="button" id="btnCloseNotesModal" class="btn-cancel-notes" title="Cancelar">
-            <i data-lucide="x"></i> <span>Cancelar</span>
-          </button>
-          <button type="button" id="btnSaveNotes" class="btn-save-notes" title="Guardar Cuaderno">
-            <i data-lucide="save"></i> <span>Guardar Cuaderno</span>
+          <button type="button" id="btnSaveNotes" class="btn-save-notes" title="Guardar anotaciones" aria-label="Guardar anotaciones">
+            <i data-lucide="save"></i>
           </button>
         </div>
       </div>
@@ -1167,6 +1173,32 @@
             </div>
             <span class="share-circle-label">Correo</span>
           </a>
+
+          <a id="shareQrCode" href="#" class="share-circle-item">
+            <div class="share-circle-btn qrcode">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+                <rect x="6" y="6" width="1" height="1" fill="currentColor"></rect>
+                <rect x="17" y="6" width="1" height="1" fill="currentColor"></rect>
+                <rect x="6" y="17" width="1" height="1" fill="currentColor"></rect>
+                <path d="M10 14h1v3h-1zM14 10h3v1h-3z"></path>
+              </svg>
+            </div>
+            <span class="share-circle-label">Código QR</span>
+          </a>
+        </div>
+
+        <!-- Contenedor Desplegable para Código QR -->
+        <div id="shareQrContainer" class="share-qr-container" style="display: none;">
+          <div class="share-qr-card">
+            <div class="share-qr-frame">
+              <img id="shareQrImg" src="" alt="Código QR del repertorio" />
+            </div>
+            <p class="share-qr-instructions">Escanea este código con la cámara para abrir e importar el repertorio</p>
+          </div>
         </div>
 
         <!-- Copiar Enlace Directo Estilo YouTube -->
