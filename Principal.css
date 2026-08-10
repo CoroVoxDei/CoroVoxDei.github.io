@@ -113,6 +113,12 @@ body {
 }
 
 /* ======= Botón inicio (derecha) ======= */
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .top-right .icon-btn {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -179,7 +185,7 @@ body.light-mode .top-right .icon-btn {
   cursor: pointer;
   padding: 0;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: visible;
+  overflow: hidden;
   outline: none;
   flex-shrink: 0;
 }
@@ -204,6 +210,14 @@ body.light-mode .topbar-auth-btn {
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
+}
+
+.topbar-user-default-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 .default-avatar-svg {
@@ -2188,11 +2202,30 @@ body.light-mode .song-notes-header {
   word-break: break-word;
 }
 
+.song-notes-sub-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.song-notes-author-label {
+  font-size: 0.88rem;
+  color: #4b5563;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.song-notes-sub-dot {
+  font-size: 0.88rem;
+  color: #9ca3af;
+}
+
 .song-notes-sub-label {
   font-size: 0.88rem;
   color: #6b7280;
-  display: block;
-  margin-top: 3px;
+  display: inline-block;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -2201,7 +2234,7 @@ body.light-mode .song-notes-header {
 .notes-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -3051,70 +3084,59 @@ body.light-mode .song-notes-footer {
 }
 
 .btn-clear-notes {
-  background: transparent;
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #f87171;
-  font-size: 0.8rem;
-  padding: 8px 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border-radius: 8px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s ease;
-}
-
-.btn-clear-notes:hover {
-  background: rgba(239, 68, 68, 0.18);
-}
-
-.btn-cancel-notes {
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  color: #374151;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-body.light-mode .btn-cancel-notes {
-  border-color: rgba(0, 0, 0, 0.15);
-  color: #4b5563;
+.btn-clear-notes:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  transform: translateY(-1px);
 }
 
-.btn-cancel-notes:hover {
-  background: #f3f4f6;
+.btn-clear-notes i,
+.btn-clear-notes svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btn-save-notes {
   background: linear-gradient(135deg, #a51e17 0%, #d32f2f 100%);
   color: #ffffff;
   border: none;
-  padding: 9px 20px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
   border-radius: 8px;
-  font-size: 0.88rem;
-  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(165, 30, 23, 0.4);
+  box-shadow: 0 3px 10px rgba(165, 30, 23, 0.35);
   transition: all 0.2s ease;
-  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-save-notes:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(165, 30, 23, 0.5);
+  box-shadow: 0 5px 14px rgba(165, 30, 23, 0.45);
+}
+
+.btn-save-notes i,
+.btn-save-notes svg {
+  width: 18px;
+  height: 18px;
 }
 
 @media (max-width: 1024px) {
@@ -3157,33 +3179,6 @@ body.light-mode .btn-cancel-notes {
     min-width: 36px;
   }
 
-  /* Pie del cuaderno en celulares: sustituir textos por íconos limpios */
-  .btn-clear-notes span,
-  .btn-cancel-notes span,
-  .btn-save-notes span {
-    display: none !important;
-  }
-
-  .btn-clear-notes,
-  .btn-cancel-notes,
-  .btn-save-notes {
-    padding: 8px 12px;
-    gap: 0;
-    justify-content: center;
-    min-width: 40px;
-    border-radius: 8px;
-  }
-
-  .btn-clear-notes i,
-  .btn-clear-notes svg,
-  .btn-cancel-notes i,
-  .btn-cancel-notes svg,
-  .btn-save-notes i,
-  .btn-save-notes svg {
-    width: 18px;
-    height: 18px;
-  }
-
   .song-notes-footer-minimal {
     padding: 8px 12px;
     gap: 8px;
@@ -3216,13 +3211,33 @@ body.light-mode .btn-cancel-notes {
 }
 
 @media (max-width: 768px) {
-  /* Al activar teclado en celulares: ocultar el footer inferior para pegar la barra de formato directamente sobre el teclado */
+  /* Al activar teclado en celulares: mantener el pie visible y compacto con botones Limpiar y Guardar */
   .song-notes-card.keyboard-open .song-notes-footer-minimal {
-    display: none !important;
+    display: flex !important;
+    padding: 6px 10px !important;
+    border-top: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
+    gap: 6px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .song-notes-card.keyboard-open .song-notes-footer-minimal button {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+    border-radius: 6px !important;
+  }
+
+  .song-notes-card.keyboard-open .song-notes-footer-minimal .btn-save-notes {
+    background: var(--primary, #A51E17) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
   }
 
   .song-notes-card.keyboard-open .song-notes-header-minimal {
-    padding: 6px 10px !important;
+    padding: 8px 10px 6px 10px !important;
     gap: 4px !important;
   }
 
@@ -3247,12 +3262,10 @@ body.light-mode .btn-cancel-notes {
   .song-notes-card.keyboard-open .song-notes-toolbar-minimal {
     border-bottom: none !important;
     border-top: 1px solid #d1d5db !important;
-    padding: 6px 8px !important;
+    padding: 5px 8px !important;
     background: #ffffff !important;
-    position: sticky !important;
-    bottom: 0 !important;
+    position: relative !important;
     z-index: 100 !important;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05) !important;
   }
 }
 
@@ -3416,6 +3429,12 @@ body.light-mode .btn-cancel-notes {
 .menu-fab.playing {
   background: #dc2626;
   animation: pulse-audio-fab 1.5s infinite;
+}
+
+/* Estilos para el Botón de YouTube */
+.menu-fab.youtube-fab svg {
+  fill: #ffffff !important;
+  stroke: none !important;
 }
 
 @keyframes pulse-audio-fab {
@@ -7920,22 +7939,34 @@ body.light-mode .metro-btn-play.playing:hover {
 /* Fila de Botones Circulares Estilo YouTube/Instagram */
 .share-circles-wrapper {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 26px;
-  padding: 8px 0;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 10px;
+  margin-bottom: 22px;
+  padding: 4px 2px 10px 2px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.share-circles-wrapper::-webkit-scrollbar {
+  display: none;
 }
 
 .share-circle-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  width: 76px; /* Ranura de alineación fija */
+  flex-shrink: 0;
+  width: 62px;
 }
 
 .share-circle-item:hover {
@@ -7943,8 +7974,8 @@ body.light-mode .metro-btn-play.playing:hover {
 }
 
 .share-circle-btn {
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -7967,7 +7998,8 @@ body.light-mode .metro-btn-play.playing:hover {
 .share-circle-btn.whatsapp,
 .share-circle-btn.facebook,
 .share-circle-btn.telegram,
-.share-circle-btn.email {
+.share-circle-btn.email,
+.share-circle-btn.qrcode {
   color: #e4e4e7;
 }
 
@@ -8000,11 +8032,19 @@ body.light-mode .metro-btn-play.playing:hover {
   box-shadow: 0 8px 24px rgba(234, 67, 53, 0.25);
 }
 
+.share-circle-item:hover .share-circle-btn.qrcode {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.18);
+}
+
 .share-circle-label {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: #a1a1aa;
   text-align: center;
+  white-space: nowrap;
   transition: color 0.2s ease;
 }
 
@@ -8181,6 +8221,12 @@ body.light-mode .share-circle-btn.email {
   border-color: #ea4335;
 }
 
+body.light-mode .share-circle-btn.qrcode {
+  background: #18181b;
+  color: #ffffff;
+  border-color: #18181b;
+}
+
 /* Hover en Modo Claro */
 body.light-mode .share-circle-item:hover .share-circle-btn.whatsapp {
   background: #1ebd5b;
@@ -8204,6 +8250,70 @@ body.light-mode .share-circle-item:hover .share-circle-btn.email {
   background: #d93025;
   border-color: #d93025;
   box-shadow: 0 8px 24px rgba(234, 67, 53, 0.3);
+}
+
+body.light-mode .share-circle-item:hover .share-circle-btn.qrcode {
+  background: #27272a;
+  border-color: #27272a;
+  box-shadow: 0 8px 24px rgba(24, 24, 27, 0.3);
+}
+
+/* Contenedor del Código QR */
+.share-qr-container {
+  margin-top: 14px;
+  animation: fadeInQr 0.25s ease-out;
+}
+
+@keyframes fadeInQr {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.share-qr-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.share-qr-frame {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 190px;
+}
+
+.share-qr-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.share-qr-instructions {
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  margin: 0;
+  line-height: 1.35;
+}
+
+body.light-mode .share-qr-card {
+  background: #f4f4f5;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .share-qr-instructions {
+  color: #52525b;
 }
 
 body.light-mode .share-pill-group {
@@ -8243,13 +8353,14 @@ body.light-mode .share-system-btn:hover {
 @media (max-width: 380px) {
   .share-circles-wrapper {
     gap: 8px;
+    justify-content: flex-start;
   }
   .share-circle-item {
-    width: 68px;
+    width: 58px;
   }
   .share-circle-btn {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
   }
 }
 
