@@ -541,33 +541,48 @@ window.isYouTubeUrl = function(url) {
 };
 
 window.toggleAudio = function(url, btn) {
+    if (!url || window.isYouTubeUrl(url)) return;
     const audioProgress = document.getElementById("audioProgress");
     const audioTime = document.getElementById("audioTime");
 
     function formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) return "0:00";
         const min = Math.floor(seconds / 60);
         const sec = Math.floor(seconds % 60);
         return `${min}:${sec < 10 ? '0' : ''}${sec}`;
     }
 
     // Si ya hay un audio cargado y es el mismo URL
-        if (currentAudio && currentAudio.dataset.url === url) {
+    if (currentAudio && currentAudio.dataset.url === url) {
         if (currentAudio.paused) {
-            currentAudio.play();
-            btn.classList.add("playing");
-            if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PAUSE;
-            else updateIcon(btn, "pause");
+            const playPromise = currentAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    btn?.classList.add("playing");
+                    if (btn) {
+                        if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PAUSE;
+                        else updateIcon(btn, "pause");
+                    }
+                }).catch(err => {
+                    console.error("Error al reanudar audio:", err);
+                    if (typeof showToast === "function") showToast("No se pudo reproducir el audio", "error");
+                });
+            }
         } else {
             currentAudio.pause();
-            btn.classList.remove("playing");
-            if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PLAY;
-            else updateIcon(btn, "play");
+            btn?.classList.remove("playing");
+            if (btn) {
+                if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PLAY;
+                else updateIcon(btn, "play");
+            }
         }
     } else {
         // Si hay un audio diferente sonando, lo detenemos
         if (currentAudio) {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
+            try {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            } catch(e) {}
             if (currentAudioBtn) {
                 currentAudioBtn.classList.remove("playing");
                 if (currentAudioBtn.id === "btnToolAudio") currentAudioBtn.innerHTML = SVG_PLAY;
@@ -580,23 +595,47 @@ window.toggleAudio = function(url, btn) {
         currentAudio.dataset.url = url; // Guardamos el URL para identificarlo
         currentAudioBtn = btn;
         
-        currentAudio.play().catch(err => console.error("Error al reproducir audio:", err));
-        btn.classList.add("playing");
-        if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PAUSE;
-        else updateIcon(btn, "pause");
+        const playPromise = currentAudio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                btn?.classList.add("playing");
+                if (btn) {
+                    if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PAUSE;
+                    else updateIcon(btn, "pause");
+                }
+            }).catch(err => {
+                console.error("Error al reproducir audio:", err);
+                btn?.classList.remove("playing");
+                if (btn) {
+                    if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PLAY;
+                    else updateIcon(btn, "play");
+                }
+                if (typeof showToast === "function") showToast("No se pudo reproducir el archivo de audio", "error");
+            });
+        }
         
         currentAudio.onloadedmetadata = () => {
-            if (audioProgress) audioProgress.max = currentAudio.duration;
+            if (audioProgress && currentAudio.duration && !isNaN(currentAudio.duration)) {
+                audioProgress.max = currentAudio.duration;
+            }
         };
 
         currentAudio.ontimeupdate = () => {
-            if (audioProgress) audioProgress.value = currentAudio.currentTime;
+            if (audioProgress && currentAudio.duration && !isNaN(currentAudio.duration)) {
+                if (audioProgress.max !== currentAudio.duration) {
+                    audioProgress.max = currentAudio.duration;
+                }
+                audioProgress.value = currentAudio.currentTime;
+            }
             if (audioTime) audioTime.textContent = formatTime(currentAudio.currentTime);
         };
 
         currentAudio.onended = () => {
-            btn.classList.remove("playing");
-            updateIcon(btn, "play");
+            btn?.classList.remove("playing");
+            if (btn) {
+                if (btn.id === "btnToolAudio") btn.innerHTML = SVG_PLAY;
+                else updateIcon(btn, "play");
+            }
             if (audioProgress) audioProgress.value = 0;
             if (audioTime) audioTime.textContent = "0:00";
             currentAudio = null;
@@ -4111,20 +4150,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       let tags = item.dataset.tags || (typeof window.getSongTag === "function" ? window.getSongTag(item) : "");
 
-      // Si falta la letra o info, buscar en allSongs como fallback de precisión
-      if ((!lyrics || !author) && title && window.allSongs) {
-        const match = window.allSongs.find(s => {
-          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
-          return info && info.title.toLowerCase().trim() === title.toLowerCase().trim();
-        });
-        if (match) {
-          const matchInfo = window.getSongInfo(match);
-          if (!lyrics) lyrics = matchInfo.lyrics;
-          if (!author) author = matchInfo.author;
-          if (!type) type = matchInfo.type;
-          if (!audio) audio = matchInfo.audio;
-          if (!youtube) youtube = matchInfo.youtube;
-          if (!tags) tags = matchInfo.tags;
+      // Si falta la letra o info, buscar en la lista global de canciones como fallback de precisión
+      if ((!lyrics || !author || !audio || !youtube) && title) {
+        const globalSongs = (typeof getGlobalSongsList === "function" ? getGlobalSongsList() : null);
+        if (globalSongs) {
+          const match = globalSongs.find(s => {
+            const matchTitle = (s.title || "").toLowerCase().trim();
+            const targetTitle = title.toLowerCase().trim();
+            if (author && s.author) {
+              return matchTitle === targetTitle && (s.author || "").toLowerCase().trim() === author.toLowerCase().trim();
+            }
+            return matchTitle === targetTitle;
+          });
+          if (match) {
+            if (!lyrics) lyrics = match.lyrics;
+            if (!author) author = match.author;
+            if (!type) type = match.type;
+            if (!audio) audio = match.audio;
+            if (!youtube) youtube = match.youtube;
+            if (!tags) tags = match.tags;
+          }
         }
       }
 
@@ -4305,24 +4350,21 @@ document.addEventListener("DOMContentLoaded", () => {
       effectiveAudio = "";
     }
 
+    window.currentOpenedSongAudio = effectiveAudio;
+    window.currentOpenedSongYoutube = effectiveYoutube;
+
     if (menuItemAudio && btnToolAudio) {
         const audioProgress = document.getElementById("audioProgress");
         const audioTime = document.getElementById("audioTime");
 
         if (effectiveAudio && !window.isYouTubeUrl(effectiveAudio)) {
             menuItemAudio.style.display = "flex";
-            btnToolAudio.onclick = (e) => {
-                e.stopPropagation();
-                window.toggleAudio(effectiveAudio, btnToolAudio);
-            };
-            // Reset icon if it was playing another song
-            if (currentAudio && currentAudio.dataset.url === effectiveAudio) {
-                if (!currentAudio.paused) {
-                    btnToolAudio.classList.add("playing");
-                    btnToolAudio.innerHTML = SVG_PAUSE;
-                }
-                if (audioProgress) {
-                    audioProgress.max = currentAudio.duration || 100;
+            // Actualizar icono y barra según si este audio específico está en reproducción
+            if (currentAudio && currentAudio.dataset.url === effectiveAudio && !currentAudio.paused) {
+                btnToolAudio.classList.add("playing");
+                btnToolAudio.innerHTML = SVG_PAUSE;
+                if (audioProgress && currentAudio.duration) {
+                    audioProgress.max = currentAudio.duration;
                     audioProgress.value = currentAudio.currentTime;
                 }
             } else {
@@ -4341,10 +4383,6 @@ document.addEventListener("DOMContentLoaded", () => {
             menuItemYoutube.style.display = "flex";
             btnToolYoutube.title = "Ver / Escuchar en YouTube";
             btnToolYoutube.setAttribute("aria-label", "Ver / Escuchar en YouTube");
-            btnToolYoutube.onclick = (e) => {
-                e.stopPropagation();
-                window.open(effectiveYoutube, "_blank");
-            };
         } else {
             menuItemYoutube.style.display = "none";
         }
@@ -4469,20 +4507,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   addTapListener(btnToolAudio, (e) => {
-    // Si el panel ya está activo, solo toggleamos el audio
-    if (panelAudio?.classList.contains("active")) {
-        // El toggle ya se maneja en el onclick dinámico de abrirLetra
-    } else {
-        deactivateAllPanels();
-        panelAudio?.classList.add("active");
-        btnToolAudio.classList.add("active");
-        btnToolAudio.closest(".menu-item-container")?.classList.add("active-container");
+    e?.stopPropagation?.();
+    const audioUrl = window.currentOpenedSongAudio;
+    if (!audioUrl || window.isYouTubeUrl(audioUrl)) return;
+
+    if (!panelAudio?.classList.contains("active")) {
+      deactivateAllPanels();
+      panelAudio?.classList.add("active");
+      btnToolAudio.classList.add("active");
+      btnToolAudio.closest(".menu-item-container")?.classList.add("active-container");
+    }
+
+    window.toggleAudio(audioUrl, btnToolAudio);
+  });
+
+  addTapListener(btnToolYoutube, (e) => {
+    e?.stopPropagation?.();
+    const youtubeUrl = window.currentOpenedSongYoutube;
+    if (youtubeUrl) {
+      window.open(youtubeUrl, "_blank");
     }
   });
 
   audioProgress?.addEventListener("input", (e) => {
     if (currentAudio) {
-        currentAudio.currentTime = e.target.value;
+      currentAudio.currentTime = parseFloat(e.target.value);
+    }
+  });
+
+  audioProgress?.addEventListener("change", (e) => {
+    if (currentAudio) {
+      currentAudio.currentTime = parseFloat(e.target.value);
     }
   });
 
