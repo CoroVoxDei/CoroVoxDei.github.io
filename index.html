@@ -121,6 +121,9 @@
     <section class="search-bar">
       <img src="Principal/Buscar.png" alt="Buscar" class="icon">
       <input type="text" id="searchInput" placeholder="Buscar canción...">
+      <button type="button" class="btn-clear-search-input" id="btnClearSearchInput" style="display: none;" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
+        <i data-lucide="x"></i>
+      </button>
       <button type="button" class="search-filter-toggle-btn" id="toggleSearchFilters" title="Filtros de búsqueda">
         <i data-lucide="sliders-horizontal"></i>
       </button>
@@ -179,6 +182,12 @@
       <!-- Carga dinámica de canciones -->
     </main>
     <div id="pagination" class="pagination"></div>
+
+    <!-- Botón Flotante para Crear Canción (Visible para Editores en Modo Editor) -->
+    <button id="btnNewSongFab" class="new-song-fab" title="Crear nueva canción" style="display: none;">
+      <i data-lucide="plus"></i>
+      <span>Nueva Canción</span>
+    </button>
   </div>
 
   <!-- =========================================================
@@ -351,6 +360,51 @@
               <div class="stat-meta">
                 <span id="profileSyncStatusVal" class="stat-val sync-text">Sincronizado</span>
                 <span class="stat-tit">En la nube</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL DE ADMINISTRADOR / EDITOR (Visible para el Editor / Administrador) -->
+          <div id="profileAdminPanel" class="profile-admin-panel" style="display: none;">
+            <div class="admin-panel-top-row">
+              <div class="admin-badge-col">
+                <span class="admin-crown-badge"><i data-lucide="shield-check"></i> Rol: Editor / Administrador Maestro</span>
+                <p class="admin-panel-description">Tienes permisos para crear, corregir y publicar cantos en la nube para todo el coro.</p>
+              </div>
+              <div class="admin-mode-toggle-box">
+                <span class="admin-mode-label">Modo de pantalla:</span>
+                <button type="button" id="btnToggleEditorMode" class="btn-toggle-editor-mode mode-editor-on">
+                  <i data-lucide="pen-tool" id="iconEditorMode"></i>
+                  <span id="textEditorMode">Modo Editor (Activo)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-actions-bar-row">
+              <button type="button" id="btnAdminCreateSong" class="btn-admin-cta-primary">
+                <i data-lucide="plus-circle"></i>
+                <span>+ Crear y Publicar Nueva Canción</span>
+              </button>
+              <button type="button" id="btnToggleManageEditors" class="btn-admin-cta-secondary">
+                <i data-lucide="user-plus"></i>
+                <span>Gestionar Editores del Coro</span>
+              </button>
+            </div>
+
+            <!-- Desplegable para Gestionar Editores de Coro (Permite ceder el rol a otro encargado) -->
+            <div id="adminEditorsDrawer" class="admin-editors-drawer" style="display: none;">
+              <div class="drawer-header">
+                <h4><i data-lucide="users"></i> Editores Autorizados para Administrar el Cancionero</h4>
+                <p>Si dejas el coro o tienes un co-director, ingresa su correo para que también pueda crear y corregir canciones desde su celular.</p>
+              </div>
+              <div class="add-editor-form-row">
+                <input type="email" id="inputNewEditorEmail" class="input-editor-email" placeholder="ejemplo.nuevo.encargado@gmail.com">
+                <button type="button" id="btnAddEditorEmail" class="btn-submit-add-editor">
+                  <i data-lucide="check"></i> <span>Autorizar Editor</span>
+                </button>
+              </div>
+              <div id="editorsListContainer" class="editors-list-chips">
+                <!-- Se llena dinámicamente con los correos de los editores autorizados -->
               </div>
             </div>
           </div>
@@ -682,9 +736,15 @@
       <div id="captureArea" class="popup-body">
         <div class="doc-header">
            <!-- Botón Descargar (Izquierda) -->
-           <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-           </button>
+           <div class="popup-left-actions-group">
+             <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen">
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+             </button>
+             <!-- Botón Editar Canción (Visible para Editores) -->
+             <button type="button" id="btnEditCurrentSong" class="popup-edit-song-btn popup-action-btn" title="Editar / Corregir Canción (Modo Editor)" style="display: none;">
+               <i data-lucide="edit-3"></i>
+             </button>
+           </div>
 
            <!-- Título y Autor (Centro) -->
            <div class="header-text">
@@ -927,6 +987,214 @@
     <button id="feedbackFab" class="feedback-fab" title="Enviar Sugerencia">
       <i data-lucide="message-square"></i>
     </button>
+  </div>
+
+  <!-- =========================================================
+       MODAL DE EDITOR DE CANCIONES (TIPO WORD / CMS EN LA NUBE)
+  ========================================================== -->
+  <div id="songEditorModal" class="modal-overlay song-editor-modal-overlay">
+    <div class="modal-content song-editor-card">
+      <div class="song-editor-header">
+        <div class="song-editor-header-left">
+          <div class="song-editor-icon-badge">
+            <i data-lucide="file-edit"></i>
+          </div>
+          <div>
+            <h2 id="songEditorModalTitle" class="song-editor-title">Nueva Canción</h2>
+            <span class="song-editor-sub"><i data-lucide="cloud"></i> Sincronización en la nube (Firestore)</span>
+          </div>
+        </div>
+        <div class="song-editor-header-actions">
+          <div class="editor-tabs-segmented">
+            <button type="button" id="tabEditorWrite" class="editor-tab-btn active">
+              <i data-lucide="pen-tool"></i> <span>Editor</span>
+            </button>
+            <button type="button" id="tabEditorPreview" class="editor-tab-btn">
+              <i data-lucide="eye"></i> <span>Vista Previa</span>
+            </button>
+          </div>
+          <button type="button" id="closeSongEditorModal" class="close-modal song-editor-close" aria-label="Cerrar">&times;</button>
+        </div>
+      </div>
+
+      <div class="song-editor-body">
+        <!-- PESTAÑA 1: EDITOR DE ESCRITURA -->
+        <div id="editorWriteTabContent" class="editor-tab-pane active">
+          
+          <!-- Metadatos de la Canción -->
+          <div class="editor-meta-grid">
+            <div class="editor-field-group">
+              <label for="editorSongTitle" class="editor-field-label">Título de la Canción <span class="required-star">*</span></label>
+              <input type="text" id="editorSongTitle" class="editor-field-input" placeholder="Ej: Pescador de Hombres" required>
+            </div>
+
+            <div class="editor-field-group">
+              <label for="editorSongAuthor" class="editor-field-label">Autor / Compositor</label>
+              <input type="text" id="editorSongAuthor" class="editor-field-input" placeholder="Ej: Cesáreo Gabaráin">
+            </div>
+
+            <div class="editor-field-group">
+              <label for="editorSongCategory" class="editor-field-label">Categoría Litúrgica <span class="required-star">*</span></label>
+              <select id="editorSongCategory" class="editor-field-input editor-select" required>
+                <option value="Entrada">Entrada</option>
+                <option value="Penitencial">Penitencial</option>
+                <option value="Gloria">Gloria</option>
+                <option value="Aclamacion">Aclamación</option>
+                <option value="Ofertorio">Ofertorio</option>
+                <option value="Santo">Santo</option>
+                <option value="PadreNuestro">Padre Nuestro</option>
+                <option value="Cordero">Cordero</option>
+                <option value="Comunión">Comunión</option>
+                <option value="AdoracionMeditacion">Meditación y Adoración</option>
+                <option value="EnvioSalida">Salida y Envío</option>
+                <option value="Marianos">Marianos</option>
+                <option value="Salesianos">Salesianos</option>
+                <option value="Cuaresma">Cuaresma</option>
+                <option value="Pascua">Pascua</option>
+                <option value="EspirituSanto">Espíritu Santo</option>
+                <option value="Adviento">Adviento y Navidad</option>
+                <option value="HimnosSalmos">Himnos y Salmos</option>
+                <option value="Contemporáneo">Contemporáneo</option>
+              </select>
+            </div>
+
+            <div class="editor-field-group">
+              <label for="editorSongTags" class="editor-field-label">Etiquetas de Voces / Tiempo</label>
+              <input type="text" id="editorSongTags" class="editor-field-input" placeholder="Ej: Todos, Solista, Moderado">
+            </div>
+
+            <div class="editor-field-group">
+              <label for="editorSongAudio" class="editor-field-label">Enlace de Audio MP3 (Opcional)</label>
+              <input type="url" id="editorSongAudio" class="editor-field-input" placeholder="https://ejemplo.com/audio.mp3">
+            </div>
+
+            <div class="editor-field-group">
+              <label for="editorSongYoutube" class="editor-field-label">Enlace de YouTube (Opcional)</label>
+              <input type="url" id="editorSongYoutube" class="editor-field-input" placeholder="https://youtube.com/watch?v=...">
+            </div>
+          </div>
+
+          <!-- Barra de Herramientas Estilo Word -->
+          <div class="word-toolbar">
+            <div class="word-toolbar-group">
+              <button type="button" id="btnWordBold" class="word-btn" title="Negrita (B)">
+                <b>B</b>
+              </button>
+              <button type="button" id="btnWordItalic" class="word-btn" title="Cursiva (I)">
+                <i>I</i>
+              </button>
+            </div>
+
+            <div class="word-toolbar-divider"></div>
+
+            <!-- Menú Desplegable de Mayúsculas / Minúsculas (Aa) -->
+            <div class="word-toolbar-group case-dropdown-wrapper">
+              <button type="button" id="btnWordCaseMenu" class="word-btn btn-case-menu" title="Mayúsculas / Minúsculas (Aa)">
+                <span>Aa</span>
+                <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 2px;"></i>
+              </button>
+              <div id="wordCaseDropdown" class="word-case-dropdown" style="display: none;">
+                <button type="button" class="case-option" data-case="upper">
+                  <span class="case-sample">TODO MAYÚSCULAS</span>
+                </button>
+                <button type="button" class="case-option" data-case="lower">
+                  <span class="case-sample">todo minúsculas</span>
+                </button>
+                <button type="button" class="case-option" data-case="title">
+                  <span class="case-sample">Tipo Título (Mayúsculas Cada Palabra)</span>
+                </button>
+                <button type="button" class="case-option" data-case="sentence">
+                  <span class="case-sample">Tipo oración (Inicio de frase mayúscula)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="word-toolbar-divider"></div>
+
+            <!-- Inserción Rápida de Secciones -->
+            <div class="word-toolbar-group quick-tags-group">
+              <button type="button" class="word-tag-btn" data-insert="[CORO]">[CORO]</button>
+              <button type="button" class="word-tag-btn" data-insert="[ESTROFA]">[ESTROFA]</button>
+              <button type="button" class="word-tag-btn" data-insert="[PUENTE]">[PUENTE]</button>
+            </div>
+
+            <div class="word-toolbar-divider"></div>
+
+            <!-- Indicador Inteligente de Detección de Acordes -->
+            <div class="word-toolbar-group chords-indicator-group">
+              <span id="chordsDetectedBadge" class="chords-detected-badge" title="El sistema reconoce automáticamente los acordes sin etiquetas HTML">
+                <i data-lucide="music-2"></i> Auto-Detección Activa
+              </span>
+            </div>
+          </div>
+
+          <!-- Área de Edición de Texto (Letra y Acordes) -->
+          <div class="editor-textarea-wrapper">
+            <textarea id="editorSongLyrics" class="editor-lyrics-textarea" rows="15" placeholder="Escribe o pega aquí la letra y los acordes...
+
+Ejemplo escribiendo acordes sobre la letra:
+Do                 Sol
+Alma de Cristo, santifícame
+Lam                Fa
+Cuerpo de Cristo, sálvame
+Do                 Sol
+Sangre de Cristo, embriágame...
+
+O también puedes escribirlos entre corchetes:
+[Do] Alma de Cristo, [Sol] santifícame
+[Lam] Cuerpo de Cristo, [Fa] sálvame...
+
+¡El sistema detectará automáticamente los acordes!"></textarea>
+          </div>
+
+          <div class="editor-helper-row">
+            <div class="helper-item">
+              <i data-lucide="sparkles"></i>
+              <span>Reconocimiento inteligente: Acordes en español (Do, Re, Mi...) e inglés (C, D, E...) se identifican solos.</span>
+            </div>
+            <div class="helper-item">
+              <i data-lucide="type"></i>
+              <span>Selecciona cualquier texto para ponerlo en <b>Negrita</b> o cambiar a <b>Mayúsculas</b>.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PESTAÑA 2: VISTA PREVIA RENDERIZADA -->
+        <div id="editorPreviewTabContent" class="editor-tab-pane" style="display: none;">
+          <div class="editor-preview-card">
+            <div class="editor-preview-header">
+              <h3 id="previewSongTitle">Título de la Canción</h3>
+              <p id="previewSongAuthor">Autor</p>
+              <div class="preview-meta-chips">
+                <span id="previewSongCategory" class="preview-chip">Comunión</span>
+                <span id="previewChordsCount" class="preview-chip chord-chip">0 acordes detectados</span>
+              </div>
+            </div>
+            <div class="editor-preview-lyrics-container">
+              <pre id="previewSongBody" class="editor-rendered-lyrics"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pie del Editor con Botones de Acción -->
+      <div class="song-editor-footer">
+        <div class="editor-footer-left">
+          <span id="editorStatusMessage" class="editor-status-text"></span>
+          <button type="button" id="btnDeleteCurrentCloudSong" class="btn-delete-cloud-song" style="display: none;" title="Eliminar canción de la nube">
+            <i data-lucide="trash-2"></i> <span>Eliminar Canto</span>
+          </button>
+        </div>
+        <div class="editor-footer-right">
+          <button type="button" id="btnCancelSongEditor" class="btn-cancel-editor">Cancelar</button>
+          <button type="button" id="btnPublishSong" class="btn-publish-cloud">
+            <i data-lucide="cloud-upload"></i>
+            <span id="btnPublishSongText">Publicar en la Nube</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- =========================================================
