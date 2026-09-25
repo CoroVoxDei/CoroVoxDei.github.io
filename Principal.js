@@ -6,14 +6,13 @@ import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, del
    CONFIGURACIÓN DE FIREBASE (NUBE REAL EN PRODUCCIÓN)
 ======================== */
 const firebaseConfig = {
-  projectId: "centering-element-q5fd2",
-  appId: "1:993272291793:web:c45b7e764b7451666500f0",
-  apiKey: "AIzaSyAjeJtUnzxU3G0C007s6Xlif3XALUedCqM",
-  authDomain: "centering-element-q5fd2.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-corojuvenilvoxde-9c8dfc42-010d-4a7b-9b66-790dce5889b0",
-  storageBucket: "centering-element-q5fd2.firebasestorage.app",
-  messagingSenderId: "993272291793",
-  oAuthClientId: "993272291793-tv2f8mpk1oto0csr3csppnippae78nto.apps.googleusercontent.com"
+  apiKey: "AIzaSyCbPlWwHtL1m3mj34MIP2rNHQjXZPIqzVk",
+  authDomain: "cancionero-vox-dei.firebaseapp.com",
+  projectId: "cancionero-vox-dei",
+  storageBucket: "cancionero-vox-dei.firebasestorage.app",
+  messagingSenderId: "175902980655",
+  appId: "1:175902980655:web:338fe5a7e7e85e53dee4da",
+  measurementId: "G-XKXH8TX5V0"
 };
 
 let app, auth, db;
@@ -22,11 +21,19 @@ let isFirebaseReal = false;
 try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
-  db = getFirestore(app, firebaseConfig.firestoreDatabaseId || "(default)");
+  // Inicialización de Firestore compatible con CDN y con base de datos por defecto
+  try {
+    db = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== "(default)"
+      ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+      : getFirestore(app);
+  } catch (dbErr) {
+    db = getFirestore(app);
+  }
   isFirebaseReal = true;
-  console.log("☁️ Firebase Cloud Database inicializado con éxito en Firestore:", firebaseConfig.firestoreDatabaseId);
+  console.log("☁️ Firebase inicializado correctamente.");
 } catch (err) {
-  console.error("❌ Error al inicializar Firebase Cloud Database:", err);
+  console.warn("⚠️ Firebase en modo offline/local:", err);
+  isFirebaseReal = false;
 }
 
 /* ==========================================================================
@@ -3089,7 +3096,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error(err);
       if (!err.message.includes("cancelado") && !err.message.includes("canceled")) {
-        showToast("Error de autenticación con Google: " + err.message, "error");
+        if (err.code === "auth/unauthorized-domain" || (err.message && err.message.includes("unauthorized-domain"))) {
+          showToast("El dominio de esta web (GitHub / Live Server) debe autorizarse en Firebase Console > Authentication > Settings > Authorized Domains. Mientras tanto, puedes iniciar sesión ingresando tu correo y contraseña arriba.", "warning", 8000);
+        } else {
+          showToast("Error de autenticación con Google: " + err.message, "error");
+        }
       }
     } finally {
       if (btnGoogleAuth) btnGoogleAuth.disabled = false;
@@ -3181,7 +3192,17 @@ document.addEventListener("DOMContentLoaded", () => {
       authForm.reset();
     } catch (err) {
       console.error(err);
-      showToast("Error: " + err.message, "error");
+      let errorMsg = err.message || "Ocurrió un error al procesar la solicitud.";
+      if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+        errorMsg = "Correo o contraseña incorrectos. Si no tienes cuenta aún, haz clic en 'Crear cuenta' abajo.";
+      } else if (err.code === "auth/email-already-in-use") {
+        errorMsg = "Este correo ya está registrado. Por favor, selecciona 'Iniciar sesión' o recupera tu contraseña.";
+      } else if (err.code === "auth/weak-password") {
+        errorMsg = "La contraseña debe tener al menos 6 caracteres.";
+      } else if (err.code === "auth/network-request-failed") {
+        errorMsg = "Error de conexión de red. Verifica tu conexión a internet.";
+      }
+      showToast(errorMsg, "error", 6000);
     } finally {
       if (btnSubmitAuth) {
         btnSubmitAuth.disabled = false;
