@@ -4020,7 +4020,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function autoSeedCatalogToFirestore(user) {
     if (isAutoSeedingCatalog) return;
     if (!isFirebaseReal || !db) return;
-    const isMasterOrEditor = AuthEngine.isEditor() || (user && user.email === MASTER_ADMIN_EMAIL);
+    const isMaster = user?.email && user.email.toLowerCase().trim() === MASTER_ADMIN_EMAIL.toLowerCase();
+    const isMasterOrEditor = isMaster || (typeof isUserEditor === "function" && isUserEditor(user));
     if (!isMasterOrEditor) return;
 
     const alreadySeeded = localStorage.getItem("voxdei_catalog_autoseeded_v2");
@@ -4029,9 +4030,44 @@ document.addEventListener("DOMContentLoaded", () => {
     isAutoSeedingCatalog = true;
     try {
       console.log("Iniciando auto-sincronización de cancionero organizado por categorías a Firestore...");
-      const response = await fetch("songs-catalog.json");
-      if (!response.ok) return;
-      const catalog = await response.json();
+      
+      // 1. Obtener canciones directamente desde los elementos .song cargados de Categorias/*.html
+      let songElements = Array.from(document.querySelectorAll(".song"));
+      if (songElements.length === 0) {
+        // Si loadSongs está terminando de procesar los HTML, esperar unos instantes
+        for (let wait = 0; wait < 15; wait++) {
+          await new Promise(r => setTimeout(r, 200));
+          songElements = Array.from(document.querySelectorAll(".song"));
+          if (songElements.length > 0) break;
+        }
+      }
+
+      let catalog = [];
+      if (songElements.length > 0) {
+        catalog = songElements.map(songEl => {
+          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(songEl) : {};
+          const title = info.title || songEl.querySelector(".song-title-text, h2")?.textContent?.trim() || "";
+          const author = info.author || songEl.querySelector(".autor, small")?.textContent?.replace(/[()]/g, "")?.trim() || "";
+          const category = songEl.dataset.category || "Entrada";
+          const audio = songEl.dataset.audio || "";
+          const youtube = window.isYouTubeUrl(audio) ? audio : (songEl.dataset.youtube || "");
+          const lyrics = songEl.querySelector(".lyrics-hidden, .lyrics, .lyrics1, [id^='letra-']")?.innerHTML || "";
+          const tags = songEl.dataset.tags || "";
+          const id = info.id || songEl.dataset.id || (window.generateStableSongId ? window.generateStableSongId(title, author) : null);
+          return { id, title, author, category, audio, youtube, lyrics, tags };
+        }).filter(s => s.title);
+      } else {
+        // Como respaldo si existe el archivo JSON
+        try {
+          const res = await fetch("songs-catalog.json");
+          if (res.ok) catalog = await res.json();
+        } catch (e) {}
+      }
+
+      if (catalog.length === 0) {
+        console.warn("Aún no hay canciones disponibles para sincronizar en el DOM.");
+        return;
+      }
 
       let successCount = 0;
       for (const song of catalog) {
@@ -4056,15 +4092,15 @@ document.addEventListener("DOMContentLoaded", () => {
         successCount++;
       }
 
-      // Eliminar los documentos anteriores de la colección general 'songs'
+      // Limpiar documentos antiguos de la colección genérica 'songs'
       try {
         await deleteDoc(doc(db, "songs", "gloria-a-dios-en-el-cielo--takillakkta"));
         await deleteDoc(doc(db, "songs", "gloria-al-senor--marticorena"));
       } catch (e) {}
 
       localStorage.setItem("voxdei_catalog_autoseeded_v2", "true");
-      console.log(`¡Auto-sincronización completada! ${successCount} canciones organizadas en Firestore.`);
-      showToast(`¡Listo! Cancionero organizado y sincronizado por categorías en Firestore.`, "success", 5000);
+      console.log(`%c¡Auto-sincronización completada! ${successCount} canciones organizadas en Firestore.`, "color: #10b981; font-weight: bold; font-size: 14px;");
+      showToast(`¡Listo! Cancionero organizado y sincronizado por categorías en Firestore (${successCount} cantos).`, "success", 6000);
     } catch (err) {
       console.warn("Auto-sincronización postergada:", err);
     } finally {
@@ -4134,9 +4170,43 @@ document.addEventListener("DOMContentLoaded", () => {
       if (publishText) publishText.textContent = "Guardar Cambios";
       if (btnDelete) btnDelete.style.display = "inline-flex";
 
-      if (titleIn) titleIn.value = songData.title || songData.titulo || "";
-      if (authorIn) authorIn.value = songData.author || songData.autor || "";
-      if (categoryIn) categoryIn.value = songData.category || "Entrada";
+      // Cargar título y autor asegurando que nunca se borren al editar
+      const songTitle = songData.title || songData.titulo || document.getElementById("popupTitulo")?.textContent?.trim() || window.currentOpenedSongTitle || "";
+      const songAuthor = songData.author || songData.autor || document.getElementById("popupAutor")?.textContent?.replace(/[()]/g, "")?.trim() || window.currentOpenedSongAuthor || "";
+      if (titleIn) titleIn.value = songTitle;
+      if (authorIn) authorIn.value = songAuthor;
+
+      // Seleccionar con exactitud la categoría correspondiente de la canción
+      let resolvedCategory = songData.category || songData.categoria || "";
+      if (!resolvedCategory && songData.title && window.allSongs) {
+        const found = window.allSongs.find(s => {
+          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
+          return info && info.title && info.title.toLowerCase().trim() === songData.title.toLowerCase().trim();
+        });
+        if (found) resolvedCategory = found.dataset.category || "";
+      }
+      if (!resolvedCategory && window.currentOpenedSongData?.category) {
+        resolvedCategory = window.currentOpenedSongData.category;
+      }
+
+      if (categoryIn) {
+        if (resolvedCategory) {
+          const normTarget = resolvedCategory.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+          let matched = false;
+          for (let i = 0; i < categoryIn.options.length; i++) {
+            const optVal = categoryIn.options[i].value;
+            const normOpt = optVal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+            if (normOpt === normTarget) {
+              categoryIn.selectedIndex = i;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) categoryIn.value = resolvedCategory;
+        } else {
+          categoryIn.value = "Entrada";
+        }
+      }
       if (tagsIn) tagsIn.value = songData.tags || "";
       if (audioIn) audioIn.value = songData.audio || "";
       if (youtubeIn) youtubeIn.value = songData.youtube || "";
@@ -4160,12 +4230,30 @@ document.addEventListener("DOMContentLoaded", () => {
       if (lyricsIn) lyricsIn.value = cleanLyrics;
     } else {
       if (modalTitle) modalTitle.textContent = "Nueva Canción";
-      if (publishText) publishText.textContent = "Publicar en la Nube";
+      if (publishText) publishText.textContent = "Guardar Canción";
       if (btnDelete) btnDelete.style.display = "none";
 
       if (titleIn) titleIn.value = "";
       if (authorIn) authorIn.value = "";
-      if (categoryIn) categoryIn.value = "Entrada";
+
+      // Si el usuario tiene una categoría seleccionada actualmente en el filtro, usarla por defecto
+      const activeFilterBtn = document.querySelector(".category-filter-btn.active, .cat-chip.active, [data-category].active");
+      const currentFilteredCat = activeFilterBtn?.dataset?.category || "";
+      let defaultCat = "Entrada";
+      if (currentFilteredCat && currentFilteredCat.toLowerCase() !== "todos") {
+        defaultCat = currentFilteredCat;
+      }
+      if (categoryIn) {
+        const normTarget = defaultCat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+        for (let i = 0; i < categoryIn.options.length; i++) {
+          const optVal = categoryIn.options[i].value;
+          const normOpt = optVal.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+          if (normOpt === normTarget) {
+            categoryIn.selectedIndex = i;
+            break;
+          }
+        }
+      }
       if (tagsIn) tagsIn.value = "";
       if (audioIn) audioIn.value = "";
       if (youtubeIn) youtubeIn.value = "";
@@ -4218,8 +4306,22 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.add("showing");
     modal.classList.add("active");
     if (window.lucide) window.lucide.createIcons();
+
+    // Auto-ajustar altura del lienzo de letra para scroll continuo sin scrollbar atrapado
+    if (lyricsIn) {
+      setTimeout(() => {
+        lyricsIn.style.height = "auto";
+        lyricsIn.style.height = Math.max(380, lyricsIn.scrollHeight + 40) + "px";
+      }, 60);
+    }
   };
   window.openSongEditorModal = openSongEditorModal;
+
+  // Escuchar escritura en el lienzo para auto-expandir sin scroll atrapado
+  document.getElementById("editorSongLyrics")?.addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = Math.max(380, this.scrollHeight + 40) + "px";
+  });
 
   // Lógica de pestañas Audio / YouTube
   document.getElementById("btnMediaOptionAudio")?.addEventListener("click", () => {
@@ -4915,15 +5017,117 @@ window.getSongTag = function(songSection, activeCategory) {
   return "";
 };
 
+async function loadSongsFromFirestore(container) {
+  if (!db) return false;
+  try {
+    const ALL_CAT_COLLECTIONS = [
+      'Entrada', 'Penitencial', 'Gloria', 'Aclamacion', 'Ofertorio', 'Santo',
+      'PadreNuestro', 'Cordero', 'Comunion', 'AdoracionMeditacion', 'EnvioSalida',
+      'Marianos', 'Salesianos', 'Cuaresma', 'Pascua', 'EspirituSanto', 'Adviento',
+      'HimnosSalmos', 'Contemporaneo'
+    ];
+    
+    const songPromises = ALL_CAT_COLLECTIONS.map(coll => getDocs(collection(db, coll)).catch(() => null));
+    const snapshots = await Promise.all(songPromises);
+    
+    container.innerHTML = "";
+    let totalLoaded = 0;
+    
+    snapshots.forEach((snap, idx) => {
+      if (!snap || snap.empty) return;
+      const collName = ALL_CAT_COLLECTIONS[idx];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (!data || !data.title) return;
+        
+        const title = data.title;
+        const author = data.author || "";
+        const audioUrl = data.audio || "";
+        const hasAudio = !!(audioUrl && !window.isYouTubeUrl(audioUrl));
+        let lyricsHtml = data.lyrics || "";
+        if (!lyricsHtml.includes("<pre>") && !lyricsHtml.includes("<div>")) {
+          lyricsHtml = `<pre>${lyricsHtml}</pre>`;
+        }
+        
+        const section = document.createElement("section");
+        section.className = "song";
+        section.dataset.category = data.category || collName;
+        section.dataset.audio = audioUrl;
+        section.dataset.youtube = data.youtube || "";
+        section.dataset.tags = data.tags || "";
+        section.dataset.id = data.id || docSnap.id || window.generateStableSongId(title, author);
+        
+        section.innerHTML = `
+          <div class="song-header">
+            <div class="song-info-container">
+              <div class="song-icon-badge">
+                <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 18V5l12-2v13"></path>
+                  <circle cx="6" cy="18" r="3"></circle>
+                  <circle cx="18" cy="16" r="3"></circle>
+                </svg>
+              </div>
+              <div class="song-title-author">
+                <h2 class="repertorio-title">
+                  <span class="song-title-text">${title}</span>
+                  ${author ? `<span class="autor">(${author})</span>` : ''}
+                  ${hasAudio ? `<span class="song-audio-pill" title="Tiene grabación de audio"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Audio</span>` : ''}
+                </h2>
+              </div>
+            </div>
+            <div class="song-btns" onclick="event.stopPropagation();">
+              <button class="add-repertorio" data-title="${title.replace(/"/g, '&quot;')}" data-author="${author.replace(/"/g, '&quot;')}">
+                <span class="icon">+</span>
+                <span class="text">Añadir al repertorio</span>
+              </button>
+            </div>
+          </div>
+          <div class="lyrics-hidden" style="display:none;">${lyricsHtml}</div>
+        `;
+        container.appendChild(section);
+        totalLoaded++;
+      });
+    });
+
+    if (totalLoaded > 0) {
+      allSongs = Array.from(document.querySelectorAll(".song"));
+      shuffleArray(allSongs);
+      allSongs.forEach(song => container.appendChild(song));
+      initSongButtons();
+      initSearch();
+      currentPage = 1;
+      showPage(1);
+      updateChordsVisibility();
+      if (window.lucide) window.lucide.createIcons();
+      console.log(`Cargadas ${totalLoaded} canciones directamente desde Firestore.`);
+      return true;
+    }
+  } catch (err) {
+    console.warn("No se pudo cargar desde Firestore, intentando fallback:", err);
+  }
+  return false;
+}
+window.loadSongsFromFirestore = loadSongsFromFirestore;
+
 function loadSongs(files) {
   const container = document.getElementById("songsContainer");
   if (!container) return;
   Promise.all(files.map(f => fetch(f).then(r => r.ok && r.status === 200 ? r.text() : "").catch(() => "")))
-    .then(htmls => {
-      container.innerHTML = htmls.join("");
+    .then(async htmls => {
+      const combinedHtml = htmls.join("");
+      
+      // Si los archivos locales HTML no existen o fueron borrados, cargar directamente desde Firestore
+      if (!combinedHtml || combinedHtml.trim().length === 0) {
+        console.log("Archivos HTML locales no encontrados o vacíos. Cargando repertorio desde Firestore...");
+        const loadedFromCloud = await loadSongsFromFirestore(container);
+        if (loadedFromCloud) return;
+      }
+
+      container.innerHTML = combinedHtml;
       
       // Re-estructurar todas las tarjetas de canciones cargadas dinámicamente
       document.querySelectorAll(".song").forEach(song => {
+
         const audio = song.dataset.audio;
         
         // 1. Extraer título de forma limpia
@@ -5702,7 +5906,7 @@ document.addEventListener("DOMContentLoaded", () => {
       audio: effectiveAudio || "",
       tags: displayTag || "",
       youtube: effectiveYoutube || "",
-      category: category || ""
+      category: category || (sElem ? sElem.dataset.category : "") || ""
     };
 
     const btnEditCurrentSong = document.getElementById("btnEditCurrentSong");
@@ -6849,6 +7053,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const audio = songSection.dataset.audio || "";
       const youtube = songSection.dataset.youtube || "";
       const tags = songSection.dataset.tags || "";
+      const category = songSection.dataset.category || "";
 
       // Determinar la lista de canciones y la posición actual según el contenedor activo
       let seq = null;
@@ -6870,7 +7075,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      window.abrirLetra(title, lyrics, autor, tipo, audio, tags, seq, songIdx, youtube);
+      window.abrirLetra(title, lyrics, autor, tipo, audio, tags, seq, songIdx, youtube, category);
     }
   });
 
