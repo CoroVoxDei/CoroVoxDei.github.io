@@ -12820,6 +12820,54 @@ body.light-mode .youtube-field-wrap {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lyrics-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-editor-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-editor-format:hover {
+  background: #a51e17;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+.btn-editor-format i,
+.btn-editor-format svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.8;
+}
+
+body.light-mode .btn-editor-format {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+body.light-mode .btn-editor-format:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #ffffff;
 }
 
 .lyrics-toolbar-chords-status {
