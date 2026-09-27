@@ -1,12 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /* ========================
    CONFIGURACIÓN DE FIREBASE (NUBE REAL EN PRODUCCIÓN)
 ======================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyCbPlWwHtL1m3mj34MIP2rNHQjXZPIqzVk",
+  apiKey: "AIzaSyCbPlWwHtl1m3mj34MIP2rNHQjXZPIqzVk",
   authDomain: "cancionero-vox-dei.firebaseapp.com",
   projectId: "cancionero-vox-dei",
   storageBucket: "cancionero-vox-dei.firebasestorage.app",
@@ -15,7 +16,7 @@ const firebaseConfig = {
   measurementId: "G-XKXH8TX5V0"
 };
 
-let app, auth, db;
+let app, auth, db, storage;
 let isFirebaseReal = false;
 
 try {
@@ -29,8 +30,17 @@ try {
   } catch (dbErr) {
     db = getFirestore(app);
   }
+  try {
+    storage = getStorage(app, "cancionero-vox-dei.firebasestorage.app");
+  } catch (stErr) {
+    try {
+      storage = getStorage(app);
+    } catch (stErr2) {
+      console.warn("Storage init warning:", stErr2);
+    }
+  }
   isFirebaseReal = true;
-  console.log("☁️ Firebase inicializado correctamente.");
+  console.log("☁️ Firebase y Storage inicializados correctamente.");
 } catch (err) {
   console.warn("⚠️ Firebase en modo offline/local:", err);
   isFirebaseReal = false;
@@ -1371,20 +1381,22 @@ function renderPagination() {
   const btnPrev5 = document.createElement("button");
   btnPrev5.innerHTML = "«";
   btnPrev5.className = "nav-btn";
+  btnPrev5.title = "Retroceder 5 páginas";
   btnPrev5.disabled = currentPage <= 1;
   btnPrev5.onclick = () => { 
-    currentPage = Math.max(1, currentPage - 5); 
-    showPage(currentPage); 
+    showPage(Math.max(1, currentPage - 5)); 
+    containerScrollTop();
   };
   paginationContainer.appendChild(btnPrev5);
 
   const btnPrev1 = document.createElement("button");
   btnPrev1.innerHTML = "‹";
   btnPrev1.className = "nav-btn";
+  btnPrev1.title = "Página anterior";
   btnPrev1.disabled = currentPage <= 1;
   btnPrev1.onclick = () => { 
-    currentPage = Math.max(1, currentPage - 1); 
-    showPage(currentPage); 
+    showPage(Math.max(1, currentPage - 1)); 
+    containerScrollTop();
   };
   paginationContainer.appendChild(btnPrev1);
 
@@ -1399,10 +1411,11 @@ function renderPagination() {
   for (let i = startPage; i <= endPage; i++) {
     const btn = document.createElement("button");
     btn.textContent = i;
+    btn.title = `Página ${i}`;
     if (i === currentPage) btn.classList.add("active");
     btn.onclick = () => {
-      currentPage = i;
-      showPage(currentPage);
+      showPage(i);
+      containerScrollTop();
     };
     paginationContainer.appendChild(btn);
   }
@@ -1410,22 +1423,32 @@ function renderPagination() {
   const btnNext1 = document.createElement("button");
   btnNext1.innerHTML = "›";
   btnNext1.className = "nav-btn";
+  btnNext1.title = "Página siguiente";
   btnNext1.disabled = currentPage >= totalPages;
   btnNext1.onclick = () => { 
-    currentPage = Math.min(totalPages, currentPage + 1); 
-    showPage(currentPage); 
+    showPage(Math.min(totalPages, currentPage + 1)); 
+    containerScrollTop();
   };
   paginationContainer.appendChild(btnNext1);
 
   const btnNext5 = document.createElement("button");
   btnNext5.innerHTML = "»";
   btnNext5.className = "nav-btn";
+  btnNext5.title = "Avanzar 5 páginas";
   btnNext5.disabled = currentPage >= totalPages;
   btnNext5.onclick = () => { 
-    currentPage = Math.min(totalPages, currentPage + 5); 
-    showPage(currentPage); 
+    showPage(Math.min(totalPages, currentPage + 5)); 
+    containerScrollTop();
   };
   paginationContainer.appendChild(btnNext5);
+}
+
+function containerScrollTop() {
+  const container = document.getElementById("songsContainer");
+  if (container) {
+    const top = container.getBoundingClientRect().top + window.pageYOffset - 100;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }
 }
 
 window.addEventListener('resize', renderPagination);
@@ -1433,12 +1456,16 @@ window.addEventListener('resize', renderPagination);
 function showPage(page) {
   const container = document.getElementById("songsContainer");
   if (!container) return;
+
+  const isSearchActive = searchInput && searchInput.value.trim() !== "";
+  const isCategoryFiltered = currentCategory !== "todos";
+  const list = (isSearchActive || isCategoryFiltered) ? filteredSongs : allSongs;
+  const totalPages = Math.ceil(list.length / songsPerPage) || 1;
+
+  currentPage = Math.max(1, Math.min(page, totalPages));
+
   container.style.opacity = "0";
   setTimeout(() => {
-    const isSearchActive = searchInput && searchInput.value.trim() !== "";
-    const isCategoryFiltered = currentCategory !== "todos";
-    const list = (isSearchActive || isCategoryFiltered) ? filteredSongs : allSongs;
-
     if (isCategoryFiltered || isSearchActive) {
       allSongs.forEach(song => (song.style.display = "none"));
       
@@ -1473,7 +1500,7 @@ function showPage(page) {
       const noResultsMsg = document.getElementById("search-no-results");
       if (noResultsMsg) noResultsMsg.style.display = "none";
 
-      const start = (page - 1) * songsPerPage;
+      const start = (currentPage - 1) * songsPerPage;
       const end = start + songsPerPage;
       allSongs.forEach(song => (song.style.display = "none"));
       list.forEach((song, index) => {
@@ -1482,7 +1509,7 @@ function showPage(page) {
       renderPagination();
     }
     container.style.opacity = "1";
-  }, 150);
+  }, 120);
 }
 
 function filterByCategory(category) {
@@ -1610,16 +1637,117 @@ function getTransposedKeyName(html, offset) {
     return isLatin ? (LATIN_MAP[transposedRoot] || transposedRoot) : transposedRoot;
 }
 
+const isChordTokenStrict = (token) => {
+    if (!token) return false;
+    const cleaned = token.replace(/^[|:\(\[\{\/\-]+/, '').replace(/[|:\)\]\}\/\-]+$/, '').trim();
+    if (!cleaned) return true;
+    if (/^(?:bis|x[0-9]+|%|\/\/|\|\||\|\|:\||:\|\||\|:\||\|:)$/i.test(cleaned)) return true;
+    const eng = /^[A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][b#]?)?$/;
+    const lat = /^(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?$/i;
+    return eng.test(cleaned) || lat.test(cleaned);
+};
+
+const isPureChordLine = (rawLine) => {
+    const line = rawLine.replace(/<[^>]+>/g, '').trim();
+    if (!line) return false;
+    if (/^\[\s*(coro|estrofa|puente|intro|verso|final|coda|pre-coro)[^\]]*\]$/i.test(line)) return false;
+    if (/\b(el|la|los|las|un|una|unos|unas|de|del|que|en|y|por|para|con|sin|sobre|su|sus|mi|mis|tu|tus|dios|señor|cristo|jesus|paz|cielo|tierra|gloria|santo|padre|hijo|espiritu|amor|vida|fe|gracia|canten|alabamos|bendecimos|adoramos|glorificamos|gracias|piedad|nosotros|mundo|pecado|cordero|virgen|maria|auxiliadora|al|hoy|te|nos|danos|aleluya|hombres|ama|inmensa|celestial|poderoso|unico|jesucristo|hizo|hagan|vengan|oigan|noche|dia|sol|luz|cruz)\b/i.test(line)) {
+        return false;
+    }
+    const tokens = line.split(/\s+/).filter(t => t.length > 0);
+    if (tokens.length === 0) return false;
+    for (const t of tokens) {
+        if (!isChordTokenStrict(t)) return false;
+    }
+    return true;
+};
+
+window.formatLyricsWithChords = function(rawLyrics) {
+    if (!rawLyrics) return "";
+    let content = String(rawLyrics).trim();
+    
+    // Auto-desescapar si vino como texto plano HTML codificado (&lt;span, &lt;pre, &lt;b)
+    if (content.includes("&lt;") && (content.includes("&lt;span") || content.includes("&lt;pre") || content.includes("&lt;b"))) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = content;
+        content = txt.value;
+    }
+
+    // Quitar tags <pre> previos desincronizados
+    content = content.replace(/<\/?pre[^>]*>/gi, "").trim();
+
+    // Si ya contiene <span class="chord"> de forma consistente
+    if (content.includes('class="chord"') || content.includes("class='chord'")) {
+        return content;
+    }
+
+    const lines = content.split(/\r?\n/);
+    const formattedLines = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+            formattedLines.push("");
+            continue;
+        }
+
+        // Marcadores tipo [CORO], [ESTROFA], etc.
+        if (/^\s*\[\s*(coro|estrofa|puente|intro|final)[^\]]*\]\s*$/i.test(trimmed)) {
+            formattedLines.push(`<b>${trimmed}</b>`);
+            continue;
+        }
+
+        if (isPureChordLine(line)) {
+            // Envolver la línea completa preservando sangría y espaciado exacto
+            formattedLines.push(`<span class="chord">${line}</span>`);
+        } else {
+            // Verificar si tiene acordes entre corchetes tipo [Am] o [Do]
+            if (/\[([A-G][#b]?[^\]]*)\]/i.test(line) || /\[(Do|Re|Mi|Fa|Sol|La|Si[^\]]*)\]/i.test(line)) {
+                const replaced = line
+                    .replace(/\[([A-G][#b]?[^\]]*)\]/g, '<span class="chord">$1</span>')
+                    .replace(/\[(Do|Re|Mi|Fa|Sol|La|Si[^\]]*)\]/gi, '<span class="chord">$1</span>');
+                formattedLines.push(replaced);
+            } else if (/^(?:intro|instrumental|zampoña|quena|guitarra|solo|interludio|final|coda|bis)\b/i.test(trimmed)) {
+                // Línea instrumental con acordes (ej. Zampoña ||: F G C bis / C E Am :|| (x2))
+                const processedInstrumental = line.replace(/\b([A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][b#]?)?|Do|Re|Mi|Fa|Sol|La|Si[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?)\b/g, (match) => {
+                    return `<span class="chord">${match}</span>`;
+                });
+                formattedLines.push(processedInstrumental);
+            } else {
+                formattedLines.push(line);
+            }
+        }
+    }
+
+    return formattedLines.join("\n");
+};
+
 window.renderPopupLyrics = function() {
     const textoElem = document.getElementById("popupTexto");
     const transpInfoElem = document.getElementById("popupTranspInfo");
     if(!textoElem || !window.originalPopupLyrics) return;
 
     let content = window.originalPopupLyrics;
+    
+    // Auto-desescapar si vino como texto codificado
+    if (content.includes("&lt;") && (content.includes("&lt;span") || content.includes("&lt;pre") || content.includes("&lt;b"))) {
+        const txt = document.createElement("textarea");
+        txt.innerHTML = content;
+        content = txt.value;
+    }
+    
+    // Quitar cualquier tag <pre> residual
+    content = content.replace(/<\/?pre[^>]*>/gi, "");
 
-    // NORMALIZACIÓN ESTRUCTURAL PROACTIVA: Evita descuadres, doble pre-wrapping y acoplamiento de estrofas
-    // 1. Quitar <pre> inicial/final si existiese duplicado para evitar estilos heredados no deseados
-    content = content.replace(/^\s*<pre[^>]*>/i, "").replace(/<\/pre>\s*$/i, "");
+    if (!content.includes('class="chord"') && !content.includes("class='chord'")) {
+        content = window.formatLyricsWithChords(content);
+        window.originalPopupLyrics = content;
+    }
+
+    // NORMALIZACIÓN ESTRUCTURAL PROACTIVA
+    content = content.replace(/<\/?pre[^>]*>/gi, "");
     
     // 2. Normalizar las etiquetas de formato que están solas en líneas, evitando "saltos fantasma" al ocultar acordes
     content = content.replace(/\r?\n\s*(<(?:b|strong|i|em|u)>)\s*\r?\n/gi, '\n\n$1');
@@ -3246,6 +3374,153 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(key, JSON.stringify(profileData));
   };
 
+  // --- GESTIÓN DE ROLES Y PRIVILEGIOS DE ADMINISTRADOR / EDITOR MAESTRO ---
+  const MASTER_ADMIN_EMAIL = "jhonbastidas2805@gmail.com";
+
+  const getAuthorizedEditors = () => {
+    try {
+      const list = JSON.parse(localStorage.getItem("voxdei_authorized_editors") || "[]");
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const isUserEditor = (user) => {
+    if (!user || !user.email) return false;
+    const email = user.email.toLowerCase().trim();
+    if (email === MASTER_ADMIN_EMAIL.toLowerCase()) return true;
+    const editors = getAuthorizedEditors();
+    return editors.map(e => e.toLowerCase().trim()).includes(email);
+  };
+
+  window.isCurrentUserEditor = () => {
+    const user = AuthEngine.getCurrentUser();
+    return isUserEditor(user);
+  };
+
+  const getActiveViewMode = () => {
+    return localStorage.getItem("voxdei_active_view_mode") || "editor";
+  };
+  window.getActiveViewMode = getActiveViewMode;
+
+  const renderAuthorizedEditorsChips = () => {
+    const container = document.getElementById("editorsListContainer");
+    if (!container) return;
+    const editors = getAuthorizedEditors();
+    
+    if (editors.length === 0) {
+      container.innerHTML = `<span style="font-size: 0.84rem; color: #94a3b8; font-style: italic;">No hay editores secundarios asignados aún. Solo jhonbastidas2805@gmail.com administra el cancionero.</span>`;
+      return;
+    }
+
+    container.innerHTML = editors.map(email => `
+      <div class="editor-chip" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; margin: 4px;">
+        <i data-lucide="user-check" style="width: 14px; height: 14px; color: #34d399;"></i>
+        <span>${email}</span>
+        <button type="button" class="btn-remove-editor" data-email="${email}" style="background: none; border: none; color: #f87171; cursor: pointer; display: flex; align-items: center; padding: 0 4px; font-size: 1.1rem; line-height: 1;" title="Revocar rol de editor">
+          &times;
+        </button>
+      </div>
+    `).join("");
+
+    container.querySelectorAll(".btn-remove-editor").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const emailToRemove = btn.getAttribute("data-email");
+        removeAuthorizedEditor(emailToRemove);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const addAuthorizedEditor = async (email) => {
+    if (!email || !email.includes("@")) {
+      showToast("Por favor ingresa un correo electrónico válido.", "error");
+      return;
+    }
+    const cleanEmail = email.toLowerCase().trim();
+    if (cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase()) {
+      showToast("jhonbastidas2805@gmail.com ya es el Administrador Maestro.", "info");
+      return;
+    }
+    let editors = getAuthorizedEditors();
+    if (editors.includes(cleanEmail)) {
+      showToast("Este correo ya está en la lista de editores.", "warning");
+      return;
+    }
+    editors.push(cleanEmail);
+    localStorage.setItem("voxdei_authorized_editors", JSON.stringify(editors));
+    if (isFirebaseReal && db) {
+      try {
+        await setDoc(doc(db, "app_config", "authorized_editors"), { list: editors }, { merge: true });
+      } catch (e) {
+        console.warn("No se pudo guardar la lista de editores en Firestore:", e);
+      }
+    }
+    renderAuthorizedEditorsChips();
+    showToast(`Editor autorizado agregado: ${cleanEmail}`, "success");
+    const input = document.getElementById("inputNewEditorEmail");
+    if (input) input.value = "";
+  };
+
+  const removeAuthorizedEditor = async (email) => {
+    let editors = getAuthorizedEditors().filter(e => e.toLowerCase().trim() !== email.toLowerCase().trim());
+    localStorage.setItem("voxdei_authorized_editors", JSON.stringify(editors));
+    if (isFirebaseReal && db) {
+      try {
+        await setDoc(doc(db, "app_config", "authorized_editors"), { list: editors }, { merge: true });
+      } catch (e) {
+        console.warn("No se pudo actualizar lista de editores en Firestore:", e);
+      }
+    }
+    renderAuthorizedEditorsChips();
+    showToast(`Rol de editor revocado para: ${email}`, "info");
+  };
+
+  const updateEditorModeUI = (user = AuthEngine.getCurrentUser()) => {
+    const isMaster = user?.email && user.email.toLowerCase().trim() === MASTER_ADMIN_EMAIL.toLowerCase();
+    const isEditor = isMaster || isUserEditor(user);
+    const currentMode = getActiveViewMode(); // "editor" | "singer"
+    
+    const profileAdminPanel = document.getElementById("profileAdminPanel");
+    const btnToggleEditorMode = document.getElementById("btnToggleEditorMode");
+    const iconEditorMode = document.getElementById("iconEditorMode");
+    const textEditorMode = document.getElementById("textEditorMode");
+    const btnNewSongFab = document.getElementById("btnNewSongFab");
+    const btnEditCurrentSong = document.getElementById("btnEditCurrentSong");
+
+    if (profileAdminPanel) {
+      profileAdminPanel.style.display = isEditor ? "block" : "none";
+    }
+
+    const showEditorTools = isEditor && (currentMode === "editor");
+
+    if (btnNewSongFab) {
+      btnNewSongFab.style.display = showEditorTools ? "flex" : "none";
+    }
+
+    if (btnEditCurrentSong) {
+      btnEditCurrentSong.style.display = showEditorTools ? "inline-flex" : "none";
+    }
+
+    if (btnToggleEditorMode) {
+      if (currentMode === "editor") {
+        btnToggleEditorMode.className = "btn-toggle-editor-mode mode-editor-on";
+        if (iconEditorMode) iconEditorMode.setAttribute("data-lucide", "pen-tool");
+        if (textEditorMode) textEditorMode.textContent = "Modo Editor (Activo)";
+      } else {
+        btnToggleEditorMode.className = "btn-toggle-editor-mode mode-singer-on";
+        if (iconEditorMode) iconEditorMode.setAttribute("data-lucide", "eye");
+        if (textEditorMode) textEditorMode.textContent = "Modo Cantante (Activo)";
+      }
+    }
+
+    renderAuthorizedEditorsChips();
+    if (window.lucide) window.lucide.createIcons();
+  };
+  window.updateEditorModeUI = updateEditorModeUI;
+
   const updateTopbarAuthUI = (user) => {
     const topbarAuthBtn = document.getElementById("topbarAuthBtn");
     const topbarUserLoggedOut = document.getElementById("topbarUserLoggedOut");
@@ -3316,6 +3591,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     updateTopbarAuthUI(null);
+    updateEditorModeUI(null);
   };
   window.showLoggedOutUI = showLoggedOutUI;
 
@@ -3376,13 +3652,25 @@ document.addEventListener("DOMContentLoaded", () => {
       initials = user.email.charAt(0).toUpperCase();
     }
 
-    const userRole = (profile && profile.role) || "Músico";
+    const isMaster = user.email && user.email.toLowerCase().trim() === MASTER_ADMIN_EMAIL.toLowerCase();
+    const isEditor = isMaster || isUserEditor(user);
+
+    let userRole = (profile && profile.role) || "Músico";
+    if (isMaster) {
+      userRole = "Editor / Administrador Maestro";
+      displayGreeting = `¡Hola, Jhon! 👋 (Director)`;
+    } else if (isEditor) {
+      userRole = "Editor Autorizado";
+    }
+
     const userGroup = (profile && profile.group) || "coro";
 
     if (greetingEl) greetingEl.textContent = displayGreeting;
-    if (subRoleEl) subRoleEl.textContent = userGroup ? `${userRole} del ${userGroup}` : userRole;
+    if (subRoleEl) subRoleEl.textContent = isMaster ? "Director / Administrador Maestro" : (userGroup ? `${userRole} del ${userGroup}` : userRole);
     if (emailEl) emailEl.textContent = user.email || "Sin correo";
     if (roleBadgeEl) roleBadgeEl.textContent = userRole;
+
+    updateEditorModeUI(user);
 
     // Foto de Perfil / Iniciales
     if (profile && profile.photoUrl) {
@@ -3651,6 +3939,699 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  const ALL_CATEGORY_COLLECTIONS = [
+    "Entrada",
+    "Penitencial",
+    "Gloria",
+    "Aclamacion",
+    "Ofertorio",
+    "Santo",
+    "PadreNuestro",
+    "Cordero",
+    "Comunion",
+    "AdoracionMeditacion",
+    "EnvioSalida",
+    "Marianos",
+    "Salesianos",
+    "Cuaresma",
+    "Pascua",
+    "EspirituSanto",
+    "Adviento",
+    "HimnosSalmos",
+    "Contemporaneo"
+  ];
+
+  function getCategoryCollectionName(cat) {
+    if (!cat) return "Entrada";
+    const raw = String(cat).trim();
+    const normalized = raw
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]/g, "");
+    return normalized || "Entrada";
+  }
+  window.getCategoryCollectionName = getCategoryCollectionName;
+
+  async function loadCloudSongs() {
+    if (isFirebaseReal && db) {
+      const collectionsToListen = [...ALL_CATEGORY_COLLECTIONS, "songs"];
+      collectionsToListen.forEach(collName => {
+        try {
+          onSnapshot(collection(db, collName), (snap) => {
+            snap.forEach(docSnap => {
+              const data = docSnap.data();
+              if (data && data.title && typeof window.upsertSongInApp === "function") {
+                window.upsertSongInApp(data);
+              }
+            });
+          }, (e) => {
+            // Silencioso para colecciones vacías
+          });
+        } catch (e) {
+          console.warn(`Lectura de colección ${collName}:`, e);
+        }
+      });
+    }
+    try {
+      const customSongs = JSON.parse(localStorage.getItem("voxdei_custom_cloud_songs") || "{}");
+      let changed = false;
+      Object.entries(customSongs).forEach(([id, s]) => {
+        if (s && s.lyrics) {
+          if (s.lyrics.includes("&lt;") && (s.lyrics.includes("&lt;span") || s.lyrics.includes("&lt;pre"))) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = s.lyrics;
+            s.lyrics = txt.value;
+            changed = true;
+          }
+          if (s.lyrics.includes("<pre>")) {
+            s.lyrics = s.lyrics.replace(/<\/?pre[^>]*>/gi, "").trim();
+            changed = true;
+          }
+        }
+        if (typeof window.upsertSongInApp === "function") window.upsertSongInApp(s);
+      });
+      if (changed) {
+        localStorage.setItem("voxdei_custom_cloud_songs", JSON.stringify(customSongs));
+      }
+    } catch (e) {}
+  }
+
+  // SINCRONIZACIÓN AUTOMÁTICA DEL CATÁLOGO POR CATEGORÍAS A FIRESTORE (SIN BOTONES MANUALES)
+  let isAutoSeedingCatalog = false;
+  async function autoSeedCatalogToFirestore(user) {
+    if (isAutoSeedingCatalog) return;
+    if (!isFirebaseReal || !db) return;
+    const isMasterOrEditor = AuthEngine.isEditor() || (user && user.email === MASTER_ADMIN_EMAIL);
+    if (!isMasterOrEditor) return;
+
+    const alreadySeeded = localStorage.getItem("voxdei_catalog_autoseeded_v2");
+    if (alreadySeeded === "true") return;
+
+    isAutoSeedingCatalog = true;
+    try {
+      console.log("Iniciando auto-sincronización de cancionero organizado por categorías a Firestore...");
+      const response = await fetch("songs-catalog.json");
+      if (!response.ok) return;
+      const catalog = await response.json();
+
+      let successCount = 0;
+      for (const song of catalog) {
+        const songCategory = song.category || "Entrada";
+        const collName = getCategoryCollectionName(songCategory);
+        const songId = (window.generateStableSongId ? window.generateStableSongId(song.title, song.author) : null) || song.id || ("song_" + successCount);
+
+        const songPayload = {
+          id: songId,
+          title: song.title,
+          author: song.author || "",
+          category: songCategory,
+          lyrics: (song.lyrics || "").replace(/<\/?pre[^>]*>/gi, "").trim(),
+          audio: song.audio || "",
+          youtube: song.youtube || "",
+          tags: song.tags || "",
+          updatedAt: new Date().toISOString(),
+          updatedBy: user.email || MASTER_ADMIN_EMAIL
+        };
+
+        await setDoc(doc(db, collName, songId), songPayload, { merge: true });
+        successCount++;
+      }
+
+      // Eliminar los documentos anteriores de la colección general 'songs'
+      try {
+        await deleteDoc(doc(db, "songs", "gloria-a-dios-en-el-cielo--takillakkta"));
+        await deleteDoc(doc(db, "songs", "gloria-al-senor--marticorena"));
+      } catch (e) {}
+
+      localStorage.setItem("voxdei_catalog_autoseeded_v2", "true");
+      console.log(`¡Auto-sincronización completada! ${successCount} canciones organizadas en Firestore.`);
+      showToast(`¡Listo! Cancionero organizado y sincronizado por categorías en Firestore.`, "success", 5000);
+    } catch (err) {
+      console.warn("Auto-sincronización postergada:", err);
+    } finally {
+      isAutoSeedingCatalog = false;
+    }
+  }
+  window.autoSeedCatalogToFirestore = autoSeedCatalogToFirestore;
+
+  // Alternar entre Modo Editor y Modo Cantante
+  document.getElementById("btnToggleEditorMode")?.addEventListener("click", () => {
+    const current = getActiveViewMode();
+    const newMode = (current === "editor") ? "singer" : "editor";
+    localStorage.setItem("voxdei_active_view_mode", newMode);
+    updateEditorModeUI();
+    if (newMode === "singer") {
+      showToast("Modo Cantante activo: vista limpia para ensayar o cantar sin herramientas de edición.", "info", 4500);
+    } else {
+      showToast("Modo Editor activo: herramientas de creación y corrección habilitadas.", "success", 4500);
+    }
+  });
+
+  // Cajón para gestionar editores del coro
+  document.getElementById("btnToggleManageEditors")?.addEventListener("click", () => {
+    const drawer = document.getElementById("adminEditorsDrawer");
+    if (!drawer) return;
+    const isHidden = (drawer.style.display === "none" || !drawer.style.display);
+    drawer.style.display = isHidden ? "block" : "none";
+    if (isHidden) renderAuthorizedEditorsChips();
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  document.getElementById("btnAddEditorEmail")?.addEventListener("click", () => {
+    const input = document.getElementById("inputNewEditorEmail");
+    if (input) addAuthorizedEditor(input.value.trim());
+  });
+
+  document.getElementById("inputNewEditorEmail")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addAuthorizedEditor(e.target.value.trim());
+    }
+  });
+
+  // CONTROLADOR DEL MODAL DE EDICIÓN DE CANCIONES (CMS EN LA NUBE)
+  let currentEditingSongData = null;
+
+  const openSongEditorModal = (songData = null) => {
+    const modal = document.getElementById("songEditorModal");
+    if (!modal) return;
+
+    currentEditingSongData = songData;
+
+    const modalTitle = document.getElementById("songEditorModalTitle");
+    const publishText = document.getElementById("btnPublishSongText");
+    const btnDelete = document.getElementById("btnDeleteCurrentCloudSong");
+
+    const titleIn = document.getElementById("editorSongTitle");
+    const authorIn = document.getElementById("editorSongAuthor");
+    const categoryIn = document.getElementById("editorSongCategory");
+    const tagsIn = document.getElementById("editorSongTags");
+    const audioIn = document.getElementById("editorSongAudio");
+    const youtubeIn = document.getElementById("editorSongYoutube");
+    const lyricsIn = document.getElementById("editorSongLyrics");
+
+    if (songData) {
+      if (modalTitle) modalTitle.textContent = "Editar Canción";
+      if (publishText) publishText.textContent = "Guardar Cambios";
+      if (btnDelete) btnDelete.style.display = "inline-flex";
+
+      if (titleIn) titleIn.value = songData.title || songData.titulo || "";
+      if (authorIn) authorIn.value = songData.author || songData.autor || "";
+      if (categoryIn) categoryIn.value = songData.category || "Entrada";
+      if (tagsIn) tagsIn.value = songData.tags || "";
+      if (audioIn) audioIn.value = songData.audio || "";
+      if (youtubeIn) youtubeIn.value = songData.youtube || "";
+      
+      let cleanLyrics = songData.lyrics || songData.letraHtml || "";
+      if (cleanLyrics.includes("<") && cleanLyrics.includes(">")) {
+        cleanLyrics = cleanLyrics
+          .replace(/<span[^>]*class=['"]chord['"][^>]*>/gi, "")
+          .replace(/<\/span>/gi, "")
+          .replace(/<\/?pre[^>]*>/gi, "")
+          .replace(/<br\s*\/?>/gi, "\n")
+          .replace(/<\/p>/gi, "\n")
+          .replace(/<p[^>]*>/gi, "")
+          .replace(/<\/?b>/gi, "")
+          .replace(/<\/?strong>/gi, "")
+          .replace(/<\/?i>/gi, "")
+          .replace(/<\/?em>/gi, "")
+          .replace(/<\/?u>/gi, "")
+          .trim();
+      }
+      if (lyricsIn) lyricsIn.value = cleanLyrics;
+    } else {
+      if (modalTitle) modalTitle.textContent = "Nueva Canción";
+      if (publishText) publishText.textContent = "Publicar en la Nube";
+      if (btnDelete) btnDelete.style.display = "none";
+
+      if (titleIn) titleIn.value = "";
+      if (authorIn) authorIn.value = "";
+      if (categoryIn) categoryIn.value = "Entrada";
+      if (tagsIn) tagsIn.value = "";
+      if (audioIn) audioIn.value = "";
+      if (youtubeIn) youtubeIn.value = "";
+      if (lyricsIn) lyricsIn.value = "";
+    }
+
+    // Inicializar visualmente la sección de Audio / YouTube
+    const audioVal = audioIn?.value || "";
+    const youtubeVal = youtubeIn?.value || "";
+    const mediaAudioBtn = document.getElementById("btnMediaOptionAudio");
+    const mediaYtBtn = document.getElementById("btnMediaOptionYoutube");
+    const panelAudio = document.getElementById("mediaPanelAudio");
+    const panelYt = document.getElementById("mediaPanelYoutube");
+    const audioEmptyState = document.getElementById("audioEmptyState");
+    const audioUploadingState = document.getElementById("audioUploadingState");
+    const audioReadyState = document.getElementById("audioReadyState");
+    const audioPreviewPlayer = document.getElementById("editorAudioPreviewPlayer");
+    const audioReadyFileName = document.getElementById("audioReadyFileName");
+
+    if (audioVal && !window.isYouTubeUrl(audioVal)) {
+      mediaAudioBtn?.classList.add("active");
+      mediaYtBtn?.classList.remove("active");
+      if (panelAudio) panelAudio.style.display = "block";
+      if (panelYt) panelYt.style.display = "none";
+      if (audioEmptyState) audioEmptyState.style.display = "none";
+      if (audioUploadingState) audioUploadingState.style.display = "none";
+      if (audioReadyState) audioReadyState.style.display = "flex";
+      if (audioPreviewPlayer) audioPreviewPlayer.src = audioVal;
+      if (audioReadyFileName) audioReadyFileName.textContent = songData?.title ? ("Grabación: " + songData.title) : "Audio guardado";
+    } else if (youtubeVal || (audioVal && window.isYouTubeUrl(audioVal))) {
+      mediaYtBtn?.classList.add("active");
+      mediaAudioBtn?.classList.remove("active");
+      if (panelAudio) panelAudio.style.display = "none";
+      if (panelYt) panelYt.style.display = "block";
+      if (audioEmptyState) audioEmptyState.style.display = "flex";
+      if (audioReadyState) audioReadyState.style.display = "none";
+      if (audioPreviewPlayer) audioPreviewPlayer.src = "";
+    } else {
+      mediaAudioBtn?.classList.add("active");
+      mediaYtBtn?.classList.remove("active");
+      if (panelAudio) panelAudio.style.display = "block";
+      if (panelYt) panelYt.style.display = "none";
+      if (audioEmptyState) audioEmptyState.style.display = "flex";
+      if (audioUploadingState) audioUploadingState.style.display = "none";
+      if (audioReadyState) audioReadyState.style.display = "none";
+      if (audioPreviewPlayer) audioPreviewPlayer.src = "";
+    }
+
+    switchEditorTab("write");
+    modal.classList.add("showing");
+    modal.classList.add("active");
+    if (window.lucide) window.lucide.createIcons();
+  };
+  window.openSongEditorModal = openSongEditorModal;
+
+  // Lógica de pestañas Audio / YouTube
+  document.getElementById("btnMediaOptionAudio")?.addEventListener("click", () => {
+    document.getElementById("btnMediaOptionAudio")?.classList.add("active");
+    document.getElementById("btnMediaOptionYoutube")?.classList.remove("active");
+    const panelAudio = document.getElementById("mediaPanelAudio");
+    const panelYt = document.getElementById("mediaPanelYoutube");
+    if (panelAudio) panelAudio.style.display = "block";
+    if (panelYt) panelYt.style.display = "none";
+  });
+
+  document.getElementById("btnMediaOptionYoutube")?.addEventListener("click", () => {
+    document.getElementById("btnMediaOptionYoutube")?.classList.add("active");
+    document.getElementById("btnMediaOptionAudio")?.classList.remove("active");
+    const panelAudio = document.getElementById("mediaPanelAudio");
+    const panelYt = document.getElementById("mediaPanelYoutube");
+    if (panelAudio) panelAudio.style.display = "none";
+    if (panelYt) panelYt.style.display = "block";
+  });
+
+  // SUBIDA DIRECTA DE AUDIO A LA NUBE (FIREBASE STORAGE)
+  const audioFileInput = document.getElementById("songAudioFileInput");
+  const triggerAudioUploadBtn = document.getElementById("btnTriggerAudioUpload");
+  const audioEmptyDropzone = document.getElementById("audioEmptyState");
+  const btnRemoveAudio = document.getElementById("btnRemoveAudioFile");
+
+  const openAudioPicker = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    audioFileInput?.click();
+  };
+
+  triggerAudioUploadBtn?.addEventListener("click", openAudioPicker);
+  audioEmptyDropzone?.addEventListener("click", (e) => {
+    if (e.target.closest("button") === triggerAudioUploadBtn) return;
+    openAudioPicker(e);
+  });
+
+  audioFileInput?.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith("audio/") && !/\.(mp3|m4a|wav|aac|ogg|wma)$/i.test(file.name)) {
+      showToast("Por favor selecciona un archivo de audio válido (MP3, M4A, WAV...)", "error");
+      return;
+    }
+
+    const emptyBox = document.getElementById("audioEmptyState");
+    const uploadingBox = document.getElementById("audioUploadingState");
+    const readyBox = document.getElementById("audioReadyState");
+    const statusText = document.getElementById("audioUploadStatusText");
+    const progressFill = document.getElementById("audioUploadProgressFill");
+    const readyName = document.getElementById("audioReadyFileName");
+    const readySize = document.getElementById("audioReadySize");
+    const previewPlayer = document.getElementById("editorAudioPreviewPlayer");
+    const audioInputHidden = document.getElementById("editorSongAudio");
+
+    if (emptyBox) emptyBox.style.display = "none";
+    if (readyBox) readyBox.style.display = "none";
+    if (uploadingBox) uploadingBox.style.display = "flex";
+    if (statusText) statusText.textContent = "Preparando subida de audio...";
+    if (progressFill) progressFill.style.width = "5%";
+
+    try {
+      if (storage && isFirebaseReal) {
+        const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        const storagePath = `canciones_audio/${Date.now()}_${cleanName}`;
+        const audioRef = ref(storage, storagePath);
+        const uploadTask = uploadBytesResumable(audioRef, file);
+
+        uploadTask.on("state_changed", 
+          (snapshot) => {
+            const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            if (progressFill) progressFill.style.width = `${Math.max(5, pct)}%`;
+            if (statusText) statusText.textContent = `Subiendo audio a la nube... (${pct}%)`;
+          },
+          (err) => {
+            console.warn("Storage upload error, using local fallback:", err);
+            // Fallback a URL local / Data URL para que nunca se quede trabado
+            const localUrl = URL.createObjectURL(file);
+            if (audioInputHidden) audioInputHidden.value = localUrl;
+            if (readyName) readyName.textContent = file.name;
+            if (readySize) readySize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB (Audio temporal)`;
+            if (previewPlayer) previewPlayer.src = localUrl;
+            if (uploadingBox) uploadingBox.style.display = "none";
+            if (readyBox) readyBox.style.display = "flex";
+            showToast("Audio cargado para la canción. (Nota: Para subida permanente a la nube, revisa reglas de Storage en Firebase)", "warning");
+          },
+          async () => {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            if (audioInputHidden) audioInputHidden.value = downloadUrl;
+            if (readyName) readyName.textContent = file.name;
+            if (readySize) readySize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB · Guardado en la nube`;
+            if (previewPlayer) previewPlayer.src = downloadUrl;
+            if (uploadingBox) uploadingBox.style.display = "none";
+            if (readyBox) readyBox.style.display = "flex";
+            showToast("¡Audio grabado subido y guardado exitosamente!", "success");
+            if (window.lucide) window.lucide.createIcons();
+          }
+        );
+      } else {
+        // Modo offline / sin Storage activo
+        const localUrl = URL.createObjectURL(file);
+        if (audioInputHidden) audioInputHidden.value = localUrl;
+        if (readyName) readyName.textContent = file.name;
+        if (readySize) readySize.textContent = `${(file.size / (1024 * 1024)).toFixed(1)} MB (Guardado local)`;
+        if (previewPlayer) previewPlayer.src = localUrl;
+        if (uploadingBox) uploadingBox.style.display = "none";
+        if (readyBox) readyBox.style.display = "flex";
+        showToast("Audio grabado cargado en la canción.", "success");
+      }
+    } catch (uploadErr) {
+      console.error("Error al procesar audio:", uploadErr);
+      const localUrl = URL.createObjectURL(file);
+      if (audioInputHidden) audioInputHidden.value = localUrl;
+      if (readyName) readyName.textContent = file.name;
+      if (previewPlayer) previewPlayer.src = localUrl;
+      if (uploadingBox) uploadingBox.style.display = "none";
+      if (readyBox) readyBox.style.display = "flex";
+      showToast("Audio disponible para reproducir.", "success");
+    }
+  });
+
+  btnRemoveAudio?.addEventListener("click", () => {
+    const audioInputHidden = document.getElementById("editorSongAudio");
+    const previewPlayer = document.getElementById("editorAudioPreviewPlayer");
+    const emptyBox = document.getElementById("audioEmptyState");
+    const readyBox = document.getElementById("audioReadyState");
+    const fileInput = document.getElementById("songAudioFileInput");
+
+    if (audioInputHidden) audioInputHidden.value = "";
+    if (previewPlayer) {
+      previewPlayer.pause();
+      previewPlayer.src = "";
+    }
+    if (fileInput) fileInput.value = "";
+    if (readyBox) readyBox.style.display = "none";
+    if (emptyBox) emptyBox.style.display = "flex";
+    showToast("Audio removido de la canción.", "info");
+  });
+
+  const closeSongEditorModal = () => {
+    const modal = document.getElementById("songEditorModal");
+    if (!modal) return;
+    modal.classList.remove("showing");
+    modal.classList.remove("active");
+    currentEditingSongData = null;
+  };
+  window.closeSongEditorModal = closeSongEditorModal;
+
+  document.getElementById("closeSongEditorModal")?.addEventListener("click", closeSongEditorModal);
+  document.getElementById("btnCancelSongEditor")?.addEventListener("click", closeSongEditorModal);
+
+  const tabEditorWrite = document.getElementById("tabEditorWrite");
+  const tabEditorPreview = document.getElementById("tabEditorPreview");
+  const editorWriteTabContent = document.getElementById("editorWriteTabContent");
+  const editorPreviewTabContent = document.getElementById("editorPreviewTabContent");
+
+  const switchEditorTab = (tab) => {
+    if (tab === "preview") {
+      tabEditorWrite?.classList.remove("active");
+      tabEditorPreview?.classList.add("active");
+      if (editorWriteTabContent) editorWriteTabContent.style.display = "none";
+      if (editorPreviewTabContent) editorPreviewTabContent.style.display = "block";
+      updateEditorPreview();
+    } else {
+      tabEditorPreview?.classList.remove("active");
+      tabEditorWrite?.classList.add("active");
+      if (editorPreviewTabContent) editorPreviewTabContent.style.display = "none";
+      if (editorWriteTabContent) editorWriteTabContent.style.display = "block";
+    }
+  };
+
+  tabEditorWrite?.addEventListener("click", () => switchEditorTab("write"));
+  tabEditorPreview?.addEventListener("click", () => switchEditorTab("preview"));
+
+  const updateEditorPreview = () => {
+    const titleVal = document.getElementById("editorSongTitle")?.value || "Sin título";
+    const authorVal = document.getElementById("editorSongAuthor")?.value || "";
+    const catVal = document.getElementById("editorSongCategory")?.value || "General";
+    const lyricsVal = document.getElementById("editorSongLyrics")?.value || "";
+
+    const previewTitle = document.getElementById("previewSongTitle");
+    const previewAuthor = document.getElementById("previewSongAuthor");
+    const previewCat = document.getElementById("previewSongCategory");
+    const previewBody = document.getElementById("previewSongBody");
+    const previewChords = document.getElementById("previewChordsCount");
+
+    if (previewTitle) previewTitle.textContent = titleVal;
+    if (previewAuthor) previewAuthor.textContent = authorVal ? `(${authorVal})` : "";
+    if (previewCat) previewCat.textContent = catVal;
+
+    const formattedHtml = window.formatLyricsWithChords(lyricsVal);
+    if (previewBody) {
+      previewBody.innerHTML = formattedHtml;
+    }
+
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = formattedHtml;
+    const chordsCount = tempDiv.querySelectorAll(".chord").length;
+    if (previewChords) {
+      previewChords.textContent = `${chordsCount} acordes detectados automáticamente`;
+    }
+  };
+
+  const applyTextWrap = (prefix, suffix) => {
+    const textarea = document.getElementById("editorSongLyrics");
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selected = text.substring(start, end) || "texto";
+    const replacement = `${prefix}${selected}${suffix}`;
+    textarea.value = text.substring(0, start) + replacement + text.substring(end);
+    textarea.focus();
+    textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+  };
+
+  document.getElementById("btnWordBold")?.addEventListener("click", () => applyTextWrap("<b>", "</b>"));
+  document.getElementById("btnWordItalic")?.addEventListener("click", () => applyTextWrap("<i>", "</i>"));
+
+  const btnWordCaseMenu = document.getElementById("btnWordCaseMenu");
+  const wordCaseDropdown = document.getElementById("wordCaseDropdown");
+
+  btnWordCaseMenu?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (wordCaseDropdown) {
+      wordCaseDropdown.style.display = wordCaseDropdown.style.display === "none" ? "block" : "none";
+    }
+  });
+
+  document.addEventListener("click", () => {
+    if (wordCaseDropdown) wordCaseDropdown.style.display = "none";
+  });
+
+  document.querySelectorAll(".case-option")?.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const caseType = btn.getAttribute("data-case");
+      const textarea = document.getElementById("editorSongLyrics");
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start === end) return;
+      const text = textarea.value;
+      let selected = text.substring(start, end);
+
+      if (caseType === "upper") {
+        selected = selected.toUpperCase();
+      } else if (caseType === "lower") {
+        selected = selected.toLowerCase();
+      } else if (caseType === "title") {
+        selected = selected.replace(/\b\w/g, l => l.toUpperCase());
+      } else if (caseType === "sentence") {
+        selected = selected.charAt(0).toUpperCase() + selected.slice(1).toLowerCase();
+      }
+
+      textarea.value = text.substring(0, start) + selected + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start, start + selected.length);
+      if (wordCaseDropdown) wordCaseDropdown.style.display = "none";
+    });
+  });
+
+  document.querySelectorAll(".word-tag-btn")?.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tag = btn.getAttribute("data-insert") + "\n";
+      const textarea = document.getElementById("editorSongLyrics");
+      if (!textarea) return;
+      const start = textarea.selectionStart;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + tag + text.substring(start);
+      textarea.focus();
+      textarea.setSelectionRange(start + tag.length, start + tag.length);
+    });
+  });
+
+  document.getElementById("btnPublishSong")?.addEventListener("click", async () => {
+    const title = document.getElementById("editorSongTitle")?.value.trim() || "";
+    const author = document.getElementById("editorSongAuthor")?.value.trim() || "";
+    const category = document.getElementById("editorSongCategory")?.value || "Entrada";
+    const tags = document.getElementById("editorSongTags")?.value.trim() || "";
+    const audio = document.getElementById("editorSongAudio")?.value.trim() || "";
+    const youtube = document.getElementById("editorSongYoutube")?.value.trim() || "";
+    const rawLyrics = document.getElementById("editorSongLyrics")?.value.trim() || "";
+
+    if (!title) {
+      showToast("Por favor ingresa un título para la canción.", "error");
+      document.getElementById("editorSongTitle")?.focus();
+      return;
+    }
+
+    if (!rawLyrics) {
+      showToast("Por favor escribe la letra y acordes de la canción.", "error");
+      document.getElementById("editorSongLyrics")?.focus();
+      return;
+    }
+
+    const formattedLyrics = window.formatLyricsWithChords(rawLyrics);
+
+    const btnPublish = document.getElementById("btnPublishSong");
+    if (btnPublish) btnPublish.disabled = true;
+
+    try {
+      const songId = currentEditingSongData?.id || (window.generateStableSongId ? window.generateStableSongId(title, author) : ("song_" + Date.now()));
+      const songPayload = {
+        id: songId,
+        title: title,
+        author: author,
+        category: category,
+        tags: tags,
+        audio: audio,
+        youtube: youtube,
+        lyrics: formattedLyrics,
+        updatedAt: new Date().toISOString(),
+        updatedBy: AuthEngine.getCurrentUser()?.email || MASTER_ADMIN_EMAIL
+      };
+
+      const targetColl = getCategoryCollectionName(category);
+      if (isFirebaseReal && db) {
+        await setDoc(doc(db, targetColl, songId), songPayload, { merge: true });
+        // Si se cambió de categoría, eliminar el documento de la colección previa
+        if (currentEditingSongData?.category && getCategoryCollectionName(currentEditingSongData.category) !== targetColl) {
+          try {
+            await deleteDoc(doc(db, getCategoryCollectionName(currentEditingSongData.category), songId));
+          } catch (e) {}
+        }
+        // Limpiar de la colección obsoleta general 'songs' si existiese allí
+        try {
+          await deleteDoc(doc(db, "songs", songId));
+        } catch (e) {}
+      }
+
+      let customSongs = JSON.parse(localStorage.getItem("voxdei_custom_cloud_songs") || "{}");
+      customSongs[songId] = songPayload;
+      localStorage.setItem("voxdei_custom_cloud_songs", JSON.stringify(customSongs));
+
+      window.upsertSongInApp(songPayload);
+      closeSongEditorModal();
+      showToast("¡Canción guardada y publicada en la nube exitosamente!", "success");
+
+      if (window.currentOpenedSongData && window.currentOpenedSongData.title === title) {
+        window.abrirLetra(title, formattedLyrics, author, "", audio, tags, null, null, youtube, category);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error al guardar en la nube: " + (err.message || err), "error");
+    } finally {
+      if (btnPublish) btnPublish.disabled = false;
+    }
+  });
+
+  document.getElementById("btnDeleteCurrentCloudSong")?.addEventListener("click", async () => {
+    if (!currentEditingSongData) return;
+    const ok = await showConfirmModal({
+      title: "Eliminar canción",
+      message: `¿Estás seguro de que deseas eliminar permanentemente la canción "${currentEditingSongData.title || currentEditingSongData.titulo}" de la nube?`,
+      confirmText: "Eliminar",
+      cancelText: "Cancelar",
+      danger: true,
+      icon: "trash-2"
+    });
+    if (!ok) return;
+
+    try {
+      const songId = currentEditingSongData.id || window.generateStableSongId(currentEditingSongData.title || currentEditingSongData.titulo, currentEditingSongData.author || currentEditingSongData.autor);
+      const targetColl = getCategoryCollectionName(currentEditingSongData.category);
+      if (isFirebaseReal && db && songId) {
+        try {
+          await deleteDoc(doc(db, targetColl, songId));
+        } catch (e) {}
+        try {
+          await deleteDoc(doc(db, "songs", songId));
+        } catch (e) {}
+      }
+
+      let customSongs = JSON.parse(localStorage.getItem("voxdei_custom_cloud_songs") || "{}");
+      if (customSongs[songId]) {
+        delete customSongs[songId];
+        localStorage.setItem("voxdei_custom_cloud_songs", JSON.stringify(customSongs));
+      }
+
+      const titleTarget = (currentEditingSongData.title || currentEditingSongData.titulo || "").toLowerCase().trim();
+      const el = allSongs.find(s => {
+        const h2 = s.querySelector("h2");
+        const t = h2 ? (h2.querySelector(".song-title-text")?.textContent.trim() || h2.textContent.trim()) : "";
+        return t.toLowerCase() === titleTarget;
+      });
+      if (el) {
+        el.remove();
+        allSongs = allSongs.filter(s => s !== el);
+        window.allSongs = allSongs;
+        if (typeof showPage === "function") showPage(currentPage || 1);
+      }
+
+      closeSongEditorModal();
+      document.getElementById("popupLetra")?.classList.remove("active");
+      showToast("La canción ha sido eliminada.", "info");
+    } catch (err) {
+      showToast("Error al eliminar canción: " + err.message, "error");
+    }
+  });
+
+  // Conectar botones de apertura del editor
+  document.getElementById("btnAdminCreateSong")?.addEventListener("click", () => openSongEditorModal(null));
+  document.getElementById("btnNewSongFab")?.addEventListener("click", () => openSongEditorModal(null));
+  document.getElementById("btnEditCurrentSong")?.addEventListener("click", () => {
+    if (window.currentOpenedSongData) {
+      openSongEditorModal(window.currentOpenedSongData);
+    }
+  });
+
   // Escuchar el estado de autenticación real o simulado
   AuthEngine.onAuthStateChanged(async (user) => {
     const authBadge = document.getElementById("authBadge");
@@ -3659,6 +4640,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (authBadge) authBadge.style.display = "inline-block";
       renderUserProfile(user);
       await window.syncLocalAndCloudOnLogin(user);
+      loadCloudSongs();
+      autoSeedCatalogToFirestore(user);
     } else {
       if (authBadge) authBadge.style.display = "none";
       showLoggedOutUI();
@@ -3746,6 +4729,108 @@ window.getSongInfo = function(songSection) {
   }
 
   return { title: "", author: "", id: "" };
+};
+
+window.upsertSongInApp = function(songPayload) {
+  if (!songPayload || !songPayload.title) return;
+  const container = document.getElementById("songsContainer");
+  if (!container) return;
+
+  const title = (songPayload.title || "").trim();
+  const author = (songPayload.author || "").trim();
+  const category = (songPayload.category || "Entrada").trim();
+  let lyrics = songPayload.lyrics || "";
+  if (lyrics.includes("&lt;") && (lyrics.includes("&lt;span") || lyrics.includes("&lt;pre") || lyrics.includes("&lt;b"))) {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = lyrics;
+    lyrics = txt.value;
+  }
+  lyrics = lyrics.replace(/<\/?pre[^>]*>/gi, "").trim();
+
+  if (!lyrics.includes('class="chord"') && !lyrics.includes("class='chord'")) {
+    lyrics = window.formatLyricsWithChords(lyrics);
+  }
+  lyrics = lyrics.replace(/<\/?pre[^>]*>/gi, "").trim();
+  const audio = songPayload.audio || "";
+  const youtube = songPayload.youtube || "";
+  const tags = songPayload.tags || "";
+
+  let list = (typeof allSongs !== "undefined" && Array.isArray(allSongs)) ? allSongs : (window.allSongs || []);
+
+  let existingElem = list.find(s => {
+    const h2 = s.querySelector("h2");
+    const t = h2 ? (h2.querySelector(".song-title-text")?.textContent.trim() || h2.textContent.trim()) : "";
+    return t.toLowerCase() === title.toLowerCase();
+  });
+
+  if (existingElem) {
+    existingElem.dataset.category = category;
+    if (audio) existingElem.dataset.audio = audio;
+    if (youtube) existingElem.dataset.youtube = youtube;
+    if (tags) existingElem.dataset.tags = tags;
+    const authorSpan = existingElem.querySelector(".autor");
+    if (authorSpan) {
+      authorSpan.textContent = author ? `(${author})` : "";
+    }
+    const lyricsHidden = existingElem.querySelector(".lyrics-hidden");
+    if (lyricsHidden) {
+      lyricsHidden.innerHTML = lyrics;
+    }
+  } else {
+    const newDiv = document.createElement("div");
+    newDiv.className = "song";
+    newDiv.dataset.category = category;
+    if (audio) newDiv.dataset.audio = audio;
+    if (youtube) newDiv.dataset.youtube = youtube;
+    if (tags) newDiv.dataset.tags = tags;
+    const hasAudio = !!(audio && !window.isYouTubeUrl(audio));
+    newDiv.innerHTML = `
+      <div class="song-header">
+        <div class="song-info-container">
+          <div class="song-icon-badge">
+            <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </div>
+          <div class="song-title-author">
+            <h2 class="repertorio-title">
+              <span class="song-title-text">${title}</span>
+              ${author ? `<span class="autor">(${author})</span>` : ''}
+              ${hasAudio ? `<span class="song-audio-pill" title="Tiene grabación de audio"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Audio</span>` : ''}
+            </h2>
+          </div>
+        </div>
+        <div class="song-btns" onclick="event.stopPropagation();">
+          <button class="add-repertorio" data-title="${title.replace(/"/g, '&quot;')}">
+            <span class="icon">+</span>
+            <span class="text">Añadir al repertorio</span>
+          </button>
+        </div>
+      </div>
+      <div class="lyrics-hidden" style="display:none;">${lyrics}</div>
+    `;
+
+    newDiv.addEventListener("click", () => {
+      window.abrirLetra(title, lyrics, author, "", audio, tags, null, null, youtube, category);
+    });
+
+    const addBtn = newDiv.querySelector(".add-repertorio");
+    addBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.agregarAlRepertorio?.(title);
+    });
+
+    container.prepend(newDiv);
+    list.unshift(newDiv);
+    allSongs = list;
+    window.allSongs = list;
+  }
+
+  if (typeof initSongButtons === "function") initSongButtons();
+  if (typeof updateChordsVisibility === "function") updateChordsVisibility();
+  if (typeof showPage === "function" && typeof currentPage !== "undefined") showPage(currentPage || 1);
 };
 
 function shuffleArray(array) {
@@ -3872,24 +4957,27 @@ function loadSongs(files) {
         const stableId = window.generateStableSongId(title, author);
         song.dataset.id = stableId;
 
+        const hasAudio = !!(audioUrl && !window.isYouTubeUrl(audioUrl));
+
         // 3. Crear nueva estructura interna refinada y uniforme
         song.innerHTML = `
           <div class="song-header">
             <div class="song-info-container">
               <!-- Music Note Icon Badge -->
               <div class="song-icon-badge">
-                <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="music-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 18V5l12-2v13"></path>
                   <circle cx="6" cy="18" r="3"></circle>
                   <circle cx="18" cy="16" r="3"></circle>
                 </svg>
               </div>
               
-              <!-- Title and Author -->
+              <!-- Title, Author & Audio indicator -->
               <div class="song-title-author">
                 <h2 class="repertorio-title">
                   <span class="song-title-text">${title}</span>
                   ${author ? `<span class="autor">(${author})</span>` : ''}
+                  ${hasAudio ? `<span class="song-audio-pill" title="Tiene grabación de audio"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Audio</span>` : ''}
                 </h2>
               </div>
             </div>
@@ -4207,7 +5295,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetHideTimer() {
     const notesWrapper = document.getElementById("popupNotesWrapper");
     const notesModal = document.getElementById("popupSongNotesModal");
-    if (settingsMenu?.classList.contains("active") || notesModal?.classList.contains("active")) {
+    const activeToolPanel = document.querySelector(".tool-panel.active");
+    if (settingsMenu?.classList.contains("active") || notesModal?.classList.contains("active") || activeToolPanel) {
         clearTimeout(hideTimer);
         return;
     }
@@ -4215,7 +5304,7 @@ document.addEventListener("DOMContentLoaded", () => {
     notesWrapper?.classList.remove("hidden-fab");
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
-        if (!settingsMenu?.classList.contains("active") && !notesModal?.classList.contains("active")) {
+        if (!settingsMenu?.classList.contains("active") && !notesModal?.classList.contains("active") && !document.querySelector(".tool-panel.active")) {
           settingsWrapper?.classList.add("hidden-fab");
           notesWrapper?.classList.add("hidden-fab");
         }
@@ -4511,6 +5600,79 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Configurar barras de Audio y YouTube directas del lector
+    const readerAudioBar = document.getElementById("readerAudioBar");
+    const readerYoutubeBar = document.getElementById("readerYoutubeBar");
+    const categoryDisplay = document.getElementById("popupCategoryDisplay");
+
+    if (readerAudioBar) {
+      if (effectiveAudio && !window.isYouTubeUrl(effectiveAudio)) {
+        readerAudioBar.style.display = "flex";
+      } else {
+        readerAudioBar.style.display = "none";
+      }
+    }
+
+    if (readerYoutubeBar) {
+      if (effectiveYoutube) {
+        readerYoutubeBar.style.display = "flex";
+      } else {
+        readerYoutubeBar.style.display = "none";
+      }
+    }
+
+    if (categoryDisplay) {
+      const catDisplayName = window.getCategoryDisplayName ? window.getCategoryDisplayName(category) : category;
+      categoryDisplay.textContent = catDisplayName ? `· ${catDisplayName}` : "";
+    }
+
+    // Botón Repertorio en el Lector
+    const btnPopupAddRep = document.getElementById("btnPopupAddRep");
+    if (btnPopupAddRep) {
+      let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+      const isInRep = rep.some(s => s.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim());
+      const repIcon = btnPopupAddRep.querySelector("i, svg, .rep-icon");
+      const repText = btnPopupAddRep.querySelector(".rep-text");
+      if (isInRep) {
+        btnPopupAddRep.classList.add("in-rep");
+        if (repText) repText.textContent = "En Repertorio";
+      } else {
+        btnPopupAddRep.classList.remove("in-rep");
+        if (repText) repText.textContent = "Repertorio";
+      }
+
+      btnPopupAddRep.onclick = (e) => {
+        e.stopPropagation();
+        let curRep = JSON.parse(localStorage.getItem("repertorio")) || [];
+        const idx = curRep.findIndex(s => s.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim());
+        if (idx === -1) {
+          curRep.push({ title: titulo, author: autor, lyrics: letraHtml, type: tipo, audio: effectiveAudio, youtube: effectiveYoutube, category: category });
+          localStorage.setItem("repertorio", JSON.stringify(curRep));
+          btnPopupAddRep.classList.add("in-rep");
+          if (repText) repText.textContent = "En Repertorio";
+          showToast("Añadido a tu repertorio", "success");
+        } else {
+          curRep.splice(idx, 1);
+          localStorage.setItem("repertorio", JSON.stringify(curRep));
+          btnPopupAddRep.classList.remove("in-rep");
+          if (repText) repText.textContent = "Repertorio";
+          showToast("Quitado de tu repertorio", "info");
+        }
+        if (typeof initSongButtons === "function") initSongButtons();
+        if (window.lucide) window.lucide.createIcons();
+      };
+    }
+
+    // Cerrar panel de notas si estuviera abierto de otra canción
+    const readerInlineNotes = document.getElementById("readerInlineNotes");
+    if (readerInlineNotes) readerInlineNotes.style.display = "none";
+    const savedNote = localStorage.getItem("voxdei_note_" + titulo) || "";
+    const notesBadge = document.getElementById("notesBadgeDot");
+    if (notesBadge) notesBadge.style.display = savedNote.trim() ? "inline-block" : "none";
+
+    if (!letraHtml.includes('class="chord"') && !letraHtml.includes("class='chord'")) {
+        letraHtml = window.formatLyricsWithChords(letraHtml);
+    }
     window.originalPopupLyrics = letraHtml;
     
     window.transposeOffset = 0;
@@ -4532,6 +5694,22 @@ document.addEventListener("DOMContentLoaded", () => {
     window.renderPopupLyrics();
     window.currentOpenedSongTitle = titulo;
     window.currentOpenedSongAuthor = autor || "";
+    window.currentOpenedSongData = {
+      title: titulo,
+      lyrics: letraHtml,
+      author: autor || "",
+      type: tipo || "",
+      audio: effectiveAudio || "",
+      tags: displayTag || "",
+      youtube: effectiveYoutube || "",
+      category: category || ""
+    };
+
+    const btnEditCurrentSong = document.getElementById("btnEditCurrentSong");
+    if (btnEditCurrentSong) {
+      btnEditCurrentSong.style.display = (window.isCurrentUserEditor?.() && window.getActiveViewMode?.() === "editor") ? "inline-flex" : "none";
+    }
+
     checkSongNotesBadge(titulo, autor);
     popup.classList.add("active");
     if (window.lucide) window.lucide.createIcons();
@@ -4612,6 +5790,31 @@ document.addEventListener("DOMContentLoaded", () => {
     window.renderPopupLyrics();
   });
 
+  document.getElementById("btnReaderZoomIn")?.addEventListener("click", () => {
+    window.tamañoFuente = Math.min(26, (window.tamañoFuente || 16) + 1);
+    localStorage.setItem("fontSize", window.tamañoFuente);
+    const textoElem = document.getElementById("popupTexto");
+    if (textoElem) textoElem.style.setProperty("font-size", window.tamañoFuente + "px", "important");
+  });
+
+  document.getElementById("btnReaderZoomOut")?.addEventListener("click", () => {
+    window.tamañoFuente = Math.max(11, (window.tamañoFuente || 16) - 1);
+    localStorage.setItem("fontSize", window.tamañoFuente);
+    const textoElem = document.getElementById("popupTexto");
+    if (textoElem) textoElem.style.setProperty("font-size", window.tamañoFuente + "px", "important");
+  });
+
+  const toggleChordsBtn = document.getElementById("btnToggleChordsReader");
+  toggleChordsBtn?.addEventListener("click", () => {
+    const isHidden = document.body.classList.toggle("hide-chords");
+    toggleChordsBtn.classList.toggle("active", !isHidden);
+    if (isHidden) {
+      showToast("Acordes ocultos (modo solo letra)", "info");
+    } else {
+      showToast("Acordes visibles", "info");
+    }
+  });
+
   addTapListener(btnToolNotation, (e) => {
       window.chordNotation = window.chordNotation === "english" ? "latin" : "english";
       localStorage.setItem("chordNotation", window.chordNotation);
@@ -4663,6 +5866,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (textoElem) {
         textoElem.style.lineHeight = window.espaciadoLinea;
     }
+  });
+
+  document.querySelectorAll(".tool-panel").forEach(panel => {
+    panel.addEventListener("click", (e) => e.stopPropagation());
+    panel.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+    panel.addEventListener("mousedown", (e) => e.stopPropagation());
   });
 
   btnDownloadImage?.addEventListener("click", async () => {
@@ -4887,88 +6096,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnNotesFab?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (!window.currentOpenedSongTitle) {
-      const currentTitleEl = document.getElementById("popupTitulo");
-      window.currentOpenedSongTitle = currentTitleEl ? currentTitleEl.textContent : "";
-    }
-    if (!window.currentOpenedSongAuthor) {
-      const currentAuthorEl = document.getElementById("popupAutor");
-      window.currentOpenedSongAuthor = currentAuthorEl ? currentAuthorEl.textContent?.trim() : "";
-    }
-    const songTitle = window.currentOpenedSongTitle || document.getElementById("popupTitulo")?.textContent || "TE OFRECEMOS SEÑOR";
+    const songTitle = window.currentOpenedSongTitle || document.getElementById("popupTitulo")?.textContent?.trim() || "";
     const songAuthor = window.currentOpenedSongAuthor || document.getElementById("popupAutor")?.textContent?.trim() || "";
-    const songNotesModalTitle = document.getElementById("songNotesModalTitle");
-    if (songNotesModalTitle) songNotesModalTitle.textContent = songTitle.toUpperCase();
+    if (!songTitle) return;
 
-    const autorText = songAuthor;
-    const notesSongAuthorSub = document.getElementById("notesSongAuthorSub");
-    const notesSongSubDot = document.getElementById("notesSongSubDot");
-
-    if (notesSongAuthorSub) {
-      if (autorText) {
-        notesSongAuthorSub.textContent = autorText;
-        notesSongAuthorSub.style.display = "inline";
-        if (notesSongSubDot) notesSongSubDot.style.display = "inline";
-      } else {
-        notesSongAuthorSub.textContent = "";
-        notesSongAuthorSub.style.display = "none";
-        if (notesSongSubDot) notesSongSubDot.style.display = "none";
-      }
+    const modalTitle = document.getElementById("songNotesModalTitle");
+    if (modalTitle) modalTitle.textContent = songTitle.toUpperCase();
+    if (notesSongTitleSub) {
+      notesSongTitleSub.textContent = songAuthor ? `(${songAuthor})` : "cuaderno de ensayo";
     }
 
-    const notesSongTitleSub = document.getElementById("notesSongTitleSub");
-    if (notesSongTitleSub) notesSongTitleSub.textContent = "cuaderno de ensayo";
-
-    // Cargar notas guardadas para esta canción
     const key = getSongNotesStorageKey(songTitle, songAuthor);
+    let loadedKey = "";
+    let loadedRich = "";
+
     if (key) {
-      let savedRaw = localStorage.getItem(key);
-      if (!savedRaw && songAuthor) {
+      let raw = localStorage.getItem(key);
+      if (!raw && songAuthor) {
         const legacyKey = "song_notes_" + songTitle.trim().toLowerCase().replace(/\s+/g, "_");
-        const legacyRaw = localStorage.getItem(legacyKey);
-        if (legacyRaw) savedRaw = legacyRaw;
+        raw = localStorage.getItem(legacyKey);
       }
-      if (savedRaw) {
+      if (raw) {
         try {
-          const data = JSON.parse(savedRaw);
-          if (notesKeyInput) notesKeyInput.value = data.keyNotes || "";
-          if (notesRichEditor) {
-            notesRichEditor.innerHTML = data.richNotes || (data.textNotes ? data.textNotes.replace(/\n/g, "<br>") : "");
-          }
-        } catch (err) {
-          if (notesKeyInput) notesKeyInput.value = "";
-          if (notesRichEditor) notesRichEditor.innerHTML = "";
+          const data = JSON.parse(raw);
+          loadedKey = data.keyNotes || "";
+          loadedRich = data.richNotes || (data.textNotes ? data.textNotes.replace(/\n/g, "<br>") : "");
+        } catch (e) {
+          loadedRich = raw;
         }
-      } else {
-        if (notesKeyInput) notesKeyInput.value = "";
-        if (notesRichEditor) notesRichEditor.innerHTML = "";
       }
     }
+
+    if (notesKeyInput) notesKeyInput.value = loadedKey;
+    if (notesRichEditor) notesRichEditor.innerHTML = loadedRich;
 
     window.initialNotesState = {
-      key: notesKeyInput ? notesKeyInput.value : "",
-      rich: notesRichEditor ? notesRichEditor.innerHTML : ""
+      key: loadedKey,
+      rich: loadedRich
     };
 
-    // Actualizar indicador de tono actual
-    const notesCurrentTransDisplay = document.getElementById("notesCurrentTransDisplay");
-    if (notesCurrentTransDisplay) {
-      const currentOffset = window.transposeOffset || 0;
-      const currentKey = getTransposedKeyName(window.originalPopupLyrics, currentOffset);
-      const origKey = getOriginalKey(window.originalPopupLyrics);
-      if (currentOffset === 0) {
-        notesCurrentTransDisplay.textContent = origKey ? `Original (${origKey})` : "Original";
-      } else {
-        notesCurrentTransDisplay.textContent = currentKey ? `${currentKey} (${currentOffset > 0 ? '+' : ''}${currentOffset} semitonos)` : (currentOffset > 0 ? `+${currentOffset}` : `${currentOffset}`);
-      }
-    }
-
-    // Al abrir el cuaderno, iniciar siempre en Modo Edición por defecto
     setReadOnlyMode(false);
-
+    hideAllPopovers();
     popupSongNotesModal?.classList.add("active");
     if (window.lucide) window.lucide.createIcons();
-    resetHideTimer();
+    setTimeout(() => {
+      notesRichEditor?.focus();
+    }, 150);
   });
 
   /* =========================================================
