@@ -1716,7 +1716,8 @@ window.formatLyricsWithChords = function(rawLyrics) {
                 });
                 formattedLines.push(processedInstrumental);
             } else {
-                formattedLines.push(line);
+                const processedLine = line.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+                formattedLines.push(processedLine);
             }
         }
     }
@@ -4533,15 +4534,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
-    const selected = text.substring(start, end) || "texto";
-    const replacement = `${prefix}${selected}${suffix}`;
-    textarea.value = text.substring(0, start) + replacement + text.substring(end);
-    textarea.focus();
-    textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    const selected = text.substring(start, end);
+    
+    if (!selected) {
+      const placeholder = "Escribe aquí la estrofa o coro";
+      textarea.value = text.substring(0, start) + `${prefix}${placeholder}${suffix}` + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + placeholder.length);
+    } else {
+      // Si el texto seleccionado ya tiene las etiquetas de apertura y cierre, las quitamos (toggle)
+      if (selected.startsWith(prefix) && selected.endsWith(suffix)) {
+        const unwrapped = selected.slice(prefix.length, -suffix.length);
+        textarea.value = text.substring(0, start) + unwrapped + text.substring(end);
+        textarea.focus();
+        textarea.setSelectionRange(start, start + unwrapped.length);
+      } else {
+        const replacement = `${prefix}${selected}${suffix}`;
+        textarea.value = text.substring(0, start) + replacement + text.substring(end);
+        textarea.focus();
+        textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+      }
+    }
+    textarea.dispatchEvent(new Event("input"));
   };
 
   document.getElementById("btnWordBold")?.addEventListener("click", () => applyTextWrap("<b>", "</b>"));
   document.getElementById("btnWordItalic")?.addEventListener("click", () => applyTextWrap("<i>", "</i>"));
+
+  // Atajo de teclado universal Ctrl+B / Cmd+B para poner en negrita el coro
+  document.getElementById("editorSongLyrics")?.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
+      e.preventDefault();
+      applyTextWrap("<b>", "</b>");
+    }
+  });
 
   const btnWordCaseMenu = document.getElementById("btnWordCaseMenu");
   const wordCaseDropdown = document.getElementById("wordCaseDropdown");
