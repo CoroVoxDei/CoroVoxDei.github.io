@@ -227,11 +227,15 @@
           <div class="repertorio-actions-group">
             <button id="btnGuardarRepertorio" class="btn-guardar" title="Guardar lista de cantos">
               <span class="icon"><i data-lucide="save"></i></span>
-              <span class="text">Guardar Repertorio</span>
+              <span class="text">Guardar</span>
+            </button>
+            <button id="btnCompartirRepertorioActivo" class="btn-guardar btn-share-active-rep" title="Compartir este repertorio por enlace">
+              <span class="icon"><i data-lucide="share-2"></i></span>
+              <span class="text">Compartir</span>
             </button>
             <button id="btnLimpiarRepertorio" class="btn-limpiar" title="Limpiar lista de cantos">
               <span class="icon"><i data-lucide="trash-2"></i></span>
-              <span class="text">Limpiar Repertorio</span>
+              <span class="text">Limpiar</span>
             </button>
           </div>
         </div>
@@ -983,193 +987,531 @@
   </div>
 
   <!-- =========================================================
-       MODAL DE EDITOR DE CANCIONES (DISEÑO PROFESIONAL, LIMPIO Y EXPANDIDO)
+       MODAL DE EDITOR DE CANCIONES (WIZARD MODERNO EN PASOS PARA MÓVIL Y DESKTOP)
   ========================================================== -->
   <div id="songEditorModal" class="modal-overlay song-editor-modal-overlay">
-    <div class="modal-content song-editor-card clean-editor-card">
+    <div class="modal-content song-editor-card modern-editor-card">
       
-      <!-- Cabecera elegante y minimalista -->
-      <div class="clean-editor-header">
-        <div class="clean-header-title-box">
-          <h2 id="songEditorModalTitle" class="clean-modal-title">Editar Canción</h2>
-        </div>
-        <div class="clean-header-actions">
-          <div class="clean-tabs-pill">
-            <button type="button" id="tabEditorWrite" class="clean-tab-btn active" title="Escribir">
-              <i data-lucide="pen-tool"></i> <span class="tab-label">Escribir</span>
-            </button>
-            <button type="button" id="tabEditorPreview" class="clean-tab-btn" title="Vista Previa">
-              <i data-lucide="eye"></i> <span class="tab-label">Vista Previa</span>
-            </button>
+      <!-- Cabecera moderna con insignia y subtítulo -->
+      <div class="modern-editor-header">
+        <button type="button" id="btnEditorBack" class="modern-header-back-btn" title="Volver al paso anterior" style="display: none;">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <div class="modern-header-left">
+          <div class="modern-header-badge">
+            <i data-lucide="music-2"></i>
           </div>
-          <button type="button" id="closeSongEditorModal" class="clean-close-btn" aria-label="Cerrar">&times;</button>
+          <div class="modern-header-text">
+            <h2 id="songEditorModalTitle" class="modern-modal-title">Nueva canción</h2>
+            <p id="songEditorModalSubtitle" class="modern-modal-subtitle">Agrega una nueva canción al repertorio del coro</p>
+          </div>
         </div>
+        <button type="button" id="closeSongEditorModal" class="modern-close-btn" aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
       </div>
 
-      <div class="song-editor-body clean-editor-body">
-        <!-- PESTAÑA 1: LIENZO DE ESCRITURA EN 4 SECCIONES SEPARADAS -->
-        <div id="editorWriteTabContent" class="editor-tab-pane active">
-          
-          <!-- SECCIÓN 1: TÍTULO EN COLOR DESTACADO -->
-          <div class="editor-section editor-section-title">
-            <label for="editorSongTitle" class="editor-section-label">Título de la Canción:</label>
-            <input type="text" id="editorSongTitle" class="editor-title-primary" placeholder="Ej: Kyrie Eleíson" required autocomplete="off">
+      <!-- Barra de progreso segmentada para móvil (1 de 4, 2 de 4, etc.) -->
+      <div id="editorStepProgressBar" class="editor-step-progress-bar">
+        <div class="step-segments-track">
+          <div class="step-seg active" data-step="1"></div>
+          <div class="step-seg" data-step="2"></div>
+          <div class="step-seg" data-step="3"></div>
+          <div class="step-seg" data-step="4"></div>
+        </div>
+        <span id="editorStepIndicatorText" class="step-indicator-text">1 de 4</span>
+      </div>
+
+      <div class="song-editor-body modern-editor-body">
+        
+        <!-- ==========================================
+             PASO 1: INFORMACIÓN BÁSICA
+             ========================================== -->
+        <div id="editorStep1" class="editor-step-pane active">
+          <div class="mobile-step-title-block">
+            <h3 class="mobile-step-title">Información básica</h3>
+            <p class="mobile-step-desc">Cuéntanos de qué canción se trata.</p>
           </div>
 
-          <!-- SECCIÓN 2: CATEGORÍA Y AUTOR CLARAMENTE SEPARADOS -->
-          <div class="editor-section editor-section-meta">
-            <div class="meta-col">
-              <label for="editorSongCategory" class="editor-section-label">Categoría:</label>
-              <select id="editorSongCategory" class="editor-field-select" required>
-                <option value="Entrada">Entrada</option>
-                <option value="Penitencial">Penitencial</option>
-                <option value="Gloria">Gloria</option>
-                <option value="Aclamacion">Aclamación</option>
-                <option value="Ofertorio">Ofertorio</option>
-                <option value="Santo">Santo</option>
-                <option value="PadreNuestro">Padre Nuestro</option>
-                <option value="Cordero">Cordero</option>
-                <option value="Comunión">Comunión</option>
-                <option value="AdoracionMeditacion">Meditación y Adoración</option>
-                <option value="EnvioSalida">Salida y Envío</option>
-                <option value="Marianos">Marianos</option>
-                <option value="Salesianos">Salesianos</option>
-                <option value="Cuaresma">Cuaresma</option>
-                <option value="Pascua">Pascua</option>
-                <option value="EspirituSanto">Espíritu Santo</option>
-                <option value="Adviento">Adviento y Navidad</option>
-                <option value="HimnosSalmos">Himnos y Salmos</option>
-                <option value="Contemporáneo">Contemporáneo</option>
-              </select>
+          <div class="modern-editor-section">
+            <div class="modern-basic-info-grid">
+              
+              <!-- Nombre de la canción -->
+              <div class="modern-form-group">
+                <label for="editorSongTitle" class="modern-form-label">
+                  <i data-lucide="music-2" class="field-label-icon"></i>
+                  <span>Nombre de la canción</span> <span class="text-required">*</span>
+                </label>
+                <div class="modern-input-wrap">
+                  <input type="text" id="editorSongTitle" class="modern-input" placeholder="Alma misionera" maxlength="100" autocomplete="off" required>
+                </div>
+                <div class="modern-input-helper-row">
+                  <span id="editorTitleCharCount" class="modern-char-counter">0/100</span>
+                </div>
+              </div>
+
+              <!-- Categoría -->
+              <div class="modern-form-group">
+                <label for="editorSongCategory" class="modern-form-label">
+                  <i data-lucide="folder" class="field-label-icon"></i>
+                  <span>Categoría</span> <span class="text-required">*</span>
+                </label>
+                <div class="modern-select-wrap">
+                  <i data-lucide="folder" class="modern-field-icon"></i>
+                  <select id="editorSongCategory" class="modern-select" required>
+                    <option value="Entrada">Entrada</option>
+                    <option value="Penitencial">Penitencial</option>
+                    <option value="Gloria">Gloria</option>
+                    <option value="Aclamacion">Aclamación</option>
+                    <option value="Ofertorio">Ofertorio</option>
+                    <option value="Santo">Santo</option>
+                    <option value="PadreNuestro">Padre Nuestro</option>
+                    <option value="Cordero">Cordero</option>
+                    <option value="Comunión">Comunión</option>
+                    <option value="AdoracionMeditacion">Meditación y Adoración</option>
+                    <option value="EnvioSalida">Salida y Envío</option>
+                    <option value="Marianos">Marianos</option>
+                    <option value="Salesianos">Salesianos</option>
+                    <option value="Cuaresma">Cuaresma</option>
+                    <option value="Pascua">Pascua</option>
+                    <option value="EspirituSanto">Espíritu Santo</option>
+                    <option value="Adviento">Adviento y Navidad</option>
+                    <option value="HimnosSalmos">Himnos y Salmos</option>
+                    <option value="Contemporáneo">Contemporáneo</option>
+                  </select>
+                  <i data-lucide="chevron-down" class="modern-select-arrow"></i>
+                </div>
+              </div>
+
+              <!-- Autor -->
+              <div class="modern-form-group">
+                <label for="editorSongAuthor" class="modern-form-label">
+                  <i data-lucide="user" class="field-label-icon"></i>
+                  <span>Autor</span> <span class="text-optional">(opcional)</span>
+                </label>
+                <div class="modern-input-wrap has-icon">
+                  <i data-lucide="user" class="modern-field-icon"></i>
+                  <input type="text" id="editorSongAuthor" class="modern-input" placeholder="Cesáreo Gabaráin" autocomplete="off">
+                </div>
+              </div>
             </div>
 
-            <div class="meta-col">
-              <label for="editorSongAuthor" class="editor-section-label">Autor:</label>
-              <input type="text" id="editorSongAuthor" class="editor-field-input" placeholder="Ej: Cesáreo Gabaráin, JMJ 2013 Rio">
+            <!-- Fila de Etiquetas de uso litúrgico / devocional -->
+            <div class="modern-tags-row">
+              <div class="modern-form-group compact-group">
+                <div class="modern-label-compact-row">
+                  <label for="editorSongTags" class="modern-form-label" style="margin-bottom: 0;">
+                    <i data-lucide="tag" class="field-label-icon"></i>
+                    <span>Etiquetas de uso</span>
+                  </label>
+                  <span class="text-optional-badge">Opcional</span>
+                </div>
+                <div class="modern-input-wrap has-icon">
+                  <i data-lucide="tag" class="modern-field-icon"></i>
+                  <input type="text" id="editorSongTags" class="modern-input" placeholder="Ej: Uso Devocional, Litúrgico..." autocomplete="off">
+                </div>
+              </div>
+              <div class="modern-quick-tags-container">
+                <div class="quick-tags-pills">
+                  <button type="button" class="quick-tag-pill" data-tag="Uso Devocional">Devocional</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Litúrgico">Litúrgico</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Alabanza">Alabanza</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Meditación">Meditación</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Adoración">Adoración</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Comunión">Comunión</button>
+                </div>
+              </div>
             </div>
-            
-            <input type="hidden" id="editorSongTags" value="">
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PASO 2: LETRA Y ACORDES
+             ========================================== -->
+        <div id="editorStep2" class="editor-step-pane">
+          <div class="mobile-step-title-block">
+            <h3 class="mobile-step-title">Letra y acordes</h3>
+            <p class="mobile-step-desc">Escribe la letra de la canción con los acordes en el lugar correspondiente.</p>
           </div>
 
-          <!-- SECCIÓN 3: AUDIO Y YOUTUBE CON SU ACCIÓN AL COSTADO -->
-          <div class="editor-section editor-section-media">
-            <div class="media-left-selector">
-              <label class="editor-section-label">Referencia:</label>
-              <div class="media-pills-row">
-                <button type="button" id="btnMediaOptionAudio" class="media-choice-btn active" title="Subir Audio">
-                  <i data-lucide="mic"></i> <span>Audio</span>
+          <div class="modern-editor-section">
+            <div class="modern-editor-box">
+              <!-- Barra de herramientas unificada estilo editor profesional -->
+              <div class="modern-editor-toolbar">
+                <div class="modern-toolbar-left">
+                  <button type="button" id="btnWordBold" class="toolbar-btn" title="Negrita / Resaltar Coro (Ctrl + B)">
+                    <span class="icon-bold">B</span>
+                  </button>
+                  <button type="button" id="btnWordItalic" class="toolbar-btn" title="Cursiva">
+                    <span class="icon-italic">I</span>
+                  </button>
+                  <button type="button" id="btnWordUnderline" class="toolbar-btn" title="Subrayado">
+                    <span class="icon-underline">U</span>
+                  </button>
+                  <button type="button" id="btnWordChordsWrap" class="toolbar-btn" title="Envolver en corchetes [Acorde]">
+                    <span>[ ]</span>
+                  </button>
+
+                  <span class="toolbar-divider"></span>
+
+                  <button type="button" id="btnWordStanza" class="toolbar-btn" title="Insertar separación de estrofa">
+                    <i data-lucide="list"></i>
+                  </button>
+                  <button type="button" id="btnWordVerse" class="toolbar-btn" title="Insertar marca [Coro]">
+                    <i data-lucide="list-ordered"></i>
+                  </button>
+
+                  <span class="toolbar-divider"></span>
+
+                  <div class="dropdown-wrapper" style="position: relative; display: inline-block;">
+                    <button type="button" id="btnWordCaseMenu" class="toolbar-btn" title="Cambiar Mayúsculas / Minúsculas">
+                      <span>Aa</span>
+                    </button>
+                    <div id="wordCaseDropdown" class="word-case-dropdown" style="display: none;">
+                      <button type="button" class="case-option" data-case="upper">MAYÚSCULAS</button>
+                      <button type="button" class="case-option" data-case="lower">minúsculas</button>
+                      <button type="button" class="case-option" data-case="title">Tipo Título</button>
+                      <button type="button" class="case-option" data-case="sentence">Tipo oración</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modern-toolbar-right">
+                  <!-- Controles visuales de tamaño para que quepa la letra sin deslizar a los lados -->
+                  <div class="modern-zoom-controls">
+                    <button type="button" id="btnLyricZoomOut" class="toolbar-btn zoom-btn" title="Reducir letra visualmente (evita deslizar a los lados)">
+                      <span class="zoom-text">A-</span>
+                    </button>
+                    <span id="editorFontSizeBadge" class="zoom-badge" title="Tamaño visual actual">13px</span>
+                    <button type="button" id="btnLyricZoomIn" class="toolbar-btn zoom-btn" title="Aumentar tamaño de letra">
+                      <span class="zoom-text">A+</span>
+                    </button>
+                    <button type="button" id="btnLyricWrapToggle" class="toolbar-btn wrap-btn active" title="Ajustar líneas a la pantalla (evita desplazamiento lateral)">
+                      <i data-lucide="wrap-text"></i>
+                    </button>
+                  </div>
+
+                  <div class="modern-segmented-switch">
+                    <button type="button" id="tabEditorWrite" class="seg-btn active" title="Editar texto y acordes">Texto</button>
+                    <button type="button" id="tabEditorPreview" class="seg-btn" title="Ver cómo se verá con acordes flotantes">Acordes</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Área de escritura sin texto de ejemplo -->
+              <div id="editorWriteTabContent" class="modern-pane active">
+                <textarea id="editorSongLyrics" class="modern-lyrics-textarea" spellcheck="false" placeholder="Escribe aquí la letra con los acordes encima de cada palabra."></textarea>
+              </div>
+
+              <!-- Vista previa de acordes -->
+              <div id="editorPreviewTabContent" class="modern-pane" style="display: none;">
+                <div class="modern-preview-container">
+                  <div class="modern-preview-info">
+                    <h3 id="previewSongTitle" class="preview-title">Título</h3>
+                    <p id="previewSongAuthor" class="preview-author">Autor</p>
+                    <div class="preview-chips-row">
+                      <span id="previewSongCategory" class="preview-chip">Entrada</span>
+                      <span id="previewChordsCount" class="preview-chip chords-chip">0 acordes</span>
+                    </div>
+                  </div>
+                  <div class="modern-preview-body">
+                    <pre id="previewSongBody" class="preview-rendered-lyrics"></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PASO 3: REFERENCIA MUSICAL
+             ========================================== -->
+        <div id="editorStep3" class="editor-step-pane">
+          <div class="mobile-step-title-block">
+            <h3 class="mobile-step-title">Referencia musical</h3>
+            <p class="mobile-step-desc">Agrega un audio o un enlace de YouTube.</p>
+          </div>
+
+          <div class="modern-editor-section">
+            <div class="modern-section-heading-row" style="margin-bottom: 12px;">
+              <div class="modern-media-nav" style="width: 100%; display: flex; gap: 8px;">
+                <button type="button" id="btnMediaOptionAudio" class="modern-media-tab-btn active" style="flex: 1;">
+                  <i data-lucide="music-2"></i>
+                  <span>Audio</span>
                 </button>
-                <button type="button" id="btnMediaOptionYoutube" class="media-choice-btn" title="Enlace YouTube">
-                  <i data-lucide="youtube"></i> <span>YouTube</span>
+                <button type="button" id="btnMediaOptionYoutube" class="modern-media-tab-btn" style="flex: 1;">
+                  <i data-lucide="youtube"></i>
+                  <span>YouTube</span>
                 </button>
               </div>
             </div>
 
-            <div class="media-right-action">
-              <!-- Panel de Audio -->
-              <div id="mediaPanelAudio" class="media-panel-target">
+            <div class="modern-media-content">
+              <!-- Panel de Audio Compacto -->
+              <div id="mediaPanelAudio" class="media-panel-pane">
                 <input type="file" id="songAudioFileInput" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" style="display: none;">
                 <input type="hidden" id="editorSongAudio" value="">
 
-                <div id="audioEmptyState" class="audio-empty-box">
-                  <button type="button" id="btnTriggerAudioUpload" class="btn-upload-action">
-                    <i data-lucide="upload-cloud"></i>
-                    <span>Subir archivo de audio (MP3, WAV, M4A)</span>
-                  </button>
+                <!-- Barra de Audio Compacta, estilizada y equilibrada -->
+                <div id="audioEmptyState" class="modern-audio-compact-bar" role="button" tabindex="0" title="Haz clic o arrastra un archivo de audio">
+                  <div class="compact-upload-left">
+                    <div class="compact-upload-icon-box">
+                      <i data-lucide="upload-cloud"></i>
+                    </div>
+                    <div class="compact-upload-text">
+                      <span class="compact-upload-main"><strong>Subir archivo de audio</strong></span>
+                      <span class="compact-upload-sub">(MP3, WAV, M4A &bull; Máx. 10 MB)</span>
+                    </div>
+                  </div>
+                  <span class="compact-upload-badge">Seleccionar archivo</span>
                 </div>
 
-                <div id="audioUploadingState" class="audio-uploading-box" style="display: none;">
-                  <div class="audio-upload-spinner"></div>
-                  <span id="audioUploadStatusText">Subiendo audio...</span>
-                  <div class="audio-upload-progressbar">
-                    <div id="audioUploadProgressFill" class="progress-fill" style="width: 0%;"></div>
+                <!-- Subiendo audio -->
+                <div id="audioUploadingState" class="modern-uploading-state" style="display: none;">
+                  <div class="uploading-spinner"></div>
+                  <div class="uploading-info">
+                    <span id="audioUploadStatusText">Subiendo audio...</span>
+                    <div class="uploading-progress-track">
+                      <div id="audioUploadProgressFill" class="progress-fill" style="width: 0%;"></div>
+                    </div>
                   </div>
                 </div>
 
-                <div id="audioReadyState" class="audio-ready-pill" style="display: none;">
+                <!-- Audio cargado / listo -->
+                <div id="audioReadyState" class="modern-audio-ready-card" style="display: none;">
                   <div class="audio-ready-left">
-                    <i data-lucide="check-circle-2" class="audio-ready-check"></i>
-                    <span id="audioReadyFileName" class="audio-ready-filename">Audio guardado</span>
+                    <i data-lucide="check-circle-2" class="ready-check-icon"></i>
+                    <span id="audioReadyFileName" class="ready-filename">Audio guardado</span>
                   </div>
-                  <div class="audio-ready-actions">
+                  <div class="audio-ready-right">
                     <audio id="editorAudioPreviewPlayer" controls controlsList="nodownload" preload="metadata"></audio>
-                    <button type="button" id="btnRemoveAudioFile" class="btn-remove-audio-pill" title="Eliminar audio">
+                    <button type="button" id="btnRemoveAudioFile" class="btn-remove-audio" title="Eliminar audio">
                       <i data-lucide="trash-2"></i>
                     </button>
                   </div>
                 </div>
               </div>
 
-              <!-- Panel de YouTube -->
-              <div id="mediaPanelYoutube" class="media-panel-target" style="display: none;">
-                <div class="youtube-field-wrap">
-                  <i data-lucide="link" class="youtube-input-icon"></i>
-                  <input type="url" id="editorSongYoutube" class="editor-field-input youtube-url-input" placeholder="Coloca el link de YouTube: https://www.youtube.com/watch?v=...">
+              <!-- Panel de YouTube Compacto -->
+              <div id="mediaPanelYoutube" class="media-panel-pane" style="display: none;">
+                <div class="modern-youtube-input-wrap">
+                  <i data-lucide="link-2" class="yt-icon"></i>
+                  <input type="url" id="editorSongYoutube" class="modern-input" placeholder="Pegar enlace de YouTube: https://www.youtube.com/watch?v=...">
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- SECCIÓN 4: LETRA Y ACORDES -->
-          <div class="editor-section editor-section-lyrics">
-            <div class="lyrics-section-header">
-              <div class="lyrics-header-left">
-                <label for="editorSongLyrics" class="editor-section-label">Letra y Acordes:</label>
-                <button type="button" id="btnWordBold" class="btn-editor-format" title="Poner en negrita / Marcar Coro (Ctrl + B)">
-                  <i data-lucide="bold"></i>
-                  <span>Negrita (Coro)</span>
-                </button>
-              </div>
-              <span class="lyrics-toolbar-chords-status">
-                <span class="status-dot"></span> Acordes automáticos activos
-              </span>
-            </div>
-
-            <textarea id="editorSongLyrics" class="clean-lyrics-editor" spellcheck="false" placeholder="Escribe o pega aquí la letra con los acordes encima de cada palabra:
-
-Do                 Sol
-Alma de Cristo, santifícame
-Lam                Fa
-Cuerpo de Cristo, sálvame..."></textarea>
-          </div>
-
         </div>
 
-        <!-- PESTAÑA 2: VISTA PREVIA RENDERIZADA -->
-        <div id="editorPreviewTabContent" class="editor-tab-pane" style="display: none;">
-          <div class="clean-preview-wrapper">
-            <div class="clean-preview-header">
-              <h3 id="previewSongTitle" class="preview-heading">Título</h3>
-              <p id="previewSongAuthor" class="preview-subheading">Autor</p>
-              <div class="clean-preview-chips">
-                <span id="previewSongCategory" class="preview-chip">Entrada</span>
-                <span id="previewChordsCount" class="preview-chip chord-chip">0 acordes</span>
+        <!-- ==========================================
+             PASO 4: VISTA PREVIA Y DETALLES (MÓVIL)
+             ========================================== -->
+        <div id="editorStep4" class="editor-step-pane">
+          <div class="mobile-step-title-block">
+            <h3 class="mobile-step-title">Vista previa y detalles</h3>
+            <p class="mobile-step-desc">Revisa la información antes de guardar.</p>
+          </div>
+
+          <div class="modern-summary-card">
+            <div class="summary-card-header">
+              <div class="summary-song-icon">
+                <i data-lucide="music-2"></i>
+              </div>
+              <div class="summary-song-meta">
+                <h4 id="summarySongTitle" class="summary-song-title">Título de la canción</h4>
+                <span id="summarySongSubmeta" class="summary-song-submeta">Entrada &bull; Autor</span>
               </div>
             </div>
-            <div class="clean-preview-body">
-              <pre id="previewSongBody" class="clean-preview-lyrics"></pre>
+
+            <div class="summary-details-list">
+              <div class="summary-detail-row">
+                <div class="summary-row-left">
+                  <i data-lucide="file-text" class="summary-row-icon"></i>
+                  <span class="summary-row-label">Letra y acordes</span>
+                </div>
+                <strong id="summaryLyricsStatus" class="summary-row-val">Lista para guardar</strong>
+              </div>
+
+              <div class="summary-detail-row">
+                <div class="summary-row-left">
+                  <i data-lucide="headphones" class="summary-row-icon"></i>
+                  <span class="summary-row-label">Audio / Enlace</span>
+                </div>
+                <strong id="summaryAudioStatus" class="summary-row-val">Sin audio</strong>
+              </div>
+
+              <div class="summary-detail-row">
+                <div class="summary-row-left">
+                  <i data-lucide="folder" class="summary-row-icon"></i>
+                  <span class="summary-row-label">Categoría</span>
+                </div>
+                <strong id="summaryCategoryVal" class="summary-row-val">Entrada</strong>
+              </div>
+
+              <div class="summary-detail-row">
+                <div class="summary-row-left">
+                  <i data-lucide="user" class="summary-row-icon"></i>
+                  <span class="summary-row-label">Autor</span>
+                </div>
+                <strong id="summaryAuthorVal" class="summary-row-val">Desconocido</strong>
+              </div>
+
+              <div class="summary-detail-row" id="summaryTagsRow" style="display: none;">
+                <div class="summary-row-left">
+                  <i data-lucide="tag" class="summary-row-icon"></i>
+                  <span class="summary-row-label">Etiquetas</span>
+                </div>
+                <strong id="summaryTagsVal" class="summary-row-val">Uso Devocional</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mensaje de confirmación final -->
+          <div class="summary-ready-tip">
+            <i data-lucide="lightbulb" class="ready-tip-icon"></i>
+            <div class="ready-tip-text">
+              <strong>¡Listo!</strong>
+              <span>Tu canción se agregará al repertorio del coro y estará disponible para todos.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             PASO 5: ÉXITO ("¡CANCIÓN GUARDADA!")
+             ========================================== -->
+        <div id="editorStepSuccess" class="editor-step-pane">
+          <div class="success-screen-wrapper">
+            <div class="success-badge-circle">
+              <i data-lucide="music-2" class="success-music-icon"></i>
+              <div class="success-check-pill">
+                <i data-lucide="check"></i>
+              </div>
+            </div>
+
+            <h3 class="success-screen-title">¡Canción guardada!</h3>
+            <p id="successScreenMessage" class="success-screen-msg">La canción ha sido agregada correctamente al repertorio del coro.</p>
+
+            <div class="success-actions-col">
+              <button type="button" id="btnSuccessViewSong" class="btn-success-primary">
+                <i data-lucide="music-2"></i>
+                <span>Ver en el repertorio</span>
+              </button>
+              <button type="button" id="btnSuccessAddAnother" class="btn-success-secondary">
+                <i data-lucide="plus"></i>
+                <span>Agregar otra</span>
+              </button>
+            </div>
+
+            <div class="success-spiritual-quote">
+              <p>La música también es una forma de orar</p>
+              <span class="cross-symbol">✝</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Pie del Editor: Botones claros y directos -->
-      <div class="clean-editor-footer">
-        <div class="clean-footer-left">
-          <button type="button" id="btnDeleteCurrentCloudSong" class="btn-clean-danger" style="display: none;" title="Eliminar de la base de datos">
-            <i data-lucide="trash-2"></i> <span class="btn-text">Eliminar Canto</span>
+      <!-- Pie del Editor con botones interactivos y sincronizados según el paso -->
+      <div id="modernEditorFooter" class="modern-editor-footer">
+        <div class="footer-left">
+          <button type="button" id="btnEditorPrevStep" class="btn-modern-cancel mobile-step-btn" style="display: none;">
+            <i data-lucide="arrow-left"></i>
+            <span>Anterior</span>
+          </button>
+          <button type="button" id="btnCancelSongEditor" class="btn-modern-cancel desktop-only-btn">Cancelar</button>
+          <button type="button" id="btnDeleteCurrentCloudSong" class="btn-modern-danger" style="display: none;" title="Eliminar de la base de datos">
+            <i data-lucide="trash-2"></i>
+            <span>Eliminar</span>
           </button>
         </div>
-        <div class="clean-footer-right">
-          <button type="button" id="btnCancelSongEditor" class="btn-clean-ghost">Cancelar</button>
-          <button type="button" id="btnPublishSong" class="btn-clean-primary">
-            <i data-lucide="check"></i>
-            <span id="btnPublishSongText">Guardar Cambios</span>
+        <div class="footer-right">
+          <button type="button" id="btnEditorNextStep" class="btn-modern-primary mobile-step-btn">
+            <span>Siguiente</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+          <button type="button" id="btnPublishSong" class="btn-modern-primary">
+            <i data-lucide="save"></i>
+            <span id="btnPublishSongText">Guardar canción</span>
           </button>
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- =========================================================
+       BOTTOM SHEET PARA MÓVIL: "AGREGAR NUEVA CANCIÓN"
+  ========================================================== -->
+  <div id="newSongBottomSheet" class="modal-overlay new-song-sheet-overlay">
+    <div class="new-song-sheet-card">
+      <div class="sheet-drag-handle"></div>
+      
+      <div class="sheet-hero">
+        <div class="sheet-hero-icon">
+          <i data-lucide="plus"></i>
+        </div>
+        <div class="sheet-hero-content">
+          <h3 class="sheet-hero-title">Agregar nueva canción</h3>
+          <p class="sheet-hero-subtitle">Completa la información y guarda tu canción en el repertorio del coro.</p>
+        </div>
+      </div>
+
+      <div class="sheet-action-list">
+        <button type="button" id="btnSheetNewSong" class="sheet-action-item">
+          <div class="sheet-action-icon-box">
+            <i data-lucide="music-2"></i>
+          </div>
+          <div class="sheet-action-text">
+            <span class="sheet-action-name">Nueva canción</span>
+            <span class="sheet-action-desc">Empieza con un lienzo en blanco</span>
+          </div>
+          <i data-lucide="chevron-right" class="sheet-action-arrow"></i>
+        </button>
+
+        <button type="button" id="btnSheetEditSong" class="sheet-action-item">
+          <div class="sheet-action-icon-box">
+            <i data-lucide="edit-3"></i>
+          </div>
+          <div class="sheet-action-text">
+            <span class="sheet-action-name">Corregir o editar canción</span>
+            <span class="sheet-action-desc">Modifica letra, acordes o datos de un canto</span>
+          </div>
+          <i data-lucide="chevron-right" class="sheet-action-arrow"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL DE SELECCIÓN: "CORREGIR O EDITAR CANCIÓN"
+  ========================================================== -->
+  <div id="editSongSelectModal" class="modal-overlay edit-song-select-overlay">
+    <div class="modal-content edit-song-select-card">
+      <div class="edit-song-select-header">
+        <div class="edit-song-select-header-left">
+          <div class="edit-song-select-badge">
+            <i data-lucide="edit-3"></i>
+          </div>
+          <div>
+            <h3 class="edit-song-select-title">Corregir o editar canción</h3>
+            <p class="edit-song-select-subtitle">Selecciona la canción que deseas modificar</p>
+          </div>
+        </div>
+        <button type="button" id="closeEditSongSelectModal" class="modern-close-btn" aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Buscador rápido en vivo -->
+      <div class="edit-song-search-wrap">
+        <i data-lucide="search" class="edit-search-icon"></i>
+        <input type="text" id="inputFilterEditSong" class="modern-input" placeholder="Buscar canción por título, autor o categoría..." autocomplete="off">
+      </div>
+
+      <!-- Lista dinámica de canciones -->
+      <div id="editSongListContainer" class="edit-song-items-list">
+        <!-- Renderizado dinámicamente -->
+      </div>
     </div>
   </div>
 
