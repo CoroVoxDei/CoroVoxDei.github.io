@@ -1102,23 +1102,30 @@
                 <div class="modern-label-compact-row">
                   <label for="editorSongTags" class="modern-form-label" style="margin-bottom: 0;">
                     <i data-lucide="tag" class="field-label-icon"></i>
-                    <span>Etiquetas de uso</span>
+                    <span>Etiquetas de uso</span> <span class="text-optional">(opcional)</span>
                   </label>
-                  <span class="text-optional-badge">Opcional</span>
                 </div>
-                <div class="modern-input-wrap has-icon">
+                <div class="modern-input-wrap has-icon has-action-btn">
                   <i data-lucide="tag" class="modern-field-icon"></i>
-                  <input type="text" id="editorSongTags" class="modern-input" placeholder="Ej: Uso Devocional, Litúrgico..." autocomplete="off">
+                  <input type="text" id="editorSongTags" class="modern-input" placeholder="Ej: Devocional, Litúrgico..." autocomplete="off">
+                  <button type="button" id="btnToggleSuggestedTags" class="btn-suggested-tags-toggle" title="Ver etiquetas sugeridas" aria-label="Ver etiquetas sugeridas">
+                    <i data-lucide="chevron-down" id="tagsChevronIcon"></i>
+                  </button>
                 </div>
               </div>
-              <div class="modern-quick-tags-container">
+              <div id="suggestedTagsDrawer" class="suggested-tags-drawer" style="display: none;">
+                <div class="suggested-tags-title">Etiquetas sugeridas (toca para seleccionar varias):</div>
                 <div class="quick-tags-pills">
-                  <button type="button" class="quick-tag-pill" data-tag="Uso Devocional">Devocional</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Devocional">Devocional</button>
                   <button type="button" class="quick-tag-pill" data-tag="Litúrgico">Litúrgico</button>
                   <button type="button" class="quick-tag-pill" data-tag="Alabanza">Alabanza</button>
                   <button type="button" class="quick-tag-pill" data-tag="Meditación">Meditación</button>
                   <button type="button" class="quick-tag-pill" data-tag="Adoración">Adoración</button>
                   <button type="button" class="quick-tag-pill" data-tag="Comunión">Comunión</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Pascua">Pascua</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Cuaresma">Cuaresma</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Navidad">Navidad</button>
+                  <button type="button" class="quick-tag-pill" data-tag="Mariano">Mariano</button>
                 </div>
               </div>
             </div>
@@ -1154,15 +1161,6 @@
 
                   <span class="toolbar-divider"></span>
 
-                  <button type="button" id="btnWordStanza" class="toolbar-btn" title="Insertar separación de estrofa">
-                    <i data-lucide="list"></i>
-                  </button>
-                  <button type="button" id="btnWordVerse" class="toolbar-btn" title="Insertar marca [Coro]">
-                    <i data-lucide="list-ordered"></i>
-                  </button>
-
-                  <span class="toolbar-divider"></span>
-
                   <div class="dropdown-wrapper" style="position: relative; display: inline-block;">
                     <button type="button" id="btnWordCaseMenu" class="toolbar-btn" title="Cambiar Mayúsculas / Minúsculas">
                       <span>Aa</span>
@@ -1174,27 +1172,23 @@
                       <button type="button" class="case-option" data-case="sentence">Tipo oración</button>
                     </div>
                   </div>
+
+                  <div class="toolbar-divider"></div>
+
+                  <!-- Controles de tamaño de letra estilizados con el resto de la barra (Aa, etc.) -->
+                  <button type="button" id="btnLyricZoomOut" class="toolbar-btn" title="Reducir tamaño de letra">
+                    <span>A-</span>
+                  </button>
+                  <span id="editorFontSizeBadge" class="toolbar-font-indicator" title="Tamaño actual">12px</span>
+                  <button type="button" id="btnLyricZoomIn" class="toolbar-btn" title="Aumentar tamaño de letra">
+                    <span>A+</span>
+                  </button>
                 </div>
 
                 <div class="modern-toolbar-right">
-                  <!-- Controles visuales de tamaño para que quepa la letra sin deslizar a los lados -->
-                  <div class="modern-zoom-controls">
-                    <button type="button" id="btnLyricZoomOut" class="toolbar-btn zoom-btn" title="Reducir letra visualmente (evita deslizar a los lados)">
-                      <span class="zoom-text">A-</span>
-                    </button>
-                    <span id="editorFontSizeBadge" class="zoom-badge" title="Tamaño visual actual">13px</span>
-                    <button type="button" id="btnLyricZoomIn" class="toolbar-btn zoom-btn" title="Aumentar tamaño de letra">
-                      <span class="zoom-text">A+</span>
-                    </button>
-                    <button type="button" id="btnLyricWrapToggle" class="toolbar-btn wrap-btn active" title="Ajustar líneas a la pantalla (evita desplazamiento lateral)">
-                      <i data-lucide="wrap-text"></i>
-                    </button>
-                  </div>
-
-                  <div class="modern-segmented-switch">
-                    <button type="button" id="tabEditorWrite" class="seg-btn active" title="Editar texto y acordes">Texto</button>
-                    <button type="button" id="tabEditorPreview" class="seg-btn" title="Ver cómo se verá con acordes flotantes">Acordes</button>
-                  </div>
+                  <button type="button" id="btnToggleLyricsPreview" class="toolbar-btn btn-preview-toggle" title="Ver cómo se verá con acordes" aria-label="Ver cómo se verá con acordes">
+                    <i data-lucide="eye" id="iconLyricsPreview"></i>
+                  </button>
                 </div>
               </div>
 
@@ -1211,7 +1205,7 @@
                     <p id="previewSongAuthor" class="preview-author">Autor</p>
                     <div class="preview-chips-row">
                       <span id="previewSongCategory" class="preview-chip">Entrada</span>
-                      <span id="previewChordsCount" class="preview-chip chords-chip">0 acordes</span>
+                      <span id="previewChordsCount" class="preview-chip chords-chip">0 acordes detectados</span>
                     </div>
                   </div>
                   <div class="modern-preview-body">
@@ -1414,22 +1408,19 @@
       <!-- Pie del Editor con botones interactivos y sincronizados según el paso -->
       <div id="modernEditorFooter" class="modern-editor-footer">
         <div class="footer-left">
-          <button type="button" id="btnEditorPrevStep" class="btn-modern-cancel mobile-step-btn" style="display: none;">
+          <button type="button" id="btnEditorPrevStep" class="btn-modern-nav-icon btn-prev-arrow" style="display: none;" title="Paso anterior" aria-label="Paso anterior">
             <i data-lucide="arrow-left"></i>
-            <span>Anterior</span>
           </button>
-          <button type="button" id="btnCancelSongEditor" class="btn-modern-cancel desktop-only-btn">Cancelar</button>
-          <button type="button" id="btnDeleteCurrentCloudSong" class="btn-modern-danger" style="display: none;" title="Eliminar de la base de datos">
+          <button type="button" id="btnDeleteCurrentCloudSong" class="btn-modern-danger" style="display: none;" title="Eliminar canción de la nube" aria-label="Eliminar canción">
             <i data-lucide="trash-2"></i>
             <span>Eliminar</span>
           </button>
         </div>
         <div class="footer-right">
-          <button type="button" id="btnEditorNextStep" class="btn-modern-primary mobile-step-btn">
-            <span>Siguiente</span>
+          <button type="button" id="btnEditorNextStep" class="btn-modern-nav-icon btn-next-arrow" title="Siguiente paso" aria-label="Siguiente paso">
             <i data-lucide="arrow-right"></i>
           </button>
-          <button type="button" id="btnPublishSong" class="btn-modern-primary">
+          <button type="button" id="btnPublishSong" class="btn-modern-primary" style="display: none;" title="Guardar">
             <i data-lucide="save"></i>
             <span id="btnPublishSongText">Guardar canción</span>
           </button>
