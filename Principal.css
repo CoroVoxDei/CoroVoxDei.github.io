@@ -11686,25 +11686,28 @@ body.light-mode .popup-edit-song-btn:hover {
   background: #1e293b;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
-  padding: 6px;
+  padding: 5px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
   z-index: 10005;
-  min-width: 250px;
+  min-width: 150px;
+  max-width: 190px;
+  box-sizing: border-box;
 }
 
 .case-option {
   background: transparent;
   border: none;
   border-radius: 6px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   color: #cbd5e1;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .case-option:hover {
@@ -12893,44 +12896,49 @@ body.light-mode .toolbar-divider {
   background: #cbd5e1;
 }
 
-/* Switch segmentado Texto / Acordes */
-.modern-segmented-switch {
-  display: flex;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 3px;
-  gap: 2px;
-}
-
-body.light-mode .modern-segmented-switch {
-  background: #e2e8f0;
-}
-
-.seg-btn {
-  border: none;
+/* Botón de vista previa de acordes (icono de ojo) */
+.btn-preview-toggle {
   background: transparent;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 
-body.light-mode .seg-btn {
-  color: #64748b;
+.btn-preview-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-.seg-btn.active {
-  background: rgba(220, 38, 38, 0.2);
-  color: #f87171;
+.btn-preview-toggle.active {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.4);
 }
 
-body.light-mode .seg-btn.active {
-  background: #fee2e2;
-  color: #dc2626;
-  font-weight: 700;
+body.light-mode .btn-preview-toggle {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+body.light-mode .btn-preview-toggle:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+body.light-mode .btn-preview-toggle.active {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
 }
 
 /* Área de texto de letra */
@@ -12940,66 +12948,25 @@ body.light-mode .seg-btn.active {
   flex: 1;
 }
 
-/* Controles de zoom y ajuste de texto en la barra de herramientas */
+/* Controles de texto y tamaño en la barra de herramientas */
 .modern-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.modern-zoom-controls {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 2px 4px;
-}
-
-body.light-mode .modern-zoom-controls {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-
-.zoom-btn {
-  padding: 3px 6px !important;
-  height: 26px !important;
-  font-size: 0.76rem !important;
-  font-weight: 800 !important;
-  border-radius: 5px !important;
-  min-width: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.zoom-badge {
-  font-size: 0.72rem;
+.toolbar-font-indicator {
+  font-size: 0.76rem;
   font-weight: 700;
   color: #94a3b8;
   padding: 0 4px;
   user-select: none;
+  min-width: 24px;
+  text-align: center;
 }
 
-body.light-mode .zoom-badge {
-  color: #475569;
-}
-
-.wrap-btn {
-  padding: 3px 6px !important;
-  height: 26px !important;
-  border-radius: 5px !important;
-}
-
-.wrap-btn.active {
-  background: rgba(220, 38, 38, 0.15) !important;
-  color: #ef4444 !important;
-}
-
-body.light-mode .wrap-btn.active {
-  background: #fee2e2 !important;
-  color: #dc2626 !important;
+body.light-mode .toolbar-font-indicator {
+  color: #64748b;
 }
 
 .modern-lyrics-textarea {
@@ -13010,22 +12977,17 @@ body.light-mode .wrap-btn.active {
   padding: 14px 16px;
   color: #ffffff;
   font-family: 'Roboto Mono', 'SF Mono', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-x: auto;
   tab-size: 4;
   overflow-y: hidden;
   resize: none;
   box-sizing: border-box;
   min-height: 240px;
   transition: font-size 0.12s ease;
-}
-
-.modern-lyrics-textarea.nowrap-mode {
-  white-space: pre !important;
-  word-break: normal !important;
-  overflow-x: auto;
 }
 
 body.light-mode .modern-lyrics-textarea {
@@ -13048,32 +13010,81 @@ body.light-mode .modern-lyrics-textarea {
   margin-bottom: 5px;
 }
 
-.text-optional-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #94a3b8;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 1px 7px;
-  border-radius: 6px;
-}
-
-body.light-mode .text-optional-badge {
-  color: #64748b;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-}
-
-.modern-quick-tags-container {
+.modern-input-wrap.has-action-btn {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+}
+
+.modern-input-wrap.has-action-btn .modern-input {
+  padding-right: 44px;
+}
+
+.btn-suggested-tags-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-suggested-tags-toggle i,
+.btn-suggested-tags-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.25s ease;
+}
+
+.btn-suggested-tags-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+body.light-mode .btn-suggested-tags-toggle:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Cajón deslizante de sugerencias */
+.suggested-tags-drawer {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-top: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
+body.light-mode .suggested-tags-drawer {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.suggested-tags-title {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+body.light-mode .suggested-tags-title {
+  color: #64748b;
 }
 
 .quick-tags-pills {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
@@ -13082,9 +13093,9 @@ body.light-mode .text-optional-badge {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
   color: #cbd5e1;
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 500;
-  padding: 3px 9px;
+  padding: 4px 10px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
@@ -13124,14 +13135,18 @@ body.light-mode .quick-tag-pill.active {
 
 /* Vista previa de acordes */
 .modern-preview-container {
-  padding: 18px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  min-height: 300px;
-  overflow-y: auto;
+  padding: 16px 18px;
+  background: rgba(0, 0, 0, 0.25);
+  min-height: 260px;
+  max-height: 520px;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  border-radius: 12px;
 }
 
 body.light-mode .modern-preview-container {
   background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .modern-preview-info {
@@ -13145,7 +13160,7 @@ body.light-mode .modern-preview-info {
 }
 
 .preview-title {
-  font-size: 1.3rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #f87171;
   margin: 0;
@@ -13196,17 +13211,29 @@ body.light-mode .preview-chip.chords-chip {
 }
 
 .preview-rendered-lyrics {
-  font-family: 'Roboto Mono', monospace;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-family: 'Roboto Mono', 'SF Mono', Consolas, 'Courier New', monospace !important;
+  white-space: pre !important;
+  word-break: normal !important;
+  overflow-x: auto;
   color: #ffffff;
-  font-size: 0.92rem;
-  line-height: 1.6;
+  font-size: 11px;
+  line-height: 1.5;
   margin: 0;
+  display: inline-block;
+  min-width: 100%;
+}
+
+.preview-rendered-lyrics .chord {
+  color: #ffca28 !important;
+  font-weight: 700 !important;
 }
 
 body.light-mode .preview-rendered-lyrics {
   color: #0f172a;
+}
+
+body.light-mode .preview-rendered-lyrics .chord {
+  color: #d97706 !important;
 }
 
 /* SECCIÓN 3: REFERENCIA MUSICAL */
@@ -14182,6 +14209,11 @@ body.light-mode .sheet-drag-handle {
   margin-bottom: 20px;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.sheet-hero .modern-close-btn {
+  margin-left: auto;
 }
 
 body.light-mode .sheet-hero {
@@ -14324,6 +14356,32 @@ body.light-mode .sheet-action-desc {
   height: 18px;
   color: #94a3b8;
   flex-shrink: 0;
+}
+
+/* En Desktop (>= 768px): La ventana de selección es un modal centrado */
+@media (min-width: 768px) {
+  .new-song-sheet-overlay {
+    align-items: center !important;
+    padding: 24px !important;
+  }
+  .new-song-sheet-card {
+    border-radius: 22px !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.55) !important;
+    padding: 24px 28px 28px 28px !important;
+    transform: scale(0.92) !important;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease !important;
+  }
+  .new-song-sheet-overlay.active .new-song-sheet-card {
+    transform: scale(1) !important;
+  }
+  .sheet-drag-handle {
+    display: none !important;
+  }
+}
+
+body.light-mode .new-song-sheet-card {
+  border-color: #e2e8f0;
 }
 
 /* ==========================================================================
@@ -14560,57 +14618,224 @@ body.light-mode .edit-song-item:hover .edit-song-chevron {
 }
 
 /* ==========================================================================
-   REGLAS RESPONSIVAS (MÓVIL VS DESKTOP)
+   WIZARD MODERNO EN PASOS (DESKTOP & MÓVIL)
    ========================================================================== */
 
-/* En Desktop (>= 768px): Todo se ve en un flujo continuo y elegante */
+.editor-step-pane {
+  display: none !important;
+}
+
+.editor-step-pane.active {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+}
+
+.editor-step-progress-bar {
+  display: flex !important;
+}
+
+/* Botones de navegación icon-only (Atrás y Adelante sin texto) */
+.btn-modern-nav-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+.btn-modern-nav-icon i,
+.btn-modern-nav-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.2px;
+  transition: transform 0.15s ease;
+}
+
+.btn-modern-nav-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn-modern-nav-icon:active {
+  transform: translateY(1px);
+}
+
+/* Botón flecha adelante destacado */
+.btn-modern-nav-icon.btn-next-arrow {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+}
+
+.btn-modern-nav-icon.btn-next-arrow:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.5);
+}
+
+.btn-modern-nav-icon.btn-next-arrow:hover i,
+.btn-modern-nav-icon.btn-next-arrow:hover svg {
+  transform: translateX(2px);
+}
+
+.btn-modern-nav-icon.btn-prev-arrow:hover i,
+.btn-modern-nav-icon.btn-prev-arrow:hover svg {
+  transform: translateX(-2px);
+}
+
+/* Modo claro */
+body.light-mode .btn-modern-nav-icon {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .btn-modern-nav-icon:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+body.light-mode .btn-modern-nav-icon.btn-next-arrow {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+body.light-mode .btn-modern-nav-icon.btn-next-arrow:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+/* Botón Eliminar Canción */
+.btn-modern-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #f87171;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  min-height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.btn-modern-danger i,
+.btn-modern-danger svg {
+  width: 17px;
+  height: 17px;
+}
+
+.btn-modern-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(220, 38, 38, 0.35);
+  transform: translateY(-1px);
+}
+
+body.light-mode .btn-modern-danger {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+body.light-mode .btn-modern-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Botón Guardar / Guardar cambios (Paso 4) */
+.btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 11px 22px;
+  min-height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.btn-modern-primary:hover {
+  background: #b91c1c;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Pie del editor */
+.modern-editor-footer {
+  padding: 14px 24px;
+  background: #111827;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  flex-shrink: 0;
+}
+
+body.light-mode .modern-editor-footer {
+  background: #ffffff;
+  border-top-color: #f1f5f9;
+}
+
+.modern-editor-footer .footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modern-editor-footer .footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* En Desktop (>= 768px): Modal centrado, proporcionado y elegante */
 @media (min-width: 768px) {
-  .editor-step-progress-bar {
-    display: none !important;
+  .modern-editor-card {
+    width: 90% !important;
+    max-width: 760px !important;
+    max-height: 88vh !important;
+    border-radius: 20px !important;
   }
-  .mobile-step-title-block {
-    display: none !important;
-  }
-  .mobile-step-btn {
-    display: none !important;
-  }
-  .desktop-only-btn {
-    display: inline-flex !important;
-  }
-  #btnPublishSong {
-    display: inline-flex !important;
-  }
-  .editor-step-pane {
-    display: block !important;
-  }
-  #editorStep4, #editorStepSuccess {
-    display: none !important;
-  }
-  .modern-editor-body {
-    display: flex !important;
-    flex-direction: column !important;
+  .modern-basic-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
 }
 
-/* En Móvil (< 768px): Wizard interactivo paso a paso idéntico al mockup */
+/* En Móvil (< 768px): Pantalla completa fluida */
 @media (max-width: 767px) {
-  .desktop-only-btn {
-    display: none !important;
-  }
-  .editor-step-progress-bar {
-    display: flex !important;
-  }
-  .mobile-step-title-block {
-    display: block !important;
-  }
-  .editor-step-pane {
-    display: none !important;
-  }
-  .editor-step-pane.active {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-  }
   .modern-editor-card {
     width: 100vw !important;
     height: 100dvh !important;
@@ -14624,10 +14849,10 @@ body.light-mode .edit-song-item:hover .edit-song-chevron {
     font-size: 1.15rem;
   }
   .modern-modal-subtitle {
-    display: none; /* En celular ahorramos espacio en la cabecera */
+    display: none;
   }
   .modern-header-badge {
-    display: none; /* En celular el título va centrado y limpio */
+    display: none;
   }
   .modern-editor-body {
     padding: 16px;
@@ -14639,10 +14864,30 @@ body.light-mode .edit-song-item:hover .edit-song-chevron {
   }
   .modern-editor-footer {
     padding: 12px 16px;
-    background: #111827;
   }
-  body.light-mode .modern-editor-footer {
-    background: #ffffff;
+  /* En dispositivos pequeños: Solo icono, sin texto */
+  .modern-editor-footer button span {
+    display: none !important;
+  }
+  .modern-editor-footer .btn-modern-danger,
+  .modern-editor-footer .btn-modern-primary {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    gap: 0 !important;
+  }
+  .modern-editor-footer .btn-modern-danger i,
+  .modern-editor-footer .btn-modern-danger svg,
+  .modern-editor-footer .btn-modern-primary i,
+  .modern-editor-footer .btn-modern-primary svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke-width: 2.2px;
+    margin: 0 !important;
   }
 }
 
@@ -14667,10 +14912,3 @@ body.light-mode .song-audio-pill {
   background: #fef2f2;
   border-color: #fecdd3;
 }
-
-
-
-
-
-
-
