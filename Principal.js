@@ -4406,9 +4406,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (audioPreviewPlayer) audioPreviewPlayer.src = "";
     }
 
-    switchEditorTab("write");
-    // Inicializar wizard móvil en paso 1
+    if (typeof setLyricsPreviewMode === "function") setLyricsPreviewMode(false);
+    const suggestedTagsDrawer = document.getElementById("suggestedTagsDrawer");
+    if (suggestedTagsDrawer) suggestedTagsDrawer.style.display = "none";
+    const tagsChevronIcon = document.getElementById("tagsChevronIcon");
+    if (tagsChevronIcon) tagsChevronIcon.style.transform = "rotate(0deg)";
+    // Inicializar wizard en paso 1
     setEditorStep(1);
+    updateEditorFontSize();
 
     modal.classList.add("showing");
     modal.classList.add("active");
@@ -4654,6 +4659,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnPrev = document.getElementById("btnEditorPrevStep");
     const btnNext = document.getElementById("btnEditorNextStep");
     const btnPublish = document.getElementById("btnPublishSong");
+    const btnDelete = document.getElementById("btnDeleteCurrentCloudSong");
     const modalFooter = document.getElementById("modernEditorFooter");
     const progressBar = document.getElementById("editorStepProgressBar");
 
@@ -4662,10 +4668,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (btnBack) btnBack.style.display = "none";
       if (progressBar) progressBar.style.display = "none";
       if (modalFooter) modalFooter.style.display = "none";
+      if (btnDelete) btnDelete.style.display = "none";
     } else {
       if (modalFooter) modalFooter.style.display = "flex";
-      if (progressBar && window.innerWidth < 768) progressBar.style.display = "flex";
+      if (progressBar) progressBar.style.display = "flex";
 
+      // Botón atrás (flecha sin texto)
       if (step === 1) {
         if (btnBack) btnBack.style.display = "none";
         if (btnPrev) btnPrev.style.display = "none";
@@ -4674,17 +4682,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnPrev) btnPrev.style.display = "inline-flex";
       }
 
+      // Botón Eliminar: SÓLO en modo edición de canción existente Y SÓLO en el paso 1 (al inicio)
+      if (btnDelete) {
+        btnDelete.style.display = (currentEditingSongData && step === 1) ? "inline-flex" : "none";
+      }
+
+      // Paso final vs pasos intermedios:
+      // En pasos 1, 2, 3: SOLO flecha siguiente (btnNext sin texto), NUNCA guardar cambios / guardar canción
+      // En paso final (4): Se oculta flecha adelante y SE MUESTRA guardar
       if (step === totalEditorSteps) {
         if (btnNext) btnNext.style.display = "none";
-        if (btnPublish) btnPublish.style.display = "inline-flex";
+        if (btnPublish) {
+          btnPublish.style.display = "inline-flex";
+          const publishText = document.getElementById("btnPublishSongText");
+          if (publishText) {
+            publishText.textContent = currentEditingSongData ? "Guardar cambios" : "Guardar canción";
+          }
+        }
         updateSummaryView();
       } else {
         if (btnNext) btnNext.style.display = "inline-flex";
-        if (window.innerWidth < 768) {
-          if (btnPublish) btnPublish.style.display = "none";
-        } else {
-          if (btnPublish) btnPublish.style.display = "inline-flex";
-        }
+        if (btnPublish) btnPublish.style.display = "none";
       }
     }
 
@@ -4738,6 +4756,11 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.remove("showing");
     modal.classList.remove("active");
     currentEditingSongData = null;
+    setLyricsPreviewMode(false);
+    const suggestedTagsDrawer = document.getElementById("suggestedTagsDrawer");
+    if (suggestedTagsDrawer) suggestedTagsDrawer.style.display = "none";
+    const tagsChevronIcon = document.getElementById("tagsChevronIcon");
+    if (tagsChevronIcon) tagsChevronIcon.style.transform = "rotate(0deg)";
     setEditorStep(1);
   };
   window.closeSongEditorModal = closeSongEditorModal;
@@ -4745,38 +4768,44 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("closeSongEditorModal")?.addEventListener("click", closeSongEditorModal);
   document.getElementById("btnCancelSongEditor")?.addEventListener("click", closeSongEditorModal);
 
-  const tabEditorWrite = document.getElementById("tabEditorWrite");
-  const tabEditorPreview = document.getElementById("tabEditorPreview");
+  let isEditorPreviewActive = false;
+  const btnToggleLyricsPreview = document.getElementById("btnToggleLyricsPreview");
   const editorWriteTabContent = document.getElementById("editorWriteTabContent");
   const editorPreviewTabContent = document.getElementById("editorPreviewTabContent");
 
-  const switchEditorTab = (tab) => {
-    if (tab === "preview") {
-      tabEditorWrite?.classList.remove("active");
-      tabEditorPreview?.classList.add("active");
+  const setLyricsPreviewMode = (active) => {
+    isEditorPreviewActive = !!active;
+    if (isEditorPreviewActive) {
+      btnToggleLyricsPreview?.classList.add("active");
+      btnToggleLyricsPreview?.setAttribute("title", "Volver al editor de letra");
       if (editorWriteTabContent) editorWriteTabContent.style.display = "none";
       if (editorPreviewTabContent) editorPreviewTabContent.style.display = "block";
       updateEditorPreview();
     } else {
-      tabEditorPreview?.classList.remove("active");
-      tabEditorWrite?.classList.add("active");
+      btnToggleLyricsPreview?.classList.remove("active");
+      btnToggleLyricsPreview?.setAttribute("title", "Ver cómo se verá con acordes");
       if (editorPreviewTabContent) editorPreviewTabContent.style.display = "none";
       if (editorWriteTabContent) editorWriteTabContent.style.display = "block";
     }
+    if (window.lucide) window.lucide.createIcons();
   };
+  window.setLyricsPreviewMode = setLyricsPreviewMode;
 
-  tabEditorWrite?.addEventListener("click", () => switchEditorTab("write"));
-  tabEditorPreview?.addEventListener("click", () => switchEditorTab("preview"));
+  btnToggleLyricsPreview?.addEventListener("click", () => {
+    setLyricsPreviewMode(!isEditorPreviewActive);
+  });
 
-  // Controles de tamaño de letra visual y ajuste de líneas para que quepa en pantalla
-  const FONT_SIZES = [10, 11, 12, 13, 14, 15, 16];
-  let currentFontSizeIdx = 3; // 13px por defecto
+  // Controles de tamaño de letra visual para que quepan estrofas completas sin quebrar líneas
+  const FONT_SIZES = [8, 9, 10, 11, 12, 13, 14, 15];
+  let currentFontSizeIdx = 3; // 11px por defecto para que quepa de forma óptima
 
   const updateEditorFontSize = () => {
     const textarea = document.getElementById("editorSongLyrics");
+    const previewBody = document.getElementById("previewSongBody");
     const badge = document.getElementById("editorFontSizeBadge");
     const size = FONT_SIZES[currentFontSizeIdx];
     if (textarea) textarea.style.fontSize = `${size}px`;
+    if (previewBody) previewBody.style.fontSize = `${size}px`;
     if (badge) badge.textContent = `${size}px`;
   };
 
@@ -4792,13 +4821,6 @@ document.addEventListener("DOMContentLoaded", () => {
       currentFontSizeIdx++;
       updateEditorFontSize();
     }
-  });
-
-  document.getElementById("btnLyricWrapToggle")?.addEventListener("click", function() {
-    const textarea = document.getElementById("editorSongLyrics");
-    if (!textarea) return;
-    const isNowrap = textarea.classList.toggle("nowrap-mode");
-    this.classList.toggle("active", !isNowrap);
   });
 
   const updateEditorPreview = () => {
@@ -4820,13 +4842,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedHtml = window.formatLyricsWithChords(lyricsVal);
     if (previewBody) {
       previewBody.innerHTML = formattedHtml;
+      updateEditorFontSize();
     }
 
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = formattedHtml;
     const chordsCount = tempDiv.querySelectorAll(".chord").length;
     if (previewChords) {
-      previewChords.textContent = `${chordsCount} acordes detectados automáticamente`;
+      previewChords.textContent = `${chordsCount} acordes detectados`;
     }
   };
 
@@ -4865,23 +4888,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btnWordUnderline")?.addEventListener("click", () => applyTextWrap("<u>", "</u>"));
   document.getElementById("btnWordChordsWrap")?.addEventListener("click", () => applyTextWrap("[", "]"));
 
-  document.getElementById("btnWordStanza")?.addEventListener("click", () => {
-    const textarea = document.getElementById("editorSongLyrics");
-    if (!textarea) return;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const breakText = "\n\n";
-    textarea.value = text.substring(0, start) + breakText + text.substring(end);
-    textarea.focus();
-    textarea.setSelectionRange(start + breakText.length, start + breakText.length);
-    textarea.dispatchEvent(new Event("input"));
-  });
-
-  document.getElementById("btnWordVerse")?.addEventListener("click", () => {
-    applyTextWrap("[Coro]\n", "");
-  });
-
   // Atajo de teclado universal Ctrl+B / Cmd+B para poner en negrita el coro
   document.getElementById("editorSongLyrics")?.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
@@ -4898,12 +4904,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Sincronización y manejo interactivo de etiquetas de uso
+  // Desplegable de etiquetas sugeridas
+  const btnToggleSuggestedTags = document.getElementById("btnToggleSuggestedTags");
+  const suggestedTagsDrawer = document.getElementById("suggestedTagsDrawer");
+  const tagsChevronIcon = document.getElementById("tagsChevronIcon");
+
+  btnToggleSuggestedTags?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (!suggestedTagsDrawer) return;
+    const isHidden = (suggestedTagsDrawer.style.display === "none" || !suggestedTagsDrawer.style.display);
+    suggestedTagsDrawer.style.display = isHidden ? "block" : "none";
+    if (tagsChevronIcon) {
+      tagsChevronIcon.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
+    }
+    if (isHidden) {
+      window.syncQuickTagPills?.(document.getElementById("editorSongTags")?.value || "");
+    }
+  });
+
+  // Sincronización y manejo interactivo de etiquetas de uso (1, 2, 3 o más etiquetas)
   window.syncQuickTagPills = function(tagsText) {
-    const raw = (tagsText || "").toLowerCase();
+    const currentList = (tagsText || "")
+      .split(/[,–\-\/]/)
+      .map(t => t.trim().toLowerCase())
+      .filter(Boolean);
+
     document.querySelectorAll(".quick-tag-pill")?.forEach(pill => {
-      const pTag = (pill.getAttribute("data-tag") || "").toLowerCase();
-      if (pTag && raw.includes(pTag)) {
+      const pTag = (pill.getAttribute("data-tag") || "").trim().toLowerCase();
+      if (pTag && currentList.includes(pTag)) {
         pill.classList.add("active");
       } else {
         pill.classList.remove("active");
@@ -4913,11 +4941,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".quick-tag-pill")?.forEach(pill => {
     pill.addEventListener("click", () => {
-      const tag = pill.getAttribute("data-tag");
+      const tag = pill.getAttribute("data-tag")?.trim();
       const tagsInput = document.getElementById("editorSongTags");
       if (!tagsInput || !tag) return;
 
-      let currentTags = tagsInput.value.split(/[-–,]/).map(t => t.trim()).filter(Boolean);
+      let currentTags = tagsInput.value
+        .split(/[,–\-\/]/)
+        .map(t => t.trim())
+        .filter(Boolean);
+
       const tagIndex = currentTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
 
       if (tagIndex >= 0) {
@@ -4927,7 +4959,8 @@ document.addEventListener("DOMContentLoaded", () => {
         currentTags.push(tag);
         pill.classList.add("active");
       }
-      tagsInput.value = currentTags.join(" - ");
+      tagsInput.value = currentTags.join(", ");
+      tagsInput.dispatchEvent(new Event("input"));
     });
   });
 
@@ -4962,8 +4995,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   btnWordCaseMenu?.addEventListener("click", (e) => {
     e.stopPropagation();
-    if (wordCaseDropdown) {
-      wordCaseDropdown.style.display = wordCaseDropdown.style.display === "none" ? "block" : "none";
+    if (!wordCaseDropdown) return;
+    const isHidden = (wordCaseDropdown.style.display === "none" || !wordCaseDropdown.style.display);
+    if (isHidden) {
+      wordCaseDropdown.style.display = "flex";
+      wordCaseDropdown.style.left = "0";
+      wordCaseDropdown.style.right = "auto";
+      const rect = wordCaseDropdown.getBoundingClientRect();
+      if (rect.right > (window.innerWidth - 12)) {
+        wordCaseDropdown.style.left = "auto";
+        wordCaseDropdown.style.right = "0";
+      }
+    } else {
+      wordCaseDropdown.style.display = "none";
     }
   });
 
@@ -5150,11 +5194,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Conectar botones de apertura del editor y bottom sheet en móvil
+  // Conectar botones de apertura del selector: Nueva Canción / Corregir o editar (PC y móvil)
   const bottomSheet = document.getElementById("newSongBottomSheet");
   const openNewSongSheet = () => {
-    if (window.innerWidth < 768 && bottomSheet) {
+    if (bottomSheet) {
       bottomSheet.classList.add("active");
+      if (window.lucide) window.lucide.createIcons();
     } else {
       openSongEditorModal(null);
     }
@@ -5163,6 +5208,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeNewSongSheet = () => {
     if (bottomSheet) bottomSheet.classList.remove("active");
   };
+
+  document.getElementById("btnCloseNewSongSheet")?.addEventListener("click", closeNewSongSheet);
 
   bottomSheet?.addEventListener("click", (e) => {
     if (e.target === bottomSheet) closeNewSongSheet();
