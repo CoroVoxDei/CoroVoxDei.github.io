@@ -700,6 +700,9 @@ function switchView(view) {
     if (window.renderizarRepertoriosGuardados) {
       window.renderizarRepertoriosGuardados();
     }
+    if (window.renderRepertorioContext) {
+      window.renderRepertorioContext();
+    }
   } else if (view === "profile") {
     if (viewHome) viewHome.style.display = "none";
     if (viewRepertorio) viewRepertorio.style.display = "none";
@@ -772,6 +775,15 @@ document.getElementById("nav-indice-btn")?.addEventListener("click", (e) => {
   closeSidebar();
   if (typeof window.abrirIndice === "function") {
     window.abrirIndice("todos");
+  }
+});
+
+// Botón Esquemas de Misa en el menú lateral (100% operativo)
+document.getElementById("nav-esquemas-btn")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  closeSidebar();
+  if (typeof window.abrirEsquemasMisa === "function") {
+    window.abrirEsquemasMisa();
   }
 });
 
@@ -2072,9 +2084,521 @@ toggleChordsBtn?.addEventListener("click", e => {
 });
 
 /* ========================
-   8. REPERTORIO (DRAG & DROP + LÓGICA)
+   8. REPERTORIO (DRAG & DROP + LÓGICA Y ESQUEMAS LITÚRGICOS)
 ======================== */
 let dragSrcEl = null;
+
+window.LITURGICAL_SCHEMAS = {
+  ordinario: {
+    id: "ordinario",
+    name: "Tiempo Ordinario (Misa Dominical)",
+    shortName: "Misa Ordinaria",
+    icon: "🕊️",
+    description: "Estructura estándar de la Misa para los domingos del Tiempo Ordinario.",
+    note: "Se canta el Gloria y el Aleluya. Todos los momentos ordinarios de la celebración están presentes.",
+    keySteps: ["entrada", "gloria", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada", aliases: ["entrada"], required: true },
+      { key: "piedad", label: "Piedad", aliases: ["piedad", "perdon", "perdón", "señor ten piedad", "senor ten piedad"], required: true },
+      { key: "gloria", label: "Gloria", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo", aliases: ["salmo", "himnos", "salmos"], required: false },
+      { key: "aleluya", label: "Aleluya", aliases: ["aleluya", "aclamacion", "aclamación"], required: true },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio", "ofrendas", "ofrenda"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "padrenuestro", label: "Padre Nuestro", aliases: ["padre nuestro", "padrenuestro"], required: false },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "comunión"], required: true },
+      { key: "meditacion", label: "Meditación", aliases: ["adoracion", "adoración", "meditacion", "meditación"], required: false },
+      { key: "salida", label: "Salida", aliases: ["salida", "despedida", "envio", "envío", "mariano", "marianos"], required: true }
+    ]
+  },
+  confirmacion: {
+    id: "confirmacion",
+    name: "Misa de Confirmación",
+    shortName: "Confirmación",
+    icon: "🔥",
+    description: "Celebración solemne con el Obispo donde los confirmandos reciben el don del Espíritu Santo.",
+    note: "Momento central: Unción con el Santo Crisma e Imposición de Manos. Se entonan cantos fervientes al Espíritu Santo.",
+    keySteps: ["entrada", "gloria", "espiritusanto", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada", aliases: ["entrada"], required: true },
+      { key: "piedad", label: "Piedad", aliases: ["piedad", "perdon", "perdón"], required: true },
+      { key: "gloria", label: "Gloria", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo", aliases: ["salmo", "himnos"], required: false },
+      { key: "aleluya", label: "Aleluya", aliases: ["aleluya", "aclamacion"], required: true },
+      { key: "espiritusanto", label: "Espíritu Santo (Unción)", aliases: ["espiritu", "espíritu", "espiritusanto", "espíritu santo"], special: true, required: true },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio", "ofrendas"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "padrenuestro", label: "Padre Nuestro", aliases: ["padre nuestro", "padrenuestro"], required: false },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "comunión"], required: true },
+      { key: "salida", label: "Envío Misionero", aliases: ["salida", "envio", "envío", "contemporaneo", "salesianos"], required: true }
+    ]
+  },
+  bautismo: {
+    id: "bautismo",
+    name: "Misa con Rito de Bautismo",
+    shortName: "Bautizo",
+    icon: "💧",
+    description: "Celebración del sacramento de iniciación a la vida cristiana y nuevo nacimiento por el agua.",
+    note: "Destacan los cantos alusivos al Agua Viva, la Luz de Cristo y la incorporación a la Iglesia.",
+    keySteps: ["entrada", "aleluya", "bautismo_agua", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada", aliases: ["entrada"], required: true },
+      { key: "piedad", label: "Piedad", aliases: ["piedad", "perdon", "perdón"], required: true },
+      { key: "gloria", label: "Gloria", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo", aliases: ["salmo"], required: false },
+      { key: "aleluya", label: "Aleluya", aliases: ["aleluya", "aclamacion"], required: true },
+      { key: "bautismo_agua", label: "Rito Bautismal / Agua", aliases: ["pascua", "comunion", "adoracion"], special: true, required: true },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio", "ofrendas"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "comunión"], required: true },
+      { key: "salida", label: "Salida Mariana", aliases: ["salida", "mariano", "marianos"], required: true }
+    ]
+  },
+  matrimonio: {
+    id: "matrimonio",
+    name: "Misa de Matrimonio",
+    shortName: "Matrimonio",
+    icon: "💍",
+    description: "Alianza conyugal ante Dios y bendición del amor esponsalicio.",
+    note: "Se canta el Gloria. Incluye rito de arras/anillos y tradicional consagración a la Santísima Virgen María.",
+    keySteps: ["entrada", "gloria", "aleluya", "ofertorio", "santo", "comunion", "consagracion_maria", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada Nupcial", aliases: ["entrada", "contemporaneo"], required: true },
+      { key: "gloria", label: "Gloria", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo", aliases: ["salmo"], required: false },
+      { key: "aleluya", label: "Aleluya", aliases: ["aleluya", "aclamacion"], required: true },
+      { key: "matrimonio_anillos", label: "Rito de Anillos / Arras", aliases: ["adoracion", "meditacion", "contemporaneo"], special: true, required: false },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "padrenuestro", label: "Padre Nuestro (Bendición)", aliases: ["padrenuestro", "padre nuestro"], required: false },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "comunión"], required: true },
+      { key: "consagracion_maria", label: "Consagración a la Virgen", aliases: ["mariano", "marianos"], special: true, required: true },
+      { key: "salida", label: "Salida Festiva", aliases: ["salida", "contemporaneo"], required: true }
+    ]
+  },
+  cuaresma: {
+    id: "cuaresma",
+    name: "Tiempo de Cuaresma",
+    shortName: "Cuaresma",
+    icon: "🕯️",
+    description: "Tiempo penitencial de 40 días de preparación para la Pascua.",
+    note: "Norma litúrgica estricta: Se suprime el Gloria y el Aleluya (se canta la Aclamación al Evangelio sin aleluya). Cantos de conversión y sobriedad.",
+    keySteps: ["entrada", "piedad", "aclamacion_cuaresmal", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada Penitencial", aliases: ["entrada", "cuaresma"], required: true },
+      { key: "piedad", label: "Señor Ten Piedad", aliases: ["piedad", "perdon", "perdón", "señor ten piedad"], required: true },
+      { key: "salmo", label: "Salmo Responsorial", aliases: ["salmo", "himnos"], required: false },
+      { key: "aclamacion_cuaresmal", label: "Aclamación (Sin Aleluya)", aliases: ["aclamacion", "aclamación", "cuaresma"], special: true, required: true },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio", "ofrendas", "cuaresma"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "padrenuestro", label: "Padre Nuestro", aliases: ["padre nuestro", "padrenuestro"], required: false },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "comunión", "cuaresma"], required: true },
+      { key: "salida", label: "Salida Penitencial", aliases: ["salida", "cuaresma", "adoracion"], required: true }
+    ]
+  },
+  pascua: {
+    id: "pascua",
+    name: "Pascua y Resurrección",
+    shortName: "Pascua",
+    icon: "🌅",
+    description: "Cincuentena pascual que celebra la Resurrección gloriosa de Jesucristo.",
+    note: "Vuelve con júbilo el Gloria Solemne y el Gran Aleluya Pascual. En la salida se canta con gozo a la Virgen (Regina Caeli / Reina del Cielo).",
+    keySteps: ["entrada", "gloria", "aleluya", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada Triunfal", aliases: ["entrada", "pascua"], required: true },
+      { key: "gloria", label: "Gloria Solemne", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo Pascual", aliases: ["salmo", "pascua"], required: false },
+      { key: "aleluya", label: "Gran Aleluya", aliases: ["aleluya", "aclamacion", "pascua"], special: true, required: true },
+      { key: "ofertorio", label: "Ofertorio Pascual", aliases: ["ofertorio", "pascua"], required: true },
+      { key: "santo", label: "Santo Jubiloso", aliases: ["santo"], required: true },
+      { key: "cordero", label: "Cordero de Dios", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión Pascual", aliases: ["comunion", "comunión", "pascua"], required: true },
+      { key: "salida", label: "Salida / Regina Caeli", aliases: ["salida", "mariano", "marianos", "pascua"], required: true }
+    ]
+  },
+  viernes_santo: {
+    id: "viernes_santo",
+    name: "Viernes Santo (Pasión del Señor)",
+    shortName: "Viernes Santo",
+    icon: "✝️",
+    description: "Celebración de la Pasión y Muerte de Jesucristo en la Cruz.",
+    note: "No es una misa (no hay consagración eucarística). La entrada y salida son en estricto silencio. Canto cumbre: Adoración de la Santa Cruz.",
+    keySteps: ["salmo", "aclamacion", "adoracion_cruz", "comunion"],
+    steps: [
+      { key: "entrada", label: "Entrada (En Silencio)", aliases: ["cuaresma", "adoracion"], special: true, required: false },
+      { key: "salmo", label: "Salmo 30 (Padre, en tus manos)", aliases: ["salmo", "cuaresma"], required: true },
+      { key: "aclamacion", label: "Aclamación a la Pasión", aliases: ["aclamacion", "cuaresma"], required: true },
+      { key: "adoracion_cruz", label: "Adoración de la Santa Cruz", aliases: ["cuaresma", "adoracion", "himnos"], special: true, required: true },
+      { key: "comunion", label: "Comunión (Reserva)", aliases: ["comunion", "comunión", "cuaresma"], required: true },
+      { key: "salida", label: "Salida (En Silencio)", aliases: ["cuaresma"], special: true, required: false }
+    ]
+  },
+  mariana: {
+    id: "mariana",
+    name: "Fiestas Marianas (Virgen María)",
+    shortName: "Misa Mariana",
+    icon: "🌹",
+    description: "Solemnidades y fiestas dedicadas a la Santísima Virgen María.",
+    note: "Entrada, comunión y salida con marcado acento mariano. Canto festivo a la Madre de Dios.",
+    keySteps: ["entrada", "gloria", "aleluya", "ofertorio", "santo", "comunion", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada Mariana", aliases: ["mariano", "marianos", "entrada"], required: true },
+      { key: "piedad", label: "Piedad", aliases: ["piedad", "perdon"], required: true },
+      { key: "gloria", label: "Gloria", aliases: ["gloria"], required: true },
+      { key: "salmo", label: "Salmo", aliases: ["salmo"], required: false },
+      { key: "aleluya", label: "Aleluya", aliases: ["aleluya", "aclamacion"], required: true },
+      { key: "ofertorio", label: "Ofertorio", aliases: ["ofertorio", "mariano"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "mariano", "marianos"], required: true },
+      { key: "salida", label: "Himno Solemne a la Virgen", aliases: ["mariano", "marianos", "salida"], special: true, required: true }
+    ]
+  },
+  exequias: {
+    id: "exequias",
+    name: "Exequias y Misa de Difuntos",
+    shortName: "Difuntos / Exequias",
+    icon: "🕊️🖤",
+    description: "Celebración de la esperanza cristiana en la resurrección y descanso eterno.",
+    note: "Cantos de esperanza y confianza en Dios. Rito central: El Último Adiós (aspersión del féretro).",
+    keySteps: ["entrada", "salmo", "ofertorio", "santo", "comunion", "ultimo_adios", "salida"],
+    steps: [
+      { key: "entrada", label: "Entrada (Hacia Ti)", aliases: ["entrada", "adoracion"], required: true },
+      { key: "piedad", label: "Señor Ten Piedad", aliases: ["piedad", "perdon"], required: true },
+      { key: "salmo", label: "Salmo 22 (El Señor es mi Pastor)", aliases: ["salmo", "himnos"], required: true },
+      { key: "aclamacion", label: "Aclamación", aliases: ["aclamacion", "aleluya"], required: false },
+      { key: "ofertorio", label: "Ofertorio (Entre tus Manos)", aliases: ["ofertorio", "adoracion"], required: true },
+      { key: "santo", label: "Santo", aliases: ["santo"], required: true },
+      { key: "cordero", label: "Cordero / Paz", aliases: ["cordero", "paz"], required: true },
+      { key: "comunion", label: "Comunión", aliases: ["comunion", "adoracion"], required: true },
+      { key: "ultimo_adios", label: "Rito del Último Adiós", aliases: ["adoracion", "salida"], special: true, required: true },
+      { key: "salida", label: "Salida de Esperanza", aliases: ["salida", "mariano"], required: true }
+    ]
+  }
+};
+
+window.CORE_LITURGICAL_STEPS = window.LITURGICAL_SCHEMAS.ordinario.steps;
+
+window.getRepertorioContext = function() {
+  try {
+    const ctx = JSON.parse(localStorage.getItem("repertorio_context")) || {};
+    return {
+      title: ctx.title || "Repertorio actual",
+      isSaved: !!ctx.isSaved,
+      lastModified: ctx.lastModified || Date.now(),
+      esquema: ctx.esquema || "ordinario"
+    };
+  } catch (e) {
+    return { title: "Repertorio actual", isSaved: false, lastModified: Date.now(), esquema: "ordinario" };
+  }
+};
+
+window.touchRepertorioModified = function(title = null, isSaved = false, esquema = null) {
+  const current = window.getRepertorioContext();
+  const updated = {
+    title: (title !== null && title !== undefined && String(title).trim()) ? String(title).trim() : current.title,
+    isSaved: isSaved,
+    lastModified: Date.now(),
+    esquema: esquema || current.esquema || "ordinario"
+  };
+  localStorage.setItem("repertorio_context", JSON.stringify(updated));
+  window.renderRepertorioContext();
+};
+
+window.cambiarEsquemaRepertorio = function(newSchemaId) {
+  const schema = window.LITURGICAL_SCHEMAS[newSchemaId] || window.LITURGICAL_SCHEMAS.ordinario;
+  const current = window.getRepertorioContext();
+  window.touchRepertorioModified(current.title, current.isSaved, schema.id);
+  
+  const select = document.getElementById("selectEsquemaMisa");
+  if (select) select.value = schema.id;
+  
+  if (typeof showToast === "function") {
+    showToast(`Esquema cambiado a: ${schema.shortName}`, "info");
+  }
+};
+
+window.getRelativeTime = function(timestamp) {
+  if (!timestamp) return "Modificado hace un momento";
+  const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+  if (diffSec < 30) return "Modificado hace un momento";
+  if (diffSec < 60) return "Modificado hace menos de 1 min";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin === 1) return "Modificado hace 1 min";
+  if (diffMin < 60) return `Modificado hace ${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours === 1) return "Modificado hace 1 hora";
+  if (diffHours < 24) return `Modificado hace ${diffHours} horas`;
+  return `Modificado el ${new Date(timestamp).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
+};
+
+window.renderLiturgicalChecklist = function(rep) {
+  const container = document.getElementById("liturgicalChecklistFlow");
+  const progressBadge = document.getElementById("liturgicalProgressText");
+  const noteBox = document.getElementById("liturgicalSchemaNote");
+  const selectEl = document.getElementById("selectEsquemaMisa");
+  if (!container) return;
+
+  const ctx = window.getRepertorioContext();
+  const schemaKey = ctx.esquema && window.LITURGICAL_SCHEMAS[ctx.esquema] ? ctx.esquema : "ordinario";
+  const activeSchema = window.LITURGICAL_SCHEMAS[schemaKey];
+
+  if (selectEl && selectEl.value !== schemaKey) {
+    selectEl.value = schemaKey;
+  }
+
+  if (noteBox) {
+    if (activeSchema.note) {
+      noteBox.style.display = "block";
+      noteBox.innerHTML = `<strong>${activeSchema.icon} Nota litúrgica:</strong> ${activeSchema.note}`;
+    } else {
+      noteBox.style.display = "none";
+      noteBox.innerHTML = "";
+    }
+  }
+
+  container.innerHTML = "";
+  const songs = Array.isArray(rep) ? rep : [];
+  const keySteps = activeSchema.keySteps || [];
+  let keyStepsCovered = 0;
+
+  activeSchema.steps.forEach(step => {
+    const matchingSongs = songs.filter(s => {
+      const res = window.resolveSong(s) || s;
+      const cat = (res.category || "").toLowerCase().trim();
+      const type = (res.type || "").toLowerCase().trim();
+      return step.aliases.some(alias => cat.includes(alias) || type.includes(alias));
+    });
+
+    const isCovered = matchingSongs.length > 0;
+    if (isCovered && keySteps.includes(step.key)) keyStepsCovered++;
+
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = `liturgical-chip ${isCovered ? "covered" : "missing"} ${step.special ? "special-liturgical-step" : ""}`;
+    chip.title = isCovered
+      ? `${step.label}: ${matchingSongs.map(s => s.title).join(", ")}`
+      : `Haz clic para buscar cantos de ${step.label}`;
+
+    chip.innerHTML = isCovered
+      ? `<span>✓</span> <strong>${step.label}</strong> ${matchingSongs.length > 1 ? `(${matchingSongs.length})` : ""}`
+      : `<span>+</span> <span>${step.label}</span>`;
+
+    chip.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isCovered) {
+        const searchInput = document.getElementById("searchRepertorioInput");
+        if (searchInput) {
+          searchInput.value = step.label;
+          searchInput.dispatchEvent(new Event("input"));
+        }
+      } else {
+        if (typeof window.switchView === "function") {
+          window.switchView("home");
+          setTimeout(() => {
+            const firstAlias = step.aliases[0] || step.key;
+            const btnCat = document.querySelector(`.category-btn[data-category="${firstAlias}"]`) ||
+                           document.querySelector(`.category-btn[data-category*="${step.key}"]`);
+            if (btnCat) {
+              btnCat.click();
+            } else {
+              const searchGeneral = document.getElementById("searchInput");
+              if (searchGeneral) {
+                searchGeneral.value = step.label;
+                searchGeneral.dispatchEvent(new Event("input"));
+              }
+            }
+          }, 150);
+        }
+      }
+    };
+
+    container.appendChild(chip);
+  });
+
+  if (progressBadge) {
+    const totalKey = keySteps.length > 0 ? keySteps.length : activeSchema.steps.length;
+    progressBadge.textContent = `${keyStepsCovered} / ${totalKey} cantos clave`;
+    if (keyStepsCovered >= totalKey && totalKey > 0) {
+      progressBadge.classList.add("progress-complete");
+    } else {
+      progressBadge.classList.remove("progress-complete");
+    }
+  }
+};
+
+window.renderRepertorioContext = function() {
+  const rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+  const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+  const ctx = window.getRepertorioContext();
+
+  const tabCountActivo = document.getElementById("tabCountActivo");
+  if (tabCountActivo) tabCountActivo.textContent = rep.length;
+
+  const tabCountGuardados = document.getElementById("tabCountGuardados");
+  if (tabCountGuardados) tabCountGuardados.textContent = saved.length;
+
+  const titleEl = document.getElementById("repActiveCelebrationTitle");
+  if (titleEl) {
+    titleEl.textContent = ctx.title || "Repertorio actual";
+  }
+
+  const statusBadge = document.getElementById("repStatusBadge");
+  if (statusBadge) {
+    if (ctx.isSaved) {
+      statusBadge.textContent = "Guardado";
+      statusBadge.className = "rep-status-pill committed";
+    } else {
+      statusBadge.textContent = "Sin guardar";
+      statusBadge.className = "rep-status-pill uncommitted";
+    }
+  }
+
+  const contadorCanciones = document.getElementById("contador-canciones");
+  if (contadorCanciones) {
+    contadorCanciones.textContent = `${rep.length} ${rep.length === 1 ? 'CANCIÓN ELEGIDA' : 'CANCIONES ELEGIDAS'}`;
+  }
+
+  const timeEl = document.getElementById("repLastModifiedText");
+  if (timeEl) {
+    timeEl.textContent = window.getRelativeTime(ctx.lastModified);
+  }
+
+  window.renderLiturgicalChecklist(rep);
+};
+
+/* =========================================
+   8.1 CONTROLADOR DE REORDENAMIENTO SUBIR / BAJAR
+========================================= */
+window.moverCancionRepertorio = function(index, direction) {
+  let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= rep.length) return;
+  const item = rep.splice(index, 1)[0];
+  rep.splice(targetIndex, 0, item);
+  localStorage.setItem("repertorio", JSON.stringify(rep));
+  window.touchRepertorioModified(null, false);
+  renderizarRepertorio(rep);
+  if (typeof initSongButtons === "function") initSongButtons();
+};
+
+/* =========================================
+   8.2 MODAL GUÍA DE ESQUEMAS LITÚRGICOS
+========================================= */
+window.currentModalSchemaId = "ordinario";
+
+window.abrirEsquemasMisa = function(schemaId = null) {
+  const modal = document.getElementById("popupEsquemasMisa");
+  if (!modal) return;
+  const ctx = window.getRepertorioContext();
+  window.currentModalSchemaId = schemaId || ctx.esquema || "ordinario";
+  window.renderEsquemasModal(window.currentModalSchemaId);
+  modal.classList.add("active");
+  if (window.lucide) window.lucide.createIcons();
+};
+
+window.cerrarEsquemasMisa = function() {
+  const modal = document.getElementById("popupEsquemasMisa");
+  if (modal) modal.classList.remove("active");
+};
+
+window.aplicarEsquemaAlRepertorio = function(schemaId) {
+  const schema = window.LITURGICAL_SCHEMAS[schemaId];
+  if (!schema) return;
+  window.cambiarEsquemaRepertorio(schemaId);
+  window.cerrarEsquemasMisa();
+  if (typeof window.switchView === "function") {
+    window.switchView("repertorio");
+  }
+  if (typeof showToast === "function") {
+    showToast(`¡Esquema "${schema.shortName}" aplicado a tu repertorio!`, "success", 4000);
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("selectEsquemaMisa")?.addEventListener("change", function() {
+    window.cambiarEsquemaRepertorio(this.value);
+  });
+  document.getElementById("btnOpenGuiaEsquemas")?.addEventListener("click", () => {
+    window.abrirEsquemasMisa();
+  });
+});
+
+window.renderEsquemasModal = function(activeSchemaId) {
+  const tabsNav = document.getElementById("esquemasTabsNav");
+  const modalBody = document.getElementById("esquemasModalBody");
+  if (!tabsNav || !modalBody) return;
+
+  const schemaKeys = Object.keys(window.LITURGICAL_SCHEMAS);
+  tabsNav.innerHTML = "";
+
+  schemaKeys.forEach(key => {
+    const sch = window.LITURGICAL_SCHEMAS[key];
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `esquema-tab-pill ${key === activeSchemaId ? "active" : ""}`;
+    btn.innerHTML = `<span class="esquema-pill-icon">${sch.icon}</span> <span>${sch.shortName}</span>`;
+    btn.onclick = () => {
+      window.currentModalSchemaId = key;
+      window.renderEsquemasModal(key);
+    };
+    tabsNav.appendChild(btn);
+  });
+
+  const sch = window.LITURGICAL_SCHEMAS[activeSchemaId] || window.LITURGICAL_SCHEMAS.ordinario;
+  
+  modalBody.innerHTML = `
+    <div class="esquema-detail-card">
+      <div class="esquema-detail-header">
+        <div class="esquema-title-box">
+          <span class="esquema-hero-icon">${sch.icon}</span>
+          <div>
+            <h3 class="esquema-detail-title">${sch.name}</h3>
+            <p class="esquema-detail-desc">${sch.description}</p>
+          </div>
+        </div>
+        <button type="button" class="btn-apply-schema-action" onclick="window.aplicarEsquemaAlRepertorio('${sch.id}')">
+          <i data-lucide="check"></i>
+          <span>Usar en Mi Repertorio</span>
+        </button>
+      </div>
+
+      ${sch.note ? `
+        <div class="esquema-liturgical-callout">
+          <i data-lucide="info"></i>
+          <p>${sch.note}</p>
+        </div>
+      ` : ''}
+
+      <div class="esquema-steps-timeline">
+        <h4 class="esquema-steps-title">
+          <i data-lucide="list-ordered"></i> Orden de Cantos para la Celebración
+        </h4>
+        <div class="esquema-steps-grid">
+          ${sch.steps.map((st, i) => `
+            <div class="esquema-step-item ${st.special ? 'special-step' : ''}">
+              <div class="step-num">${i + 1}</div>
+              <div class="step-info">
+                <span class="step-name">${st.label}</span>
+                <span class="step-badge ${st.required ? 'badge-req' : 'badge-opt'}">
+                  ${st.required ? 'Parte principal' : 'Opcional / Según día'}
+                </span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (window.lucide) window.lucide.createIcons();
+};
 
 function renderizarRepertorio(lista, esBusqueda = false) {
     const contenedor = document.getElementById("repertorio-list");
@@ -2084,10 +2608,13 @@ function renderizarRepertorio(lista, esBusqueda = false) {
     
     contenedor.innerHTML = "";
     let repertorioActual = JSON.parse(localStorage.getItem("repertorio")) || [];
-
     if (contadorCanciones) {
-        const total = repertorioActual.length;
-        contadorCanciones.textContent = `${total} ${total === 1 ? 'canción elegida' : 'canciones elegidas'}`;
+      const total = repertorioActual.length;
+      contadorCanciones.textContent = `${total} ${total === 1 ? 'CANCION ELEGIDA' : 'CANCIONES ELEGIDAS'}`;
+    }
+
+    if (window.renderRepertorioContext) {
+      window.renderRepertorioContext();
     }
 
     if (lista.length === 0) {
@@ -2153,6 +2680,11 @@ function renderizarRepertorio(lista, esBusqueda = false) {
       if (resolvedSong.type) section.dataset.type = resolvedSong.type;
       section.dataset.author = author;
 
+      // Al hacer clic en la canción se abre su letra y acordes directamente
+      section.onclick = () => {
+        window.abrirLetra(title, resolvedSong.lyrics, author, resolvedSong.type, resolvedSong.audio, resolvedSong.tags, lista, index, resolvedSong.youtube);
+      };
+
       section.innerHTML = `
         <div class="song-row-container">
           <div class="song-row-left">
@@ -2176,13 +2708,11 @@ function renderizarRepertorio(lista, esBusqueda = false) {
               <span class="autor song-autor-hidden" aria-hidden="true" style="display:none !important; visibility:hidden !important; height:0 !important; width:0 !important; overflow:hidden !important; position:absolute !important; opacity:0 !important; pointer-events:none !important;">${author}</span>
             </div>
           </div>
-
           <div class="song-row-category-col">
             <span class="category-pill-tag cat-pill-${catSlug}">${displayCategory}</span>
           </div>
-
           <div class="song-row-actions" onclick="event.stopPropagation();">
-            <button type="button" class="song-action-btn btn-remove-repertorio-item" title="Quitar del repertorio" aria-label="Quitar del repertorio" onclick="borrarCancion('${title.replace(/'/g, "\\'")}', '${author.replace(/'/g, "\\'")}')">
+            <button type="button" class="song-action-btn btn-remove-repertorio-item" title="Quitar del repertorio" aria-label="Quitar del repertorio" onclick="borrarCancion('${title.replace(/'/g, "\\'")}', '${author.replace(/'/g, "\\'")}', ${index})">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -2200,11 +2730,9 @@ function renderizarRepertorio(lista, esBusqueda = false) {
 
     // Inicializar SortableJS si no es una búsqueda
     if (!esBusqueda && lista.length > 0) {
-      // Usamos window.Sortable para asegurar compatibilidad
       const SortableLib = window.Sortable;
       if (!SortableLib) return;
 
-      // Destruir instancia previa si existe
       const oldSortable = SortableLib.get(contenedor);
       if (oldSortable) oldSortable.destroy();
 
@@ -2214,8 +2742,8 @@ function renderizarRepertorio(lista, esBusqueda = false) {
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         dragClass: 'sortable-drag',
-        forceFallback: true, // Mejor compatibilidad táctil
-        fallbackTolerance: 3, // Evita disparos accidentales
+        forceFallback: true,
+        fallbackTolerance: 3,
         onStart: function() {
           contenedor.classList.add('sorting-active');
         },
@@ -2225,8 +2753,8 @@ function renderizarRepertorio(lista, esBusqueda = false) {
           const itemMovido = rep.splice(evt.oldIndex, 1)[0];
           rep.splice(evt.newIndex, 0, itemMovido);
           localStorage.setItem("repertorio", JSON.stringify(rep));
+          window.touchRepertorioModified(null, false);
           
-          // Actualizamos los dataset-index para consistencia
           Array.from(contenedor.children).forEach((child, i) => {
             child.dataset.index = i;
           });
@@ -2235,9 +2763,7 @@ function renderizarRepertorio(lista, esBusqueda = false) {
     }
 }
 
-// Eliminamos addDragEvents ya que SortableJS se encarga de todo
-
-window.borrarCancion = async function(title, author = "") {
+window.borrarCancion = async function(title, author = "", songIndex = null) {
   const ok = await showConfirmModal({
     title: "Eliminar canción",
     message: `¿Deseas eliminar "${title}" del repertorio?`,
@@ -2248,9 +2774,25 @@ window.borrarCancion = async function(title, author = "") {
   });
   if (!ok) return;
   let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
-  rep = rep.filter(s => !(s.title === title && (s.author || "").trim() === author.trim()));
+  if (songIndex !== null && songIndex !== undefined && songIndex >= 0 && songIndex < rep.length) {
+    rep.splice(songIndex, 1);
+  } else {
+    rep = rep.filter(s => !(s.title === title && (s.author || "").trim() === author.trim()));
+  }
   localStorage.setItem("repertorio", JSON.stringify(rep));
-  renderizarRepertorio(rep);
+  window.touchRepertorioModified(null, false);
+  const searchInput = document.getElementById("searchRepertorioInput");
+  const query = searchInput ? searchInput.value.trim() : "";
+  if (query) {
+    const filtrado = rep.filter(s => {
+      const info = window.resolveSong(s) || s;
+      return (info.title || "").toLowerCase().includes(query.toLowerCase()) || 
+             (info.author || "").toLowerCase().includes(query.toLowerCase());
+    });
+    renderizarRepertorio(filtrado, true);
+  } else {
+    renderizarRepertorio(rep, false);
+  }
   initSongButtons();
   showToast(`"${title}" eliminada del repertorio`, "info");
 };
@@ -2268,6 +2810,7 @@ document.getElementById("btnLimpiarRepertorio")?.addEventListener("click", async
     });
     if (ok) {
         localStorage.removeItem("repertorio");
+        window.touchRepertorioModified("Repertorio actual", false);
         renderizarRepertorio([]);
         initSongButtons();
         showToast("Repertorio vaciado con éxito", "info");
@@ -2283,7 +2826,6 @@ window.abrirGuardarRepertorio = function() {
   if (modal) {
     modal.classList.add("active");
     
-    // Update dynamic selected songs counter in the save modal
     const badge = document.getElementById("saveRepertorioCountBadge");
     if (badge) {
       badge.textContent = `${rep.length} ${rep.length === 1 ? "canto seleccionado" : "cantos seleccionados"}`;
@@ -2291,7 +2833,8 @@ window.abrirGuardarRepertorio = function() {
     
     const input = document.getElementById("repertorioNameInput");
     if (input) {
-      input.value = "";
+      const ctx = window.getRepertorioContext();
+      input.value = (ctx.title && ctx.title !== "Repertorio actual") ? ctx.title : "";
       setTimeout(() => input.focus(), 100);
     }
     
@@ -2308,6 +2851,35 @@ window.cerrarGuardarRepertorio = function() {
   }
 };
 
+window.cargarRepertorioEnActivo = async function(repertorioId) {
+  const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+  const target = saved.find(r => r.id === repertorioId);
+  if (!target) return;
+
+  const currentRep = JSON.parse(localStorage.getItem("repertorio")) || [];
+  if (currentRep.length > 0) {
+    const ok = await showConfirmModal({
+      title: "Cargar repertorio",
+      message: `¿Deseas reemplazar tu repertorio activo con "${target.name}" (${target.songs.length} canciones)?`,
+      confirmText: "Cargar en Activo",
+      cancelText: "Cancelar",
+      icon: "refresh-cw"
+    });
+    if (!ok) return;
+  }
+
+  localStorage.setItem("repertorio", JSON.stringify(target.songs));
+  window.touchRepertorioModified(target.name, true);
+  if (typeof renderizarRepertorio === "function") {
+    renderizarRepertorio(target.songs);
+  }
+  if (typeof initSongButtons === "function") {
+    initSongButtons();
+  }
+  window.switchRepertorioTab("activo");
+  showToast(`Repertorio "${target.name}" cargado en Activo`, "success");
+};
+
 window.renderizarRepertoriosGuardados = function() {
   const contenedor = document.getElementById("saved-repertorios-list");
   if (!contenedor) return;
@@ -2315,46 +2887,100 @@ window.renderizarRepertoriosGuardados = function() {
   contenedor.innerHTML = "";
   const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
   
+  const tabCountGuardados = document.getElementById("tabCountGuardados");
+  if (tabCountGuardados) tabCountGuardados.textContent = saved.length;
+
   if (saved.length === 0) {
     contenedor.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #777; font-style: italic; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.08); border-radius: 15px;">
-        No tienes ningún repertorio guardado para otras ocasiones. ¡Guarda tu lista actual usando el botón de "Guardar Repertorio" de arriba!
+      <div class="saved-repertorio-empty" style="grid-column: 1 / -1; text-align: center; padding: 44px 20px; background: rgba(0, 0, 0, 0.02); border: 1px dashed #cbd5e1; border-radius: 16px;">
+        <i data-lucide="folder-plus" style="width: 40px; height: 40px; color: #94a3b8; margin-bottom: 12px;"></i>
+        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0 0 6px 0;">No tienes repertorios guardados</h3>
+        <p style="font-size: 0.82rem; color: #64748b; max-width: 420px; margin: 0 auto 16px auto;">
+          Puedes armar tu lista de cantos en la pestaña <strong>Activo</strong> y guardarla con un nombre (ej. <em>Misa Juvenil</em>, <em>Domingo 05 Octubre</em>) para reutilizarla cuando quieras.
+        </p>
+        <button type="button" class="btn-explore-catalog" onclick="window.switchRepertorioTab('activo')">
+          <i data-lucide="music-4"></i>
+          <span>Ir a Repertorio Activo</span>
+        </button>
       </div>
     `;
+    if (window.lucide) window.lucide.createIcons();
     return;
   }
   
   saved.forEach(rep => {
     const card = document.createElement("div");
-    card.className = "saved-repertorio-card";
+    card.className = "saved-repertorio-card-modern";
     
-    const countText = rep.songs.length === 1 ? "1 canto" : `${rep.songs.length} cantos`;
+    const countText = rep.songs.length === 1 ? "1 canción" : `${rep.songs.length} canciones`;
+
+    const previewChips = (rep.songs || []).slice(0, 4).map(s => {
+      const res = window.resolveSong(s) || s;
+      const cat = window.getCategoryDisplayName ? window.getCategoryDisplayName(res.category || "") : (res.category || "");
+      const shortCat = cat ? `<strong>${cat}:</strong> ` : "";
+      return `<span class="saved-preview-chip" title="${res.title}">${shortCat}${res.title}</span>`;
+    }).join("");
     
+    const extraCount = rep.songs.length > 4 ? `<span class="saved-preview-chip extra-chip">+${rep.songs.length - 4} más</span>` : "";
+
     card.innerHTML = `
-      <div class="saved-repertorio-info">
-        <div class="saved-repertorio-name">${rep.name}</div>
-        <div class="saved-repertorio-meta">
-          <span class="saved-repertorio-date">${rep.date}</span>
-          <span class="saved-repertorio-badge">${countText}</span>
+      <div class="saved-rep-card-top">
+        <div class="saved-rep-card-header">
+          <div class="saved-rep-icon-badge">
+            <i data-lucide="calendar"></i>
+          </div>
+          <div class="saved-rep-headings">
+            <h3 class="saved-rep-title" title="${rep.name}">${rep.name}</h3>
+            <div class="saved-rep-meta-row">
+              <span class="saved-rep-songs-count"><i data-lucide="music-2"></i> ${countText}</span>
+              <span class="saved-rep-meta-dot">•</span>
+              <span class="saved-rep-date">${rep.date || "Sin fecha"}</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="saved-repertorio-actions">
-        <button class="btn-share-repertorio-card" title="Compartir este repertorio">
-          <i data-lucide="share-2"></i>
+
+      <div class="saved-rep-songs-preview">
+        ${previewChips} ${extraCount}
+      </div>
+
+      <div class="saved-rep-card-bottom-actions">
+        <button type="button" class="btn-load-into-active" title="Cargar este repertorio en el activo para la misa de hoy">
+          <i data-lucide="play"></i>
+          <span>Cargar en Activo</span>
         </button>
-        <button class="btn-delete-repertorio" title="Eliminar este repertorio">
-          <i data-lucide="trash-2"></i>
-        </button>
+        <div class="saved-rep-quick-btns">
+          <button type="button" class="btn-card-action btn-view-rep" title="Ver y ordenar cantos">
+            <i data-lucide="list-music"></i>
+          </button>
+          <button type="button" class="btn-card-action btn-share-rep" title="Compartir enlace">
+            <i data-lucide="share-2"></i>
+          </button>
+          <button type="button" class="btn-card-action btn-delete-rep" title="Eliminar este repertorio">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
       </div>
     `;
 
-    // Asignar eventos de forma segura con JS para abrir el repertorio al hacer clic en la tarjeta
     card.onclick = () => window.abrirVerRepertorio(rep.id);
-    card.querySelector(".btn-share-repertorio-card").onclick = (e) => {
+
+    card.querySelector(".btn-load-into-active").onclick = (e) => {
+      e.stopPropagation();
+      window.cargarRepertorioEnActivo(rep.id);
+    };
+
+    card.querySelector(".btn-view-rep").onclick = (e) => {
+      e.stopPropagation();
+      window.abrirVerRepertorio(rep.id);
+    };
+
+    card.querySelector(".btn-share-rep").onclick = (e) => {
       e.stopPropagation();
       window.compartirRepertorioId(rep.id);
     };
-    card.querySelector(".btn-delete-repertorio").onclick = (e) => {
+
+    card.querySelector(".btn-delete-rep").onclick = (e) => {
       e.stopPropagation();
       window.eliminarRepertorioGuardado(rep.id);
     };
@@ -3260,16 +3886,21 @@ document.addEventListener("DOMContentLoaded", () => {
   window.switchRepertorioTab = function(tab) {
     if (tab === "activo") {
       tabRepertorioActivo?.classList.add("active");
+      tabRepertorioActivo?.setAttribute("aria-selected", "true");
       tabRepertoriosGuardados?.classList.remove("active");
+      tabRepertoriosGuardados?.setAttribute("aria-selected", "false");
       if (sectionRepertorioActivo) sectionRepertorioActivo.style.display = "block";
       if (sectionRepertoriosGuardados) sectionRepertoriosGuardados.style.display = "none";
+      const rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+      renderizarRepertorio(rep);
     } else if (tab === "guardados") {
       tabRepertorioActivo?.classList.remove("active");
+      tabRepertorioActivo?.setAttribute("aria-selected", "false");
       tabRepertoriosGuardados?.classList.add("active");
+      tabRepertoriosGuardados?.setAttribute("aria-selected", "true");
       if (sectionRepertorioActivo) sectionRepertorioActivo.style.display = "none";
       if (sectionRepertoriosGuardados) sectionRepertoriosGuardados.style.display = "block";
       
-      // Mostrar lista principal de repertorios y ocultar detalle de inicio
       const detailSection = document.getElementById("saved-repertorio-detail");
       const mainSection = document.getElementById("saved-repertorios-main");
       if (detailSection) detailSection.style.display = "none";
@@ -3277,6 +3908,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       window.renderizarRepertoriosGuardados();
     }
+    if (window.renderRepertorioContext) window.renderRepertorioContext();
   };
 
   tabRepertorioActivo?.addEventListener("click", () => window.switchRepertorioTab("activo"));
@@ -3287,6 +3919,126 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainSection = document.getElementById("saved-repertorios-main");
     if (detailSection) detailSection.style.display = "none";
     if (mainSection) mainSection.style.display = "block";
+    window.renderizarRepertoriosGuardados();
+  });
+
+  // Botón Cargar en Repertorio Activo desde la cabecera del detalle
+  document.getElementById("btnCargarRepertorioEnActivo")?.addEventListener("click", () => {
+    if (window.currentSavedRepertorioId) {
+      window.cargarRepertorioEnActivo(window.currentSavedRepertorioId);
+    }
+  });
+
+  // Botón Guardar lista actual desde la cabecera de la vista guardados
+  document.getElementById("btnQuickSaveActiveRep")?.addEventListener("click", () => {
+    window.abrirGuardarRepertorio();
+  });
+
+  // Renombrar celebración activa
+  const handleRenameCelebration = async () => {
+    const ctx = window.getRepertorioContext();
+    const nuevo = await showPromptModal({
+      title: "Nombre de la celebración",
+      message: "Asigna un nombre a este repertorio (ej. Misa Juvenil, Domingo 05 Octubre):",
+      defaultValue: (ctx.title && ctx.title !== "Repertorio actual") ? ctx.title : "Misa Dominical",
+      placeholder: "Ej. Misa Juvenil",
+      confirmText: "Guardar"
+    });
+    if (nuevo && nuevo.trim()) {
+      window.touchRepertorioModified(nuevo.trim(), ctx.isSaved);
+      showToast("Celebración actualizada a: " + nuevo.trim(), "success");
+    }
+  };
+
+  document.getElementById("btnEditRepCelebrationName")?.addEventListener("click", handleRenameCelebration);
+  document.getElementById("repActiveCelebrationTitle")?.addEventListener("click", handleRenameCelebration);
+
+  // Menú de Más Opciones [ ⋮ ] y Toolbar Agrupada
+  const btnRepMore = document.getElementById("btnRepMoreOptions");
+  const repMenu = document.getElementById("repMoreOptionsMenu");
+
+  btnRepMore?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!repMenu) return;
+    const isHidden = repMenu.style.display === "none";
+    repMenu.style.display = isHidden ? "flex" : "none";
+    btnRepMore.setAttribute("aria-expanded", isHidden ? "true" : "false");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (repMenu && !repMenu.contains(e.target) && e.target !== btnRepMore) {
+      repMenu.style.display = "none";
+      btnRepMore?.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  // Opción 1: Duplicar / Guardar Copia
+  document.getElementById("btnMenuDuplicarRepertorio")?.addEventListener("click", async () => {
+    if (repMenu) repMenu.style.display = "none";
+    const songs = JSON.parse(localStorage.getItem("repertorio")) || [];
+    if (songs.length === 0) {
+      showToast("No hay canciones en el repertorio activo para duplicar", "warning");
+      return;
+    }
+    const ctx = window.getRepertorioContext();
+    const nuevoNombre = await showPromptModal({
+      title: "Guardar copia de repertorio",
+      message: "Nombre para la copia guardada:",
+      defaultValue: `Copia de ${ctx.title || "Repertorio"}`,
+      placeholder: "Nombre de la copia",
+      confirmText: "Guardar Copia"
+    });
+    if (!nuevoNombre || !nuevoNombre.trim()) return;
+
+    const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+    const dateFormatted = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    saved.unshift({
+      id: Date.now().toString(),
+      name: nuevoNombre.trim(),
+      songs: JSON.parse(JSON.stringify(songs)),
+      date: dateFormatted
+    });
+    window.saveLocalAndCloudRepertorios(saved);
+    window.touchRepertorioModified(nuevoNombre.trim(), true);
+    window.renderizarRepertoriosGuardados();
+    showToast(`Copia "${nuevoNombre.trim()}" guardada`, "success");
+  });
+
+  // Opción 2: Copiar Lista en Texto Formateado (WhatsApp)
+  document.getElementById("btnMenuExportarTexto")?.addEventListener("click", () => {
+    if (repMenu) repMenu.style.display = "none";
+    const songs = JSON.parse(localStorage.getItem("repertorio")) || [];
+    if (songs.length === 0) {
+      showToast("Tu repertorio está vacío", "warning");
+      return;
+    }
+    const ctx = window.getRepertorioContext();
+    let text = `🎶 *${(ctx.title || "REPERTORIO").toUpperCase()}*\n`;
+    text += `📅 Coro Juvenil Vox Dei • ${new Date().toLocaleDateString('es-ES')}\n\n`;
+    
+    songs.forEach((song, i) => {
+      const res = window.resolveSong(song) || song;
+      const cat = window.getCategoryDisplayName ? window.getCategoryDisplayName(res.category || "") : (res.category || "");
+      const auth = (res.author && res.author.toLowerCase() !== "desconocido") ? ` (${res.author})` : "";
+      text += `${i + 1}. *[${cat || "Canto"}]* ${res.title}${auth}\n`;
+    });
+    text += `\n✨ Generado en Cancionero Digital Vox Dei`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("¡Lista copiada con formato! Puedes pegarla en WhatsApp", "success");
+      }).catch(() => {
+        showToast("No se pudo copiar automáticamente.", "error");
+      });
+    } else {
+      showToast("Portapapeles no soportado", "warning");
+    }
+  });
+
+  // Opción 3: Imprimir Repertorio
+  document.getElementById("btnMenuImprimirRepertorio")?.addEventListener("click", () => {
+    if (repMenu) repMenu.style.display = "none";
+    window.print();
   });
 
   document.getElementById("btnGuardarRepertorio")?.addEventListener("click", (e) => {
@@ -3322,27 +4074,18 @@ document.addEventListener("DOMContentLoaded", () => {
     saved.unshift({
       id,
       name,
-      songs,
+      songs: JSON.parse(JSON.stringify(songs)),
       date: dateFormatted
     });
     
     window.saveLocalAndCloudRepertorios(saved);
     
-    // Al guardar un repertorio, se limpia automáticamente el repertorio activo
-    localStorage.removeItem("repertorio");
-    
-    // Renderizar la lista de canciones activa ahora vacía
-    if (typeof renderizarRepertorio === "function") {
-      renderizarRepertorio([]);
-    }
-    
-    // Actualizar el estado de los botones de la pantalla principal (de check a +)
-    if (typeof initSongButtons === "function") {
-      initSongButtons();
-    }
+    // Mantener la lista activa y actualizar su estado a 'Guardado'
+    window.touchRepertorioModified(name, true);
     
     window.cerrarGuardarRepertorio();
     window.renderizarRepertoriosGuardados();
+    showToast(`Repertorio "${name}" guardado con éxito`, "success");
   });
 
   document.getElementById("repertorioNameInput")?.addEventListener("keydown", (e) => {
@@ -3366,7 +4109,8 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Tu repertorio activo está vacío. Añade canciones antes de compartir.", "warning");
       return;
     }
-    window.compartirCancionesDirecto("Repertorio Activo", activeSongs);
+    const ctx = window.getRepertorioContext();
+    window.compartirCancionesDirecto(ctx.title || "Repertorio Activo", activeSongs);
   });
 
   // Escuchar cambios de URL o navegación hash/popstate
@@ -4469,8 +5213,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.getCategoryCollectionName = getCategoryCollectionName;
 
+  let hasInitiatedCloudListener = false;
   async function loadCloudSongs() {
+    if (hasInitiatedCloudListener) return;
     if (isFirebaseReal && db) {
+      hasInitiatedCloudListener = true;
       const collectionsToListen = [...ALL_CATEGORY_COLLECTIONS, "songs"];
       collectionsToListen.forEach(collName => {
         try {
@@ -5694,10 +6441,16 @@ document.addEventListener("DOMContentLoaded", () => {
       catOverrides[songId] = category;
       if (oldId) catOverrides[oldId] = category;
       const normNewTitle = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-      catOverrides["title:" + normNewTitle] = category;
+      const normNewAuthor = (author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      if (normNewAuthor) {
+        catOverrides["title_author:" + normNewTitle + "--" + normNewAuthor] = category;
+      }
       if (oldTitle) {
         const normOldTitle = oldTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        catOverrides["title:" + normOldTitle] = category;
+        const normOldAuthor = (oldAuthor || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        if (normOldAuthor) {
+          catOverrides["title_author:" + normOldTitle + "--" + normOldAuthor] = category;
+        }
       }
       localStorage.setItem("voxdei_song_category_overrides", JSON.stringify(catOverrides));
 
@@ -5767,14 +6520,19 @@ document.addEventListener("DOMContentLoaded", () => {
       let catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
       if (catOverrides[songId]) delete catOverrides[songId];
       const normTitle = songTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-      if (catOverrides["title:" + normTitle]) delete catOverrides["title:" + normTitle];
+      const normAuthor = (currentEditingSongData.author || currentEditingSongData.autor || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      if (normAuthor && catOverrides["title_author:" + normTitle + "--" + normAuthor]) {
+        delete catOverrides["title_author:" + normTitle + "--" + normAuthor];
+      }
       localStorage.setItem("voxdei_song_category_overrides", JSON.stringify(catOverrides));
 
       const titleTarget = songTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const authorTarget = normAuthor;
       allSongs = allSongs.filter(s => {
         const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
         const t = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
-        const isMatch = (s.dataset.id && s.dataset.id === songId) || (t && t === titleTarget);
+        const a = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+        const isMatch = (s.dataset.id && s.dataset.id === songId) || (t && t === titleTarget && (!authorTarget || a === authorTarget));
         if (isMatch) {
           s.remove();
           return false;
@@ -6261,22 +7019,49 @@ window.upsertSongInApp = function(songPayload) {
   let list = (typeof allSongs !== "undefined" && Array.isArray(allSongs)) ? allSongs : (window.allSongs || []);
 
   const normTitle = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const normAuthor = author ? author.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
   const normOriginalTitle = originalTitle ? originalTitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+  const originalAuthor = (songPayload.originalAuthor || "").trim();
+  const normOriginalAuthor = originalAuthor ? originalAuthor.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
 
+  // Búsqueda precisa de elemento existente:
+  // 1. Por ID único (songId u originalId)
+  // 2. Si no hay ID coincidente, por Título Y Autor (nunca por título solo, para no sobrescribir canciones litúrgicas con el mismo nombre como Santo, Gloria, Cordero, etc.)
   let existingElem = list.find(s => {
-    if (songId && s.dataset.id && s.dataset.id === songId) return true;
-    if (originalId && s.dataset.id && s.dataset.id === originalId) return true;
-    const h2 = s.querySelector("h2");
-    const t = h2 ? (h2.querySelector(".song-title-text")?.textContent.trim() || h2.textContent.trim()) : "";
-    const normT = t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    if (normT === normTitle) return true;
-    if (normOriginalTitle && normT === normOriginalTitle) return true;
+    const sId = s.dataset.id || (typeof window.getSongInfo === "function" ? window.getSongInfo(s).id : "");
+    if (songId && sId && sId === songId) return true;
+    if (originalId && sId && sId === originalId) return true;
+
+    const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
+    const sTitle = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+    const sAuthor = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+    // Si coincide título original y autor original
+    if (normOriginalTitle && sTitle === normOriginalTitle) {
+      if (normOriginalAuthor && sAuthor) {
+        if (normOriginalAuthor === sAuthor) return true;
+      } else if (!normOriginalAuthor && !sAuthor) {
+        return true;
+      }
+    }
+
+    // Coincidencia exacta por título Y autor
+    if (sTitle && sTitle === normTitle) {
+      if (normAuthor && sAuthor) {
+        return normAuthor === sAuthor;
+      }
+      if (!normAuthor && !sAuthor) {
+        return true;
+      }
+    }
+
     return false;
   });
 
   if (existingElem) {
     existingElem.dataset.category = category;
     existingElem.dataset.id = songId;
+    existingElem.dataset.author = author;
     if (audio) existingElem.dataset.audio = audio;
     if (youtube) existingElem.dataset.youtube = youtube;
     if (tags) existingElem.dataset.tags = tags;
@@ -6293,15 +7078,25 @@ window.upsertSongInApp = function(songPayload) {
       lyrics: lyrics
     });
 
-    // Eliminar del DOM y de allSongs cualquier copia duplicada que hubiera quedado
+    // Eliminar del DOM y de allSongs únicamente duplicados EXACTOS (mismo ID o mismo Título Y Autor)
     list = list.filter(s => {
       if (s === existingElem) return true;
-      const h2Other = s.querySelector("h2");
-      const tOther = h2Other ? (h2Other.querySelector(".song-title-text")?.textContent.trim() || h2Other.textContent.trim()) : "";
-      const otherNorm = tOther.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-      const isDup = (s.dataset.id && (s.dataset.id === songId || (originalId && s.dataset.id === originalId))) ||
-                    (otherNorm && (otherNorm === normTitle || (normOriginalTitle && otherNorm === normOriginalTitle)));
-      if (isDup) {
+      const sId = s.dataset.id || (typeof window.getSongInfo === "function" ? window.getSongInfo(s).id : "");
+      if (songId && sId && sId === songId) {
+        s.remove();
+        return false;
+      }
+      if (originalId && sId && sId === originalId) {
+        s.remove();
+        return false;
+      }
+      const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : null;
+      const sTitle = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+      const sAuthor = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+
+      const authorMatch = (normAuthor && sAuthor && normAuthor === sAuthor) || (!normAuthor && !sAuthor);
+      const exactTitleAuthorMatch = (sTitle === normTitle && authorMatch);
+      if (exactTitleAuthorMatch) {
         s.remove();
         return false;
       }
@@ -6314,6 +7109,7 @@ window.upsertSongInApp = function(songPayload) {
     newDiv.className = "song song-row";
     newDiv.dataset.category = category;
     newDiv.dataset.id = songId;
+    newDiv.dataset.author = author;
     if (audio) newDiv.dataset.audio = audio;
     if (youtube) newDiv.dataset.youtube = youtube;
     if (tags) newDiv.dataset.tags = tags;
@@ -6629,10 +7425,11 @@ function loadSongs(files) {
         // Aplicar categorías reasignadas guardadas previamente en la nube o localmente
         const catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
         const normTitle = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const normAuthor = (author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
         if (catOverrides[stableId]) {
           song.dataset.category = catOverrides[stableId];
-        } else if (catOverrides["title:" + normTitle]) {
-          song.dataset.category = catOverrides["title:" + normTitle];
+        } else if (normAuthor && catOverrides["title_author:" + normTitle + "--" + normAuthor]) {
+          song.dataset.category = catOverrides["title_author:" + normTitle + "--" + normAuthor];
         }
 
         const songCat = song.dataset.category || "Entrada";
@@ -6651,14 +7448,30 @@ function loadSongs(files) {
         });
       });
 
-      // Desduplicar allSongs para garantizar que ninguna canción aparezca duplicada por ID o título
+      // Limpiar overrides antiguos corruptos que usaban prefijo 'title:' genérico
+      try {
+        let catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
+        let hadCorruptTitleKeys = false;
+        Object.keys(catOverrides).forEach(k => {
+          if (k.startsWith("title:")) {
+            delete catOverrides[k];
+            hadCorruptTitleKeys = true;
+          }
+        });
+        if (hadCorruptTitleKeys) {
+          localStorage.setItem("voxdei_song_category_overrides", JSON.stringify(catOverrides));
+        }
+      } catch (e) {}
+
+      // Desduplicar allSongs para garantizar que ninguna canción aparezca duplicada por ID o título+autor
       const seenSongKeys = new Set();
       const uniqueSongElements = [];
       document.querySelectorAll(".song").forEach(song => {
         const id = song.dataset.id || (typeof window.getSongInfo === "function" ? window.getSongInfo(song).id : "");
         const info = typeof window.getSongInfo === "function" ? window.getSongInfo(song) : null;
         const normT = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
-        const songKey = id || normT;
+        const normA = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+        const songKey = id || (normT + (normA ? "--" + normA : ""));
         if (songKey && seenSongKeys.has(songKey)) {
           song.remove();
         } else {
@@ -6676,6 +7489,11 @@ function loadSongs(files) {
       showPage(1);
       updateChordsVisibility();
       if (window.lucide) window.lucide.createIcons();
+
+      // Cargar sincronización de canciones en la nube desde Firestore (lectura pública)
+      if (typeof loadCloudSongs === "function") {
+        loadCloudSongs();
+      }
       
       // Revisar si se accedió por un link de importación compartida ahora que todas las canciones están cargadas
       if (typeof window.chequearImportacionCompartida === "function") {
@@ -8857,7 +9675,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const info = window.getSongInfo(song);
           const li = document.createElement("li");
           li.innerHTML = `
-            <a href="#" onclick="window.irACancion('${info.title.replace(/'/g, "\\'")}'); return false;">
+            <a href="#" onclick="window.irACancion('${info.title.replace(/'/g, "\\'")}', '${(info.author || '').replace(/'/g, "\\'")}', '${(info.id || '').replace(/'/g, "\\'")}'); return false;">
               <span class="index-item-left">
                 ${noteSvg}
                 <span class="index-text-container">
@@ -8888,7 +9706,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const info = window.getSongInfo(song);
         const li = document.createElement("li");
         li.innerHTML = `
-          <a href="#" onclick="window.irACancion('${info.title.replace(/'/g, "\\'")}'); return false;">
+          <a href="#" onclick="window.irACancion('${info.title.replace(/'/g, "\\'")}', '${(info.author || '').replace(/'/g, "\\'")}', '${(info.id || '').replace(/'/g, "\\'")}'); return false;">
             <span class="index-item-left">
               ${noteSvg}
               <span class="index-text-container">
@@ -8909,10 +9727,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("popupIndice").classList.remove("active");
   };
 
-  window.irACancion = (titulo) => {
+  window.irACancion = (titulo, autor = "", songId = "") => {
+    const normT = (titulo || "").toLowerCase().trim();
+    const normA = (autor || "").toLowerCase().trim();
     const song = allSongs.find(s => {
+      if (songId && s.dataset.id && s.dataset.id === songId) return true;
       const info = window.getSongInfo(s);
-      return info.title.toLowerCase().trim() === titulo.toLowerCase().trim();
+      const st = info.title.toLowerCase().trim();
+      const sa = (info.author || "").toLowerCase().trim();
+      if (normA && sa) {
+        return st === normT && sa === normA;
+      }
+      return st === normT;
     });
  
     if (song) {
@@ -8957,8 +9783,14 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         const songsInContainer = Array.from(document.querySelectorAll("#songsContainer .song"));
         const targetSongElement = songsInContainer.find(s => {
+          if (songId && s.dataset.id && s.dataset.id === songId) return true;
           const info = window.getSongInfo(s);
-          return info.title.toLowerCase().trim() === titulo.toLowerCase().trim();
+          const st = info.title.toLowerCase().trim();
+          const sa = (info.author || "").toLowerCase().trim();
+          if (normA && sa) {
+            return st === normT && sa === normA;
+          }
+          return st === normT;
         });
  
         if (targetSongElement) {
@@ -8990,6 +9822,8 @@ document.addEventListener("DOMContentLoaded", () => {
           window.cerrarGuardarRepertorio();
         } else if (closestOverlay.id === "popupVerRepertorio" && window.cerrarVerRepertorio) {
           window.cerrarVerRepertorio();
+        } else if (closestOverlay.id === "popupEsquemasMisa" && window.cerrarEsquemasMisa) {
+          window.cerrarEsquemasMisa();
         }
       }
     }
