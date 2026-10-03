@@ -288,6 +288,7 @@
        3. VISTA REPERTORIO
   ========================================================== -->
   <div id="view-repertorio" class="page-view" style="display:none;">
+    <!-- Banner de Mi Repertorio (Misma estética y proporción institucional de Inicio) -->
     <section id="repertorioHero" class="hero hero-compact-banner">
       <div class="hero-card hero-card-modern">
         <img src="Principal/Santisimo.png" alt="Repertorio Santísimo Vox Dei" class="hero-img" loading="lazy">
@@ -378,10 +379,24 @@
 
     <!-- Contenedor de Repertorios Guardados -->
     <div id="section-repertorios-guardados" class="repertorio-section-content" style="display: none;">
+      <!-- Encabezado de la Vista Guardados -->
+      <div class="saved-reps-header-bar">
+        <div class="saved-reps-header-left">
+          <h2 class="saved-reps-title">Repertorios Guardados</h2>
+          <p class="saved-reps-subtitle">Listas preparadas para otras misas, celebraciones y ensayos</p>
+        </div>
+        <div class="saved-reps-header-right">
+          <button type="button" id="btnQuickSaveActiveRep" class="btn-quick-save-rep" title="Guardar lista actual">
+            <i data-lucide="bookmark-plus"></i>
+            <span>Guardar lista actual</span>
+          </button>
+        </div>
+      </div>
+
       <main class="content">
         <div id="saved-repertorios-main">
           <div id="saved-repertorios-list" class="saved-repertorios-list">
-            <!-- Carga dinámica de repertorios guardados -->
+            <!-- Carga dinámica de tarjetas de celebraciones -->
           </div>
         </div>
         
@@ -389,11 +404,11 @@
         <div id="saved-repertorio-detail" class="saved-repertorio-detail-section" style="display: none;">
           <div class="saved-repertorio-detail-header">
             <button id="btnVolverRepertorios" class="btn-back-repertorio">
-              <i data-lucide="arrow-left"></i> Volver a la lista
+              <i data-lucide="arrow-left"></i> Volver a mis repertorios
             </button>
             <div class="saved-repertorio-title-row">
               <h2 id="saved-repertorio-detail-title" class="saved-repertorio-title-detail">Repertorio Seleccionado</h2>
-              <button id="btnRenameSavedRepertorio" class="btn-rename-saved-rep" title="Renombrar repertorio">
+              <button id="btnRenameSavedRepertorio" class="btn-rename-saved-rep" title="Renombrar o editar canciones">
                 <i data-lucide="edit-3"></i>
               </button>
               <button id="btnCompartirRepertorio" class="btn-share-saved-rep-icon" title="Compartir por link">
@@ -402,6 +417,11 @@
             </div>
             <div class="saved-repertorio-subtitle-row" style="margin-top: 6px; margin-bottom: 12px;">
               <span id="saved-repertorio-detail-count" class="saved-repertorio-detail-badge">0 cantos</span>
+            </div>
+            <div class="saved-repertorio-actions-bar">
+              <button type="button" id="btnCargarRepertorioEnActivo" class="btn-action-repertorio btn-load-repertorio" title="Usar esta lista en el repertorio activo de hoy">
+                <i data-lucide="play-circle"></i> Cargar en Repertorio Activo
+              </button>
             </div>
           </div>
           <div id="saved-repertorio-detail-list" class="saved-repertorio-songs-list">
@@ -770,6 +790,7 @@
       <ul>
         <li><a href="#" id="nav-inicio" class="active"><i data-lucide="home"></i> Inicio</a></li>
         <li><a href="#" id="nav-indice-btn"><i data-lucide="book-open"></i> Índice</a></li>
+        <li><a href="#" id="nav-esquemas-btn"><i data-lucide="scroll"></i> Esquemas de Misa</a></li>
         <li><a href="#" id="nav-repertorio"><i data-lucide="list-music"></i> Mi repertorio</a></li>
         <li><a href="#" id="nav-auth"><i data-lucide="user"></i> <span id="navAuthLabel">Perfil</span> <span id="authBadge" class="auth-badge-dot" style="display: none; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 6px; vertical-align: middle;"></span></a></li>
         <li><a href="#" id="nav-config"><i data-lucide="settings"></i> Configuración</a></li>
@@ -836,6 +857,31 @@
       </div>
       <div id="indexBody" class="index-body">
         <!-- Contenido dinámico del índice -->
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP DE ESQUEMAS DE MISA (GUÍA LITÚRGICA) -->
+  <div id="popupEsquemasMisa" class="popup-overlay">
+    <div class="popup-content esquemas-misa-popup">
+      <button onclick="window.cerrarEsquemasMisa()" class="popup-cerrar index-floating-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
+      <div class="popup-header esquemas-misa-header">
+        <div class="esquemas-header-icon-badge">
+          <i data-lucide="book-open-check"></i>
+        </div>
+        <div class="esquemas-header-text">
+          <h2 class="popup-title">Guía de Esquemas Litúrgicos</h2>
+          <p class="popup-subtitle">Estructuras oficiales y recomendaciones de cantos para cada tipo de misa o celebración.</p>
+        </div>
+      </div>
+      
+      <!-- Selector de Tipos de Celebración en el Modal -->
+      <div class="esquemas-tabs-nav" id="esquemasTabsNav">
+        <!-- Se generan dinámicamente: Ordinario, Confirmación, Bautizo, Matrimonio, Cuaresma, Pascua, Viernes Santo, Mariana, Exequias -->
+      </div>
+
+      <div id="esquemasModalBody" class="esquemas-modal-body">
+        <!-- Detalle del esquema litúrgico seleccionado -->
       </div>
     </div>
   </div>
