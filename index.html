@@ -80,6 +80,11 @@
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "light") {
           document.body.classList.add("light-mode");
+        } else if (savedTheme === "dark") {
+          document.body.classList.remove("light-mode");
+        }
+        if (typeof window.updateLogos === "function") {
+          window.updateLogos();
         }
         document.addEventListener("DOMContentLoaded", function() {
           if (typeof window.updateLogos === "function") {
@@ -106,7 +111,7 @@
     <div class="top-right">
       <!-- Botón Mi Repertorio en el mismo color neutro del menú lateral -->
       <button id="homeBtn" class="header-repertorio-btn" aria-label="Mi repertorio" title="Mi repertorio">
-        <i data-lucide="book-marked" class="header-rep-icon"></i>
+        <i data-lucide="list-music" class="header-rep-icon"></i>
         <span class="header-rep-text">Mi repertorio</span>
       </button>
 
@@ -346,15 +351,15 @@
             <span id="contador-canciones" class="counter-text">0 canciones elegidas</span>
           </div>
           <div class="repertorio-actions-group">
-            <button type="button" id="btnGuardarRepertorio" class="btn-rep-action btn-rep-save" title="Guardar lista de cantos">
+            <button type="button" id="btnGuardarRepertorio" class="btn-rep-action btn-rep-save" title="Guardar lista de cantos" onclick="window.abrirGuardarRepertorio && window.abrirGuardarRepertorio()">
               <i data-lucide="save"></i>
               <span class="text">Guardar</span>
             </button>
-            <button type="button" id="btnCompartirRepertorioActivo" class="btn-rep-action btn-rep-share" title="Compartir este repertorio por enlace">
+            <button type="button" id="btnCompartirRepertorioActivo" class="btn-rep-action btn-rep-share" title="Compartir este repertorio por enlace" onclick="window.compartirRepertorioActivo && window.compartirRepertorioActivo()">
               <i data-lucide="share-2"></i>
               <span class="text">Compartir</span>
             </button>
-            <button type="button" id="btnLimpiarRepertorio" class="btn-rep-action btn-rep-clear" title="Limpiar lista de cantos">
+            <button type="button" id="btnLimpiarRepertorio" class="btn-rep-action btn-rep-clear" title="Limpiar lista de cantos" onclick="window.limpiarRepertorio && window.limpiarRepertorio()">
               <i data-lucide="trash-2"></i>
               <span class="text">Limpiar</span>
             </button>
@@ -379,20 +384,6 @@
 
     <!-- Contenedor de Repertorios Guardados -->
     <div id="section-repertorios-guardados" class="repertorio-section-content" style="display: none;">
-      <!-- Encabezado de la Vista Guardados -->
-      <div class="saved-reps-header-bar">
-        <div class="saved-reps-header-left">
-          <h2 class="saved-reps-title">Repertorios Guardados</h2>
-          <p class="saved-reps-subtitle">Listas preparadas para otras misas, celebraciones y ensayos</p>
-        </div>
-        <div class="saved-reps-header-right">
-          <button type="button" id="btnQuickSaveActiveRep" class="btn-quick-save-rep" title="Guardar lista actual">
-            <i data-lucide="bookmark-plus"></i>
-            <span>Guardar lista actual</span>
-          </button>
-        </div>
-      </div>
-
       <main class="content">
         <div id="saved-repertorios-main">
           <div id="saved-repertorios-list" class="saved-repertorios-list">
@@ -417,11 +408,6 @@
             </div>
             <div class="saved-repertorio-subtitle-row" style="margin-top: 6px; margin-bottom: 12px;">
               <span id="saved-repertorio-detail-count" class="saved-repertorio-detail-badge">0 cantos</span>
-            </div>
-            <div class="saved-repertorio-actions-bar">
-              <button type="button" id="btnCargarRepertorioEnActivo" class="btn-action-repertorio btn-load-repertorio" title="Usar esta lista en el repertorio activo de hoy">
-                <i data-lucide="play-circle"></i> Cargar en Repertorio Activo
-              </button>
             </div>
           </div>
           <div id="saved-repertorio-detail-list" class="saved-repertorio-songs-list">
