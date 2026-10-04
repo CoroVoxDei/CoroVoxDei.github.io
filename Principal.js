@@ -641,7 +641,7 @@ function updateHeaderNavButton(view) {
     homeBtn.setAttribute("title", "Mi repertorio");
     homeBtn.setAttribute("aria-label", "Mi repertorio");
     homeBtn.innerHTML = `
-      <i data-lucide="book-marked" class="header-rep-icon"></i>
+      <i data-lucide="list-music" class="header-rep-icon"></i>
       <span class="header-rep-text">Mi repertorio</span>
     `;
   } else {
@@ -2797,25 +2797,27 @@ window.borrarCancion = async function(title, author = "", songIndex = null) {
   showToast(`"${title}" eliminada del repertorio`, "info");
 };
 
-document.getElementById("btnLimpiarRepertorio")?.addEventListener("click", async () => {
-    let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
-    if (rep.length === 0) return;
-    const ok = await showConfirmModal({
-      title: "Vaciar repertorio",
-      message: "¿Estás seguro de que deseas eliminar TODAS las canciones de tu repertorio activo?",
-      confirmText: "Vaciar todo",
-      cancelText: "Cancelar",
-      danger: true,
-      icon: "alert-triangle"
-    });
-    if (ok) {
-        localStorage.removeItem("repertorio");
-        window.touchRepertorioModified("Repertorio actual", false);
-        renderizarRepertorio([]);
-        initSongButtons();
-        showToast("Repertorio vaciado con éxito", "info");
-    }
-});
+window.limpiarRepertorio = async function() {
+  let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+  if (rep.length === 0) return;
+  const ok = await showConfirmModal({
+    title: "Vaciar repertorio",
+    message: "¿Estás seguro de que deseas eliminar TODAS las canciones de tu repertorio activo?",
+    confirmText: "Vaciar todo",
+    cancelText: "Cancelar",
+    danger: true,
+    icon: "alert-triangle"
+  });
+  if (ok) {
+    localStorage.removeItem("repertorio");
+    window.touchRepertorioModified("Repertorio actual", false);
+    renderizarRepertorio([]);
+    initSongButtons();
+    showToast("Repertorio vaciado con éxito", "info");
+  }
+};
+
+document.getElementById("btnLimpiarRepertorio")?.addEventListener("click", () => window.limpiarRepertorio());
 
 /* =========================================
    8.1 PERSISTENCIA DE MÚLTIPLES REPERTORIOS (GUARDADOS)
@@ -2910,80 +2912,67 @@ window.renderizarRepertoriosGuardados = function() {
   
   saved.forEach(rep => {
     const card = document.createElement("div");
-    card.className = "saved-repertorio-card-modern";
+    card.className = "saved-repertorio-card";
     
     const countText = rep.songs.length === 1 ? "1 canción" : `${rep.songs.length} canciones`;
 
-    const previewChips = (rep.songs || []).slice(0, 4).map(s => {
-      const res = window.resolveSong(s) || s;
-      const cat = window.getCategoryDisplayName ? window.getCategoryDisplayName(res.category || "") : (res.category || "");
-      const shortCat = cat ? `<strong>${cat}:</strong> ` : "";
-      return `<span class="saved-preview-chip" title="${res.title}">${shortCat}${res.title}</span>`;
-    }).join("");
-    
-    const extraCount = rep.songs.length > 4 ? `<span class="saved-preview-chip extra-chip">+${rep.songs.length - 4} más</span>` : "";
+    // Fecha del día en que se guardó
+    let displayDate = rep.date;
+    if (!displayDate && rep.id && !isNaN(Number(rep.id))) {
+      displayDate = new Date(Number(rep.id)).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+    if (!displayDate) {
+      displayDate = new Date().toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
 
     card.innerHTML = `
-      <div class="saved-rep-card-top">
-        <div class="saved-rep-card-header">
-          <div class="saved-rep-icon-badge">
-            <i data-lucide="calendar"></i>
-          </div>
-          <div class="saved-rep-headings">
-            <h3 class="saved-rep-title" title="${rep.name}">${rep.name}</h3>
-            <div class="saved-rep-meta-row">
-              <span class="saved-rep-songs-count"><i data-lucide="music-2"></i> ${countText}</span>
-              <span class="saved-rep-meta-dot">•</span>
-              <span class="saved-rep-date">${rep.date || "Sin fecha"}</span>
-            </div>
-          </div>
-        </div>
+      <div class="saved-repertorio-icon-box">
+        <i data-lucide="folder"></i>
       </div>
-
-      <div class="saved-rep-songs-preview">
-        ${previewChips} ${extraCount}
-      </div>
-
-      <div class="saved-rep-card-bottom-actions">
-        <button type="button" class="btn-load-into-active" title="Cargar este repertorio en el activo para la misa de hoy">
-          <i data-lucide="play"></i>
-          <span>Cargar en Activo</span>
-        </button>
-        <div class="saved-rep-quick-btns">
-          <button type="button" class="btn-card-action btn-view-rep" title="Ver y ordenar cantos">
-            <i data-lucide="list-music"></i>
-          </button>
-          <button type="button" class="btn-card-action btn-share-rep" title="Compartir enlace">
-            <i data-lucide="share-2"></i>
-          </button>
-          <button type="button" class="btn-card-action btn-delete-rep" title="Eliminar este repertorio">
-            <i data-lucide="trash-2"></i>
-          </button>
+      <div class="saved-repertorio-body">
+        <div class="saved-repertorio-name" title="${rep.name}">${rep.name}</div>
+        <div class="saved-repertorio-bottom-row">
+          <div class="saved-repertorio-meta-col">
+            <div class="saved-repertorio-count">${countText}</div>
+            <div class="saved-repertorio-date">${displayDate}</div>
+          </div>
+          <div class="saved-repertorio-actions" onclick="event.stopPropagation();">
+            <button type="button" class="btn-share-repertorio-card" title="Compartir enlace">
+              <i data-lucide="share-2"></i>
+            </button>
+            <button type="button" class="btn-delete-repertorio" title="Eliminar este repertorio">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
 
     card.onclick = () => window.abrirVerRepertorio(rep.id);
 
-    card.querySelector(".btn-load-into-active").onclick = (e) => {
-      e.stopPropagation();
-      window.cargarRepertorioEnActivo(rep.id);
-    };
+    const btnShare = card.querySelector(".btn-share-repertorio-card");
+    if (btnShare) {
+      btnShare.onclick = (e) => {
+        e.stopPropagation();
+        window.compartirRepertorioId(rep.id);
+      };
+    }
 
-    card.querySelector(".btn-view-rep").onclick = (e) => {
-      e.stopPropagation();
-      window.abrirVerRepertorio(rep.id);
-    };
-
-    card.querySelector(".btn-share-rep").onclick = (e) => {
-      e.stopPropagation();
-      window.compartirRepertorioId(rep.id);
-    };
-
-    card.querySelector(".btn-delete-rep").onclick = (e) => {
-      e.stopPropagation();
-      window.eliminarRepertorioGuardado(rep.id);
-    };
+    const btnDelete = card.querySelector(".btn-delete-repertorio");
+    if (btnDelete) {
+      btnDelete.onclick = (e) => {
+        e.stopPropagation();
+        window.eliminarRepertorioGuardado(rep.id);
+      };
+    }
 
     contenedor.appendChild(card);
   });
@@ -3406,27 +3395,50 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
   const titleEl = document.getElementById("shareModalTitle");
   if (titleEl) titleEl.textContent = `Compartir "${nombreRepertorio}"`;
 
-  // Asignar valor al input
+  // Asignar valor al input con auto-selección y copia al toque
   const inputEl = document.getElementById("shareUrlInput");
-  if (inputEl) inputEl.value = shareUrl;
+  if (inputEl) {
+    inputEl.value = shareUrl;
+    inputEl.onclick = () => {
+      inputEl.focus();
+      inputEl.select();
+      inputEl.setSelectionRange(0, 99999);
+      try {
+        if (document.execCommand("copy")) {
+          showToast("Enlace copiado al portapapeles", "success");
+        }
+      } catch (e) {}
+    };
+  }
 
   // Codificar el texto de compartir para redes sociales
-  const shareText = `Te comparto mi repertorio de cantos "${nombreRepertorio}" de la App Vox Dei. Abre este enlace para importarlo directamente en tu dispositivo: ${shareUrl}`;
+  const shareText = `Te comparto mi repertorio de cantos "${nombreRepertorio}" del Coro Juvenil Vox Dei:\n${shareUrl}`;
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(shareUrl);
 
   // Configurar enlaces de redes sociales
   const whatsappEl = document.getElementById("shareWhatsApp");
-  if (whatsappEl) whatsappEl.href = `https://api.whatsapp.com/send?text=${encodedText}`;
+  if (whatsappEl) {
+    whatsappEl.href = `https://api.whatsapp.com/send?text=${encodedText}`;
+    whatsappEl.target = "_blank";
+  }
 
   const facebookEl = document.getElementById("shareFacebook");
-  if (facebookEl) facebookEl.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+  if (facebookEl) {
+    facebookEl.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+    facebookEl.target = "_blank";
+  }
 
   const telegramEl = document.getElementById("shareTelegram");
-  if (telegramEl) telegramEl.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`Repertorio: ${nombreRepertorio}`)}`;
+  if (telegramEl) {
+    telegramEl.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`Repertorio: ${nombreRepertorio}`)}`;
+    telegramEl.target = "_blank";
+  }
 
   const emailEl = document.getElementById("shareEmail");
-  if (emailEl) emailEl.href = `mailto:?subject=${encodeURIComponent(`Repertorio de cantos: ${nombreRepertorio}`)}&body=${encodedText}`;
+  if (emailEl) {
+    emailEl.href = `mailto:?subject=${encodeURIComponent(`Repertorio de cantos: ${nombreRepertorio}`)}&body=${encodedText}`;
+  }
 
   // Configurar botón de Código QR
   const qrBtn = document.getElementById("shareQrCode");
@@ -3447,7 +3459,7 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
     };
   }
 
-  // Configurar botón de compartir nativo del sistema (Web Share API)
+  // Configurar botón de compartir nativo del sistema (Web Share API en móviles)
   const nativeBtn = document.getElementById("btnNativeShare");
   const nativeWrapper = document.getElementById("nativeShareWrapper");
   if (nativeBtn) {
@@ -3457,10 +3469,12 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
       nativeBtn.onclick = () => {
         navigator.share({
           title: `Repertorio: ${nombreRepertorio}`,
-          text: `Te comparto mi repertorio de cantos "${nombreRepertorio}" de la App Vox Dei.`,
+          text: `Te comparto mi repertorio de cantos "${nombreRepertorio}" de Vox Dei:`,
           url: shareUrl
         }).catch(err => {
-          console.log("Error al compartir de forma nativa:", err);
+          if (err && err.name !== "AbortError") {
+            console.log("Error al compartir nativamente:", err);
+          }
         });
       };
     } else {
@@ -3469,40 +3483,58 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
     }
   }
 
-  // Configurar botón de copiar
+  // Configurar botón de copiar con feedback infalible
   const copyBtn = document.getElementById("btnCopyShareUrl");
   if (copyBtn) {
     copyBtn.onclick = () => {
+      const feedbackSuccess = () => {
+        const spanEl = copyBtn.querySelector("span");
+        if (spanEl) {
+          const originalText = spanEl.textContent;
+          spanEl.textContent = "¡Copiado!";
+          copyBtn.style.background = "#25D366";
+          copyBtn.style.color = "#ffffff";
+          setTimeout(() => {
+            spanEl.textContent = originalText;
+            copyBtn.style.background = "";
+            copyBtn.style.color = "";
+          }, 2000);
+        } else {
+          const originalHTML = copyBtn.innerHTML;
+          copyBtn.innerHTML = "¡Copiado!";
+          copyBtn.style.background = "#25D366";
+          copyBtn.style.color = "#ffffff";
+          setTimeout(() => {
+            copyBtn.innerHTML = originalHTML;
+            copyBtn.style.background = "";
+            copyBtn.style.color = "";
+          }, 2000);
+        }
+        showToast("Enlace copiado al portapapeles", "success");
+      };
+
+      const fallbackCopy = () => {
+        if (inputEl) {
+          inputEl.focus();
+          inputEl.select();
+          inputEl.setSelectionRange(0, 99999);
+          try {
+            if (document.execCommand("copy")) {
+              feedbackSuccess();
+              return true;
+            }
+          } catch (e) {}
+        }
+        showToast("Selecciona el enlace y cópialo.", "info");
+        return false;
+      };
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl).then(() => {
-          const spanEl = copyBtn.querySelector("span");
-          if (spanEl) {
-            const originalText = spanEl.textContent;
-            spanEl.textContent = "¡Copiado!";
-            copyBtn.style.background = "#25D366";
-            copyBtn.style.color = "#ffffff";
-            
-            setTimeout(() => {
-              spanEl.textContent = originalText;
-              copyBtn.style.background = "";
-              copyBtn.style.color = "";
-            }, 2000);
-          } else {
-            const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = "¡Copiado!";
-            copyBtn.style.background = "#25D366";
-            copyBtn.style.color = "#ffffff";
-            setTimeout(() => {
-              copyBtn.innerHTML = originalHTML;
-              copyBtn.style.background = "";
-              copyBtn.style.color = "";
-            }, 2000);
-          }
-        }).catch(() => {
-          showToast("Por favor selecciona el texto del enlace y cópialo manualmente.", "info");
-        });
+        navigator.clipboard.writeText(shareUrl)
+          .then(feedbackSuccess)
+          .catch(() => fallbackCopy());
       } else {
-        showToast("Por favor selecciona el texto del enlace y cópialo manualmente.", "info");
+        fallbackCopy();
       }
     };
   }
@@ -4103,7 +4135,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Evento para compartir repertorio activo directamente
-  document.getElementById("btnCompartirRepertorioActivo")?.addEventListener("click", () => {
+  window.compartirRepertorioActivo = function() {
     const activeSongs = JSON.parse(localStorage.getItem("repertorio")) || [];
     if (activeSongs.length === 0) {
       showToast("Tu repertorio activo está vacío. Añade canciones antes de compartir.", "warning");
@@ -4111,7 +4143,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const ctx = window.getRepertorioContext();
     window.compartirCancionesDirecto(ctx.title || "Repertorio Activo", activeSongs);
-  });
+  };
+  document.getElementById("btnCompartirRepertorioActivo")?.addEventListener("click", () => window.compartirRepertorioActivo());
 
   // Escuchar cambios de URL o navegación hash/popstate
   window.addEventListener("hashchange", () => {
@@ -7321,185 +7354,144 @@ async function loadSongsFromFirestore(container) {
 }
 window.loadSongsFromFirestore = loadSongsFromFirestore;
 
-function loadSongs(files) {
+function createSongElement(song) {
+  const title = (song.title || "").trim();
+  const author = typeof window.cleanAuthor === "function" ? window.cleanAuthor(song.author || "") : (song.author || "").replace(/[()]/g, "").trim();
+  const stableId = song.id || (typeof window.generateStableSongId === "function" ? window.generateStableSongId(title, author) : title.toLowerCase().replace(/[^a-z0-9]/g, "_"));
+  
+  // Overrides de categoría
+  const catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
+  const normTitle = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const normAuthor = author.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const category = catOverrides[stableId] || (normAuthor && catOverrides["title_author:" + normTitle + "--" + normAuthor]) || song.category || "Entrada";
+
+  let lyrics = song.lyrics || "";
+  if (lyrics && !lyrics.includes("<pre>") && !lyrics.includes("<div>")) {
+    lyrics = `<pre>${lyrics}</pre>`;
+  }
+
+  const section = document.createElement("section");
+  section.className = "song song-row";
+  section.dataset.category = category;
+  section.dataset.id = stableId;
+  section.dataset.author = author;
+  section.dataset.audio = song.audio || "";
+  section.dataset.youtube = song.youtube || "";
+  section.dataset.tags = song.tags || "";
+  section.dataset.cover = song.cover || song.coverUrl || "";
+
+  section.innerHTML = window.createSongRowHtml({
+    id: stableId,
+    title: title,
+    author: author,
+    category: category,
+    audio: song.audio || "",
+    youtube: song.youtube || "",
+    cover: song.cover || song.coverUrl || "",
+    lyrics: lyrics
+  });
+
+  return section;
+}
+
+async function loadSongs(files) {
   const container = document.getElementById("songsContainer");
   if (!container) return;
-  Promise.all(files.map(f => fetch(f).then(r => r.ok && r.status === 200 ? r.text() : "").catch(() => "")))
-    .then(async htmls => {
-      let combinedHtml = htmls.join("");
-      
-      // Si los archivos locales HTML no respondieron (por ejemplo, modo sin internet / offline):
-      if (!combinedHtml || combinedHtml.trim().length === 0) {
-        console.log("Archivos HTML locales no disponibles. Cargando catálogo offline o Firestore...");
-        
-        // 1. Cargar desde songs-catalog.json (garantizado en caché del Service Worker para uso 100% offline)
-        try {
-          const catRes = await fetch("songs-catalog.json");
-          if (catRes.ok) {
-            const catalog = await catRes.json();
-            if (Array.isArray(catalog) && catalog.length > 0) {
-              combinedHtml = catalog.map(song => {
-                const sId = song.id || (typeof window.generateStableSongId === "function" ? window.generateStableSongId(song.title, song.author) : "");
-                let lyrics = song.lyrics || "";
-                if (!lyrics.includes("<pre>") && !lyrics.includes("<div>")) {
-                  lyrics = `<pre>${lyrics}</pre>`;
-                }
-                return `
-                  <section class="song" data-category="${song.category || 'Entrada'}" data-id="${sId}" data-audio="${song.audio || ''}" data-youtube="${song.youtube || ''}">
-                    <h2>${song.title} <small class="autor">${song.author ? `(${song.author})` : ''}</small></h2>
-                    <div class="lyrics-hidden" style="display:none;">${lyrics}</div>
-                    <button class="add-repertorio"><span class="icon">+</span><span class="text">Añadir al repertorio</span></button>
-                  </section>
-                `;
-              }).join("");
-              console.log(`Cargadas ${catalog.length} canciones desde el catálogo offline.`);
-            }
-          }
-        } catch (catErr) {
-          console.warn("Fallo lectura de catálogo JSON offline:", catErr);
-        }
 
-        // 2. Si sigue vacío y hay conexión, intentar Firestore
-        if (!combinedHtml || combinedHtml.trim().length === 0) {
-          const loadedFromCloud = await loadSongsFromFirestore(container);
-          if (loadedFromCloud) {
-            if (typeof window.chequearImportacionCompartida === "function") {
-              window.chequearImportacionCompartida();
-            }
-            return;
-          }
-        }
+  let loadedSongs = [];
+
+  // 1. Cargar directamente desde catálogo JSON estructurado (rápido, limpio y disponible offline)
+  try {
+    const catRes = await fetch("songs-catalog.json");
+    if (catRes.ok) {
+      const catalog = await catRes.json();
+      if (Array.isArray(catalog) && catalog.length > 0) {
+        loadedSongs = catalog.map(createSongElement);
+        console.log(`Cargadas ${catalog.length} canciones desde catálogo JSON.`);
       }
+    }
+  } catch (err) {
+    console.warn("Fallo lectura de catálogo JSON offline:", err);
+  }
 
-      container.innerHTML = combinedHtml;
-      
-      // Re-estructurar todas las tarjetas de canciones cargadas dinámicamente
-      document.querySelectorAll(".song").forEach(song => {
-
-        const audio = song.dataset.audio;
-        
-        // 1. Extraer título de forma limpia
-        const h2 = song.querySelector("h2");
-        let title = "";
-        let author = "";
-        if (h2) {
-          const h2Clone = h2.cloneNode(true);
-          const smallAutor = h2Clone.querySelector("small, .autor");
-          if (smallAutor) {
-            author = smallAutor.textContent.replace(/[()]/g, "").trim();
-            smallAutor.remove();
-          }
-          title = h2Clone.textContent.trim();
-        }
-        
-        // Buscar .autor adicional si no se encontró en el h2
-        if (!author) {
-          const authorEl = song.querySelector(".autor, small");
-          if (authorEl) {
-            author = authorEl.textContent.replace(/[()]/g, "").trim();
-          }
-        }
-
-        if (author) {
-          author = typeof window.cleanAuthor === "function" ? window.cleanAuthor(author) : author.replace(/[()]/g, "").trim();
-          const escAuth = author.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          title = title.replace(new RegExp(`\\s*\\(${escAuth}\\s*\\)$`, "i"), "").trim();
-        } else {
-          const match = title.match(/^(.*?)\s*\(([^)]+)\)$/);
-          if (match) {
-            title = match[1].trim();
-            author = typeof window.cleanAuthor === "function" ? window.cleanAuthor(match[2]) : match[2].trim();
-          }
-        }
-        song.dataset.author = author;
-        
-        // 2. Obtener los elementos lyrics y add-repertorio originales
-        const lyricsHidden = song.querySelector(".lyrics-hidden, [id^='letra-']");
-        const addBtn = song.querySelector(".add-repertorio");
-        const audioUrl = song.dataset.audio || "";
-
-        // Generar y asignar un ID estable, único y determinista libre de espacios y duplicaciones genéricas
-        const stableId = window.generateStableSongId(title, author);
-        song.dataset.id = stableId;
-
-        // Aplicar categorías reasignadas guardadas previamente en la nube o localmente
-        const catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
-        const normTitle = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        const normAuthor = (author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        if (catOverrides[stableId]) {
-          song.dataset.category = catOverrides[stableId];
-        } else if (normAuthor && catOverrides["title_author:" + normTitle + "--" + normAuthor]) {
-          song.dataset.category = catOverrides["title_author:" + normTitle + "--" + normAuthor];
-        }
-
-        const songCat = song.dataset.category || "Entrada";
-        const songCover = song.dataset.cover || "";
-
-        song.classList.add("song-row");
-        song.innerHTML = window.createSongRowHtml({
-          id: stableId,
-          title: title,
-          author: author,
-          category: songCat,
-          audio: audioUrl,
-          youtube: song.dataset.youtube || "",
-          cover: songCover,
-          lyrics: lyricsHidden ? lyricsHidden.innerHTML : ""
-        });
-      });
-
-      // Limpiar overrides antiguos corruptos que usaban prefijo 'title:' genérico
-      try {
-        let catOverrides = JSON.parse(localStorage.getItem("voxdei_song_category_overrides") || "{}");
-        let hadCorruptTitleKeys = false;
-        Object.keys(catOverrides).forEach(k => {
-          if (k.startsWith("title:")) {
-            delete catOverrides[k];
-            hadCorruptTitleKeys = true;
-          }
-        });
-        if (hadCorruptTitleKeys) {
-          localStorage.setItem("voxdei_song_category_overrides", JSON.stringify(catOverrides));
-        }
-      } catch (e) {}
-
-      // Desduplicar allSongs para garantizar que ninguna canción aparezca duplicada por ID o título+autor
-      const seenSongKeys = new Set();
-      const uniqueSongElements = [];
-      document.querySelectorAll(".song").forEach(song => {
-        const id = song.dataset.id || (typeof window.getSongInfo === "function" ? window.getSongInfo(song).id : "");
-        const info = typeof window.getSongInfo === "function" ? window.getSongInfo(song) : null;
-        const normT = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
-        const normA = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
-        const songKey = id || (normT + (normA ? "--" + normA : ""));
-        if (songKey && seenSongKeys.has(songKey)) {
-          song.remove();
-        } else {
-          if (songKey) seenSongKeys.add(songKey);
-          uniqueSongElements.push(song);
-        }
-      });
-
-      allSongs = uniqueSongElements;
-      shuffleArray(allSongs);
-      allSongs.forEach(song => container.appendChild(song));
-      initSongButtons();
-      initSearch();
-      currentPage = 1;
-      showPage(1);
-      updateChordsVisibility();
-      if (window.lucide) window.lucide.createIcons();
-
-      // Cargar sincronización de canciones en la nube desde Firestore (lectura pública)
-      if (typeof loadCloudSongs === "function") {
-        loadCloudSongs();
-      }
-      
-      // Revisar si se accedió por un link de importación compartida ahora que todas las canciones están cargadas
+  // 2. Si no hay catálogo JSON, intentar Firestore
+  if (loadedSongs.length === 0) {
+    const loadedFromCloud = await loadSongsFromFirestore(container);
+    if (loadedFromCloud) {
       if (typeof window.chequearImportacionCompartida === "function") {
         window.chequearImportacionCompartida();
       }
-    });
+      return;
+    }
+  }
+
+  // 3. Fallback de compatibilidad con archivos HTML si los hubiera
+  if (loadedSongs.length === 0 && Array.isArray(files) && files.length > 0) {
+    try {
+      const htmls = await Promise.all(files.map(f => fetch(f).then(r => r.ok && r.status === 200 ? r.text() : "").catch(() => "")));
+      const combined = htmls.join("");
+      if (combined.trim().length > 0) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = combined;
+        tempDiv.querySelectorAll(".song").forEach(songEl => {
+          const h2 = songEl.querySelector("h2");
+          const rawTitle = h2 ? h2.textContent.replace(/\(.*?\)/g, "").trim() : "";
+          const autorEl = songEl.querySelector(".autor, small");
+          const rawAuthor = autorEl ? autorEl.textContent.replace(/[()]/g, "").trim() : "";
+          const lyricsHidden = songEl.querySelector(".lyrics-hidden, [id^='letra-']");
+          loadedSongs.push(createSongElement({
+            title: rawTitle,
+            author: rawAuthor,
+            category: songEl.dataset.category || "Entrada",
+            audio: songEl.dataset.audio || "",
+            youtube: songEl.dataset.youtube || "",
+            lyrics: lyricsHidden ? lyricsHidden.innerHTML : ""
+          }));
+        });
+      }
+    } catch (e) {
+      console.warn("Fallo fallback de archivos HTML:", e);
+    }
+  }
+
+  // Desduplicar por ID y título+autor
+  container.innerHTML = "";
+  const seenKeys = new Set();
+  const uniqueSongs = [];
+
+  loadedSongs.forEach(songEl => {
+    const id = songEl.dataset.id;
+    const info = typeof window.getSongInfo === "function" ? window.getSongInfo(songEl) : null;
+    const normT = info ? info.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+    const normA = info ? (info.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() : "";
+    const key = id || (normT + (normA ? "--" + normA : ""));
+    if (key && !seenKeys.has(key)) {
+      seenKeys.add(key);
+      uniqueSongs.push(songEl);
+    }
+  });
+
+  allSongs = uniqueSongs;
+  window.allSongs = uniqueSongs;
+  shuffleArray(allSongs);
+  allSongs.forEach(song => container.appendChild(song));
+
+  initSongButtons();
+  initSearch();
+  currentPage = 1;
+  showPage(1);
+  updateChordsVisibility();
+  if (window.lucide) window.lucide.createIcons();
+
+  // Sincronizar canciones en la nube desde Firestore
+  if (typeof loadCloudSongs === "function") {
+    loadCloudSongs();
+  }
+
+  // Revisar si se accedió por un link de importación compartida
+  if (typeof window.chequearImportacionCompartida === "function") {
+    window.chequearImportacionCompartida();
+  }
 }
 
 function initSongButtons() {
