@@ -6823,6 +6823,11 @@ body:not(.light-mode) .btn-clear-saved-rep-search:hover {
   width: 100%;
 }
 
+.saved-repertorio-card.menu-open,
+.saved-repertorio-card:has(.saved-rep-options-dropdown[style*="display: flex"]) {
+  z-index: 100 !important;
+}
+
 .saved-repertorio-card:hover {
   transform: translateY(-2px);
   border-color: #cbd5e1;
@@ -6979,6 +6984,7 @@ body:not(.light-mode) .saved-rep-meta-line svg {
   position: relative;
   margin-left: auto;
   flex-shrink: 0;
+  z-index: 105;
 }
 
 .btn-saved-rep-options {
@@ -7021,7 +7027,7 @@ body:not(.light-mode) .btn-saved-rep-options:hover {
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
   padding: 6px;
-  z-index: 60;
+  z-index: 9999 !important;
   display: flex;
   flex-direction: column;
   gap: 2px;
