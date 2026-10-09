@@ -2977,8 +2977,18 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
       btnMore.onclick = (e) => {
         e.stopPropagation();
         const isShown = dropdown.style.display === "flex";
+        // Cerrar todos los demás menús y restablecer z-index de todas las tarjetas
         document.querySelectorAll(".saved-rep-options-dropdown").forEach(d => (d.style.display = "none"));
-        dropdown.style.display = isShown ? "none" : "flex";
+        document.querySelectorAll(".saved-repertorio-card").forEach(c => {
+          c.classList.remove("menu-open");
+          c.style.zIndex = "";
+        });
+
+        if (!isShown) {
+          dropdown.style.display = "flex";
+          card.classList.add("menu-open");
+          card.style.zIndex = "100";
+        }
       };
     }
 
@@ -2987,6 +2997,8 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
       btnShare.onclick = (e) => {
         e.stopPropagation();
         if (dropdown) dropdown.style.display = "none";
+        card.classList.remove("menu-open");
+        card.style.zIndex = "";
         window.compartirRepertorioId(rep.id);
       };
     }
@@ -2996,6 +3008,8 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
       btnDelete.onclick = (e) => {
         e.stopPropagation();
         if (dropdown) dropdown.style.display = "none";
+        card.classList.remove("menu-open");
+        card.style.zIndex = "";
         window.eliminarRepertorioGuardado(rep.id);
       };
     }
@@ -3003,6 +3017,18 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
     contenedor.appendChild(card);
   });
   
+  // Cerrar al hacer clic en cualquier otra parte
+  if (!window._savedRepDropdownCloseBound) {
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".saved-rep-options-dropdown").forEach(d => (d.style.display = "none"));
+      document.querySelectorAll(".saved-repertorio-card").forEach(c => {
+        c.classList.remove("menu-open");
+        c.style.zIndex = "";
+      });
+    });
+    window._savedRepDropdownCloseBound = true;
+  }
+
   if (window.lucide) window.lucide.createIcons();
 };
 
