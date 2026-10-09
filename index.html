@@ -16,6 +16,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Vox Dei">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png">
@@ -197,19 +198,31 @@
       </div>
     </section>
 
-    <!-- Barra de Búsqueda y Botón Filtros al Costado -->
+    <!-- Barra de Búsqueda y Botón Filtros Separados (Exacto a Image 1) -->
     <div class="search-and-filter-wrapper">
       <section class="search-bar">
         <i data-lucide="search" class="search-icon-svg"></i>
-        <input type="text" id="searchInput" placeholder="Buscar canción...">
+        <input type="text" id="searchInput" placeholder="Buscar canción..." autocomplete="off">
         <button type="button" class="btn-clear-search-input" id="btnClearSearchInput" style="display: none;" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
           <i data-lucide="x"></i>
         </button>
       </section>
-      <button type="button" class="search-filter-box-btn" id="toggleSearchFilters" title="Filtros de búsqueda">
-        <i data-lucide="sliders-horizontal"></i>
+      <button type="button" class="search-filter-box-btn search-filter-toggle-btn" id="toggleSearchFilters" title="Filtros de búsqueda" aria-label="Filtros de búsqueda">
+        <svg class="filter-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
+        </svg>
         <span class="filter-box-text">Filtros</span>
-        <i data-lucide="chevron-down" class="filter-box-chevron"></i>
+        <svg class="filter-box-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
       </button>
     </div>
 
@@ -333,18 +346,18 @@
 
     <!-- Contenedor del Repertorio Activo -->
     <div id="section-repertorio-activo" class="repertorio-section-content">
-      <!-- Buscador tipo píldora idéntico al inicio -->
-      <div class="search-and-filter-wrapper repertorio-search-wrapper">
-        <section class="search-bar">
-          <i data-lucide="search" class="search-icon-svg"></i>
-          <input type="text" id="searchRepertorioInput" placeholder="Buscar en mi repertorio...">
-          <button type="button" class="btn-clear-search-input" id="btnClearSearchRepInput" style="display: none;" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
-            <i data-lucide="x"></i>
-          </button>
-        </section>
-      </div>
-
       <main class="content repertorio-main-content">
+        <!-- Buscador de repertorio -->
+        <div class="search-and-filter-wrapper repertorio-search-wrapper">
+          <section class="search-bar">
+            <i data-lucide="search" class="search-icon-svg"></i>
+            <input type="text" id="searchRepertorioInput" placeholder="Buscar en mi repertorio...">
+            <button type="button" class="btn-clear-search-input" id="btnClearSearchRepInput" style="display: none;" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
+              <i data-lucide="x"></i>
+            </button>
+          </section>
+        </div>
+
         <div class="actions-bar repertorio-actions-bar">
           <div class="repertorio-counter-wrap">
             <i data-lucide="music-2" class="repertorio-counter-icon"></i>
@@ -386,6 +399,15 @@
     <div id="section-repertorios-guardados" class="repertorio-section-content" style="display: none;">
       <main class="content">
         <div id="saved-repertorios-main">
+          <div class="saved-reps-search-container">
+            <div class="saved-reps-search-bar">
+              <i data-lucide="search" class="saved-reps-search-icon"></i>
+              <input type="text" id="searchSavedRepertoriosInput" placeholder="Buscar repertorio..." autocomplete="off">
+              <button type="button" id="btnClearSavedRepSearch" class="btn-clear-saved-rep-search" style="display: none;" title="Limpiar búsqueda">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+          </div>
           <div id="saved-repertorios-list" class="saved-repertorios-list">
             <!-- Carga dinámica de tarjetas de celebraciones -->
           </div>
@@ -394,37 +416,76 @@
         <!-- Detalle de un repertorio guardado -->
         <div id="saved-repertorio-detail" class="saved-repertorio-detail-section" style="display: none;">
           <div class="saved-repertorio-detail-header">
-            <button id="btnVolverRepertorios" class="btn-back-repertorio">
-              <i data-lucide="arrow-left"></i> Volver a mis repertorios
-            </button>
-            <div class="saved-repertorio-title-row">
-              <h2 id="saved-repertorio-detail-title" class="saved-repertorio-title-detail">Repertorio Seleccionado</h2>
-              <button id="btnRenameSavedRepertorio" class="btn-rename-saved-rep" title="Renombrar o editar canciones">
-                <i data-lucide="edit-3"></i>
-              </button>
-              <button id="btnCompartirRepertorio" class="btn-share-saved-rep-icon" title="Compartir por link">
-                <i data-lucide="share-2"></i>
+            <div class="saved-rep-detail-top-bar">
+              <button id="btnVolverRepertorios" class="btn-back-repertorio" title="Volver a mis repertorios">
+                <i data-lucide="arrow-left"></i>
+                <span>Volver a mis repertorios</span>
               </button>
             </div>
-            <div class="saved-repertorio-subtitle-row" style="margin-top: 6px; margin-bottom: 12px;">
-              <span id="saved-repertorio-detail-count" class="saved-repertorio-detail-badge">0 cantos</span>
+
+            <!-- Tarjeta Cabecera del Repertorio Detallado (Exacto a la imagen) -->
+            <div class="saved-rep-detail-hero-card">
+              <div class="saved-rep-detail-main-info">
+                <div class="saved-rep-info-col saved-rep-detail-info-col">
+                  <div class="saved-rep-detail-title-row">
+                    <h2 id="saved-repertorio-detail-title" class="saved-repertorio-name saved-repertorio-name-detail">Misa Don Bosco</h2>
+                    <input type="text" id="inputEditSavedRepTitle" class="saved-rep-title-edit-input" style="display: none;" placeholder="Nombre del repertorio">
+                  </div>
+                  <div class="saved-rep-detail-meta-row">
+                    <div class="saved-rep-meta-line count-line">
+                      <i data-lucide="music-2"></i>
+                      <span id="saved-repertorio-detail-count">0 canciones</span>
+                    </div>
+                    <div class="saved-rep-meta-line date-line">
+                      <i data-lucide="calendar"></i>
+                      <span id="saved-repertorio-detail-date">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fila de acciones derecha: Botón Editar y Menú 3 puntos -->
+              <div class="saved-rep-detail-actions-cluster">
+                <button type="button" id="btnRenameSavedRepertorio" class="btn-rep-detail-action btn-edit-saved-rep-primary" title="Editar canciones y nombre">
+                  <i data-lucide="edit-3"></i>
+                  <span id="btnRenameSavedRepText" class="btn-edit-text-label">Editar</span>
+                </button>
+                <div class="saved-rep-detail-more-wrapper">
+                  <button type="button" id="btnSavedRepDetailMore" class="btn-saved-rep-detail-more" title="Más opciones" aria-label="Más opciones">
+                    <i data-lucide="more-vertical"></i>
+                  </button>
+                  <div id="savedRepDetailMoreDropdown" class="saved-rep-options-dropdown saved-rep-detail-dropdown" style="display: none;">
+                    <button type="button" id="btnCompartirRepertorio" class="saved-rep-dropdown-item opt-share">
+                      <i data-lucide="share-2"></i>
+                      <span>Compartir</span>
+                    </button>
+                    <button type="button" id="btnDeleteCurrentSavedRepertorio" class="saved-rep-dropdown-item opt-delete danger">
+                      <i data-lucide="trash-2"></i>
+                      <span>Eliminar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div id="saved-repertorio-detail-list" class="saved-repertorio-songs-list">
-            <!-- Carga dinámica de los cantos del repertorio seleccionado -->
+
+          <!-- Contenedor de canciones en tabla idéntica a la pantalla principal y activo -->
+          <div id="saved-repertorio-detail-list" class="songs-list-table saved-repertorio-songs-table">
+            <!-- Carga dinámica de los cantos -->
           </div>
-          
-          <!-- Sección para agregar cantos en Modo Edición -->
-          <div id="saved-repertorio-add-section" class="saved-repertorio-add-section" style="display: none; margin-top: 25px;">
-            <div class="search-bar" style="margin: 0 auto 15px auto; width: 100%; max-width: 100%;">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input type="text" id="savedRepSongSearchInput" placeholder="Buscar canciones para agregar..." autocomplete="off">
-            </div>
-            <div id="savedRepSongSearchResults" class="saved-rep-search-results">
-              <!-- Resultados de búsqueda rápidos con botón añadir (+) -->
+
+          <!-- Botón "Agregar canciones" (Solo visible en MODO EDICIÓN) -->
+          <div id="savedRepAddActionWrapper" class="saved-rep-add-action-wrapper" style="display: none;">
+            <div id="cardTriggerAddSongs" class="saved-rep-add-trigger-card" role="button" tabindex="0">
+              <div class="saved-rep-add-trigger-left">
+                <div class="saved-rep-add-plus-circle">
+                  <i data-lucide="plus"></i>
+                </div>
+                <div class="saved-rep-add-trigger-text">
+                  <span class="saved-rep-add-main-title">Agregar canciones</span>
+                  <span class="saved-rep-add-sub-title">Busca canciones del cancionero para añadir a este repertorio</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -776,7 +837,6 @@
       <ul>
         <li><a href="#" id="nav-inicio" class="active"><i data-lucide="home"></i> Inicio</a></li>
         <li><a href="#" id="nav-indice-btn"><i data-lucide="book-open"></i> Índice</a></li>
-        <li><a href="#" id="nav-esquemas-btn"><i data-lucide="scroll"></i> Esquemas de Misa</a></li>
         <li><a href="#" id="nav-repertorio"><i data-lucide="list-music"></i> Mi repertorio</a></li>
         <li><a href="#" id="nav-auth"><i data-lucide="user"></i> <span id="navAuthLabel">Perfil</span> <span id="authBadge" class="auth-badge-dot" style="display: none; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 6px; vertical-align: middle;"></span></a></li>
         <li><a href="#" id="nav-config"><i data-lucide="settings"></i> Configuración</a></li>
@@ -843,31 +903,6 @@
       </div>
       <div id="indexBody" class="index-body">
         <!-- Contenido dinámico del índice -->
-      </div>
-    </div>
-  </div>
-
-  <!-- POPUP DE ESQUEMAS DE MISA (GUÍA LITÚRGICA) -->
-  <div id="popupEsquemasMisa" class="popup-overlay">
-    <div class="popup-content esquemas-misa-popup">
-      <button onclick="window.cerrarEsquemasMisa()" class="popup-cerrar index-floating-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
-      <div class="popup-header esquemas-misa-header">
-        <div class="esquemas-header-icon-badge">
-          <i data-lucide="book-open-check"></i>
-        </div>
-        <div class="esquemas-header-text">
-          <h2 class="popup-title">Guía de Esquemas Litúrgicos</h2>
-          <p class="popup-subtitle">Estructuras oficiales y recomendaciones de cantos para cada tipo de misa o celebración.</p>
-        </div>
-      </div>
-      
-      <!-- Selector de Tipos de Celebración en el Modal -->
-      <div class="esquemas-tabs-nav" id="esquemasTabsNav">
-        <!-- Se generan dinámicamente: Ordinario, Confirmación, Bautizo, Matrimonio, Cuaresma, Pascua, Viernes Santo, Mariana, Exequias -->
-      </div>
-
-      <div id="esquemasModalBody" class="esquemas-modal-body">
-        <!-- Detalle del esquema litúrgico seleccionado -->
       </div>
     </div>
   </div>
@@ -1680,6 +1715,47 @@
           <i data-lucide="chevron-right" class="sheet-action-arrow"></i>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL EMERGENTE: AGREGAR CANCIONES AL REPERTORIO GUARDADO
+  ========================================================== -->
+  <div id="popupAddSongsSavedModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content add-songs-saved-card">
+      <div class="add-songs-saved-header">
+        <div class="add-songs-saved-header-left">
+          <div class="add-songs-saved-icon">
+            <i data-lucide="plus-circle"></i>
+          </div>
+          <div>
+            <h3 class="add-songs-saved-title">Agregar canciones</h3>
+            <p class="add-songs-saved-subtitle">Busca canciones del cancionero para añadir a este repertorio</p>
+          </div>
+        </div>
+        <button type="button" id="closeAddSongsSavedModal" class="modern-close-btn" aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Buscador -->
+      <div class="add-songs-saved-search-wrap">
+        <i data-lucide="search" class="search-icon-svg"></i>
+        <input type="text" id="inputAddSongsModalSearch" placeholder="Buscar por título, letra, autor..." autocomplete="off">
+        <button type="button" id="btnClearAddSongsModalSearch" class="btn-clear-saved-rep-search" style="display: none;" title="Limpiar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Chips de categorías idénticas a la página inicial con flechas para PC y deslizamiento móvil -->
+      <div class="modal-categories-carousel-wrapper">
+        <button type="button" class="modal-cat-arrow left" id="modalCatLeftBtn" aria-label="Categoría anterior">‹</button>
+        <div id="addSongsModalCategoryChips" class="saved-rep-category-chips modal-categories-scroll"></div>
+        <button type="button" class="modal-cat-arrow right" id="modalCatRightBtn" aria-label="Categoría siguiente">›</button>
+      </div>
+
+      <!-- Lista de canciones en modal con estilo idéntico al cancionero -->
+      <div id="addSongsModalSongList" class="add-songs-modal-song-list songs-list-table"></div>
     </div>
   </div>
 
