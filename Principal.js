@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /* ========================
@@ -778,15 +778,6 @@ document.getElementById("nav-indice-btn")?.addEventListener("click", (e) => {
   }
 });
 
-// Botón Esquemas de Misa en el menú lateral (100% operativo)
-document.getElementById("nav-esquemas-btn")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  closeSidebar();
-  if (typeof window.abrirEsquemasMisa === "function") {
-    window.abrirEsquemasMisa();
-  }
-});
-
 // Botón Configuración en el menú lateral
 document.getElementById("nav-config")?.addEventListener("click", (e) => {
   e.preventDefault();
@@ -886,7 +877,7 @@ const searchRepertorioInput = document.getElementById("searchRepertorioInput");
 let lastUserCategory = "todos";
 
 function initSearch() {
-  let currentSearchFilter = "title"; // title, author, lyrics
+  let currentSearchFilter = "all"; // title, author, lyrics, category, all
 
   if (searchInput) {
     searchInput.addEventListener("focus", (e) => {
@@ -979,18 +970,48 @@ function initSearch() {
     return matrix[b.length][a.length];
   };
 
-  // Mapeo de categorías para búsqueda
+  // Mapeo de categorías y alias para búsqueda integral
   const catMap = {
-    "Entrada": "Entrada", "Penitencial": "Penitencial", "Gloria": "Gloria",
-    "Aclamacion": "Aclamación", "Ofertorio": "Ofertorio", "Santo": "Santo",
-    "PadreNuestro": "Padre Nuestro", "Cordero": "Cordero", "Comunión": "Comunión",
-    "AdoracionMeditacion": "Adoración y Meditación", "EnvioSalida": "Salida y Envío",
-    "Marianos": "Marianos", "Salesianos": "Salesianos", "Cuaresma": "Cuaresma",
-    "Pascua": "Pascua", "Adviento": "Adviento y Navidad", "HimnosSalmos": "Himnos y Salmos",
-    "Contemporáneo" : "Contemporáneo"
+    "Entrada": "Entrada", 
+    "Penitencial": "Penitencial piedad perdon kyrie", 
+    "Gloria": "Gloria",
+    "Aclamacion": "Aclamación aleluya honor", 
+    "Ofertorio": "Ofertorio ofrenda", 
+    "Santo": "Santo",
+    "PadreNuestro": "Padre Nuestro padre", 
+    "Cordero": "Cordero paz", 
+    "Comunión": "Comunión",
+    "AdoracionMeditacion": "Adoración y Meditación adoracion meditacion", 
+    "EnvioSalida": "Salida y Envío salida envio",
+    "Marianos": "Marianos mariano maria", 
+    "Salesianos": "Salesianos salesiano don bosco", 
+    "Cuaresma": "Cuaresma",
+    "Pascua": "Pascua resurreccion", 
+    "EspirituSanto": "Espíritu Santo espiritu pentecostes",
+    "Adviento": "Adviento y Navidad adviento navidad", 
+    "HimnosSalmos": "Himnos y Salmos himnos salmos salmo himno",
+    "Contemporáneo": "Contemporáneo"
   };
 
   const matchWord = (qWord, nTitle, nLyrics, nAuthor, nCategory, titleWords, lyricsWordSet, lyricsWords, songAllWords, allSearchableWords) => {
+    // Si el filtro es "all" o no hay filtro restrictivo, busca simultáneamente en título, autor, letra y categoría
+    if (!currentSearchFilter || currentSearchFilter === "all") {
+      if (nTitle.includes(qWord)) return { matched: true, field: 'title' };
+      if (nAuthor.includes(qWord)) return { matched: true, field: 'author' };
+      if (nCategory.includes(qWord)) return { matched: true, field: 'category' };
+      if (lyricsWordSet.has(qWord) || nLyrics.includes(qWord)) return { matched: true, field: 'lyrics' };
+      
+      if (qWord.length >= 3) {
+        const fuzzyDetected = allSearchableWords.some(tWord => {
+          if (Math.abs(tWord.length - qWord.length) > 2) return false;
+          const dist = levenshtein(tWord, qWord);
+          return dist <= (qWord.length > 5 ? 2 : 1);
+        });
+        if (fuzzyDetected) return { matched: true, field: 'fuzzy' };
+      }
+      return { matched: false };
+    }
+
     if (currentSearchFilter === "title") {
       if (nTitle.includes(qWord)) return { matched: true, field: 'title' };
       if (qWord.length >= 3) {
@@ -1099,15 +1120,15 @@ function initSearch() {
     let hasTitleMatch = false;
     let hasAuthorMatch = false;
 
-    // Coincidencia exacta/frase-completa en título
+    // 1. TÍTULO (Prioridad Máxima - Tier 100,000+)
     if (nTitle === nQuery) {
-      score += 100000;
+      score += 200000;
       hasTitleMatch = true;
     } else if (nTitle.startsWith(nQuery)) {
-      score += 50000;
+      score += 150000;
       hasTitleMatch = true;
     } else if (nTitle.includes(nQuery)) {
-      score += 20000;
+      score += 120000;
       hasTitleMatch = true;
     }
 
@@ -1122,36 +1143,53 @@ function initSearch() {
         hasTitleMatch = true;
       }
     });
-    score += titleMatchesCount * 5000;
+    score += titleMatchesCount * 25000;
 
-    // Coincidencias de autor
+    // 2. AUTOR (Segunda Instancia - Tier 20,000+)
     if (nAuthor === nQuery) {
-      score += 4000;
+      score += 40000;
+      hasAuthorMatch = true;
+    } else if (nAuthor.startsWith(nQuery)) {
+      score += 30000;
       hasAuthorMatch = true;
     } else if (nAuthor.includes(nQuery)) {
-      score += 2000;
+      score += 25000;
       hasAuthorMatch = true;
+    } else {
+      const authorWords = nAuthor.split(/[\s,.\-!¡?¿]+/);
+      let authorMatchesCount = 0;
+      queryWords.forEach(qWord => {
+        if (authorWords.includes(qWord)) {
+          authorMatchesCount++;
+          hasAuthorMatch = true;
+        } else if (authorWords.some(a => a.includes(qWord))) {
+          authorMatchesCount += 0.5;
+          hasAuthorMatch = true;
+        }
+      });
+      score += authorMatchesCount * 5000;
     }
 
-    // Coincidencias de categoría
+    // 3. CATEGORÍA (Tercera Instancia - Tier 5,000+)
     let hasCategoryMatch = false;
     if (nCategory === nQuery) {
-      score += 1500;
+      score += 8000;
       hasCategoryMatch = true;
     } else if (nCategory.includes(nQuery)) {
-      score += 500;
+      score += 5000;
       hasCategoryMatch = true;
     } else {
       queryWords.forEach(qWord => {
         if (nCategory.includes(qWord)) {
           hasCategoryMatch = true;
+          score += 2000;
         }
       });
     }
 
-    // Coincidencias de frase de letra
+    // 4. LETRA (Última Instancia - Tier < 2,000)
     if (nLyrics.includes(nQuery)) {
-      score += 100;
+      score += 500;
     }
 
     // Coincidencias por palabra de letra
@@ -1163,7 +1201,7 @@ function initSearch() {
         lyricsMatchesCount += 0.5;
       }
     });
-    score += lyricsMatchesCount * 10;
+    score += lyricsMatchesCount * 20;
 
     return { score, hasTitleMatch, hasAuthorMatch, hasCategoryMatch };
   };
@@ -1240,7 +1278,11 @@ function initSearch() {
     } else if (currentSearchFilter === "category") {
       filteredSongsList = matched.filter(item => item.hasCategoryMatch);
     } else {
-      // De lo contrario (ej. "letra" o sin filtro), permitimos cualquier coincidencia con puntuación positiva
+      // De lo contrario (ej. "all", "letra" o sin filtro), permitimos cualquier coincidencia con puntuación positiva
+      filteredSongsList = matched;
+    }
+
+    if (filteredSongsList.length === 0 && matched.length > 0) {
       filteredSongsList = matched;
     }
 
@@ -2310,19 +2352,6 @@ window.touchRepertorioModified = function(title = null, isSaved = false, esquema
   window.renderRepertorioContext();
 };
 
-window.cambiarEsquemaRepertorio = function(newSchemaId) {
-  const schema = window.LITURGICAL_SCHEMAS[newSchemaId] || window.LITURGICAL_SCHEMAS.ordinario;
-  const current = window.getRepertorioContext();
-  window.touchRepertorioModified(current.title, current.isSaved, schema.id);
-  
-  const select = document.getElementById("selectEsquemaMisa");
-  if (select) select.value = schema.id;
-  
-  if (typeof showToast === "function") {
-    showToast(`Esquema cambiado a: ${schema.shortName}`, "info");
-  }
-};
-
 window.getRelativeTime = function(timestamp) {
   if (!timestamp) return "Modificado hace un momento";
   const diffSec = Math.floor((Date.now() - timestamp) / 1000);
@@ -2335,102 +2364,6 @@ window.getRelativeTime = function(timestamp) {
   if (diffHours === 1) return "Modificado hace 1 hora";
   if (diffHours < 24) return `Modificado hace ${diffHours} horas`;
   return `Modificado el ${new Date(timestamp).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`;
-};
-
-window.renderLiturgicalChecklist = function(rep) {
-  const container = document.getElementById("liturgicalChecklistFlow");
-  const progressBadge = document.getElementById("liturgicalProgressText");
-  const noteBox = document.getElementById("liturgicalSchemaNote");
-  const selectEl = document.getElementById("selectEsquemaMisa");
-  if (!container) return;
-
-  const ctx = window.getRepertorioContext();
-  const schemaKey = ctx.esquema && window.LITURGICAL_SCHEMAS[ctx.esquema] ? ctx.esquema : "ordinario";
-  const activeSchema = window.LITURGICAL_SCHEMAS[schemaKey];
-
-  if (selectEl && selectEl.value !== schemaKey) {
-    selectEl.value = schemaKey;
-  }
-
-  if (noteBox) {
-    if (activeSchema.note) {
-      noteBox.style.display = "block";
-      noteBox.innerHTML = `<strong>${activeSchema.icon} Nota litúrgica:</strong> ${activeSchema.note}`;
-    } else {
-      noteBox.style.display = "none";
-      noteBox.innerHTML = "";
-    }
-  }
-
-  container.innerHTML = "";
-  const songs = Array.isArray(rep) ? rep : [];
-  const keySteps = activeSchema.keySteps || [];
-  let keyStepsCovered = 0;
-
-  activeSchema.steps.forEach(step => {
-    const matchingSongs = songs.filter(s => {
-      const res = window.resolveSong(s) || s;
-      const cat = (res.category || "").toLowerCase().trim();
-      const type = (res.type || "").toLowerCase().trim();
-      return step.aliases.some(alias => cat.includes(alias) || type.includes(alias));
-    });
-
-    const isCovered = matchingSongs.length > 0;
-    if (isCovered && keySteps.includes(step.key)) keyStepsCovered++;
-
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = `liturgical-chip ${isCovered ? "covered" : "missing"} ${step.special ? "special-liturgical-step" : ""}`;
-    chip.title = isCovered
-      ? `${step.label}: ${matchingSongs.map(s => s.title).join(", ")}`
-      : `Haz clic para buscar cantos de ${step.label}`;
-
-    chip.innerHTML = isCovered
-      ? `<span>✓</span> <strong>${step.label}</strong> ${matchingSongs.length > 1 ? `(${matchingSongs.length})` : ""}`
-      : `<span>+</span> <span>${step.label}</span>`;
-
-    chip.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (isCovered) {
-        const searchInput = document.getElementById("searchRepertorioInput");
-        if (searchInput) {
-          searchInput.value = step.label;
-          searchInput.dispatchEvent(new Event("input"));
-        }
-      } else {
-        if (typeof window.switchView === "function") {
-          window.switchView("home");
-          setTimeout(() => {
-            const firstAlias = step.aliases[0] || step.key;
-            const btnCat = document.querySelector(`.category-btn[data-category="${firstAlias}"]`) ||
-                           document.querySelector(`.category-btn[data-category*="${step.key}"]`);
-            if (btnCat) {
-              btnCat.click();
-            } else {
-              const searchGeneral = document.getElementById("searchInput");
-              if (searchGeneral) {
-                searchGeneral.value = step.label;
-                searchGeneral.dispatchEvent(new Event("input"));
-              }
-            }
-          }, 150);
-        }
-      }
-    };
-
-    container.appendChild(chip);
-  });
-
-  if (progressBadge) {
-    const totalKey = keySteps.length > 0 ? keySteps.length : activeSchema.steps.length;
-    progressBadge.textContent = `${keyStepsCovered} / ${totalKey} cantos clave`;
-    if (keyStepsCovered >= totalKey && totalKey > 0) {
-      progressBadge.classList.add("progress-complete");
-    } else {
-      progressBadge.classList.remove("progress-complete");
-    }
-  }
 };
 
 window.renderRepertorioContext = function() {
@@ -2469,8 +2402,6 @@ window.renderRepertorioContext = function() {
   if (timeEl) {
     timeEl.textContent = window.getRelativeTime(ctx.lastModified);
   }
-
-  window.renderLiturgicalChecklist(rep);
 };
 
 /* =========================================
@@ -2486,118 +2417,6 @@ window.moverCancionRepertorio = function(index, direction) {
   window.touchRepertorioModified(null, false);
   renderizarRepertorio(rep);
   if (typeof initSongButtons === "function") initSongButtons();
-};
-
-/* =========================================
-   8.2 MODAL GUÍA DE ESQUEMAS LITÚRGICOS
-========================================= */
-window.currentModalSchemaId = "ordinario";
-
-window.abrirEsquemasMisa = function(schemaId = null) {
-  const modal = document.getElementById("popupEsquemasMisa");
-  if (!modal) return;
-  const ctx = window.getRepertorioContext();
-  window.currentModalSchemaId = schemaId || ctx.esquema || "ordinario";
-  window.renderEsquemasModal(window.currentModalSchemaId);
-  modal.classList.add("active");
-  if (window.lucide) window.lucide.createIcons();
-};
-
-window.cerrarEsquemasMisa = function() {
-  const modal = document.getElementById("popupEsquemasMisa");
-  if (modal) modal.classList.remove("active");
-};
-
-window.aplicarEsquemaAlRepertorio = function(schemaId) {
-  const schema = window.LITURGICAL_SCHEMAS[schemaId];
-  if (!schema) return;
-  window.cambiarEsquemaRepertorio(schemaId);
-  window.cerrarEsquemasMisa();
-  if (typeof window.switchView === "function") {
-    window.switchView("repertorio");
-  }
-  if (typeof showToast === "function") {
-    showToast(`¡Esquema "${schema.shortName}" aplicado a tu repertorio!`, "success", 4000);
-  }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("selectEsquemaMisa")?.addEventListener("change", function() {
-    window.cambiarEsquemaRepertorio(this.value);
-  });
-  document.getElementById("btnOpenGuiaEsquemas")?.addEventListener("click", () => {
-    window.abrirEsquemasMisa();
-  });
-});
-
-window.renderEsquemasModal = function(activeSchemaId) {
-  const tabsNav = document.getElementById("esquemasTabsNav");
-  const modalBody = document.getElementById("esquemasModalBody");
-  if (!tabsNav || !modalBody) return;
-
-  const schemaKeys = Object.keys(window.LITURGICAL_SCHEMAS);
-  tabsNav.innerHTML = "";
-
-  schemaKeys.forEach(key => {
-    const sch = window.LITURGICAL_SCHEMAS[key];
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = `esquema-tab-pill ${key === activeSchemaId ? "active" : ""}`;
-    btn.innerHTML = `<span class="esquema-pill-icon">${sch.icon}</span> <span>${sch.shortName}</span>`;
-    btn.onclick = () => {
-      window.currentModalSchemaId = key;
-      window.renderEsquemasModal(key);
-    };
-    tabsNav.appendChild(btn);
-  });
-
-  const sch = window.LITURGICAL_SCHEMAS[activeSchemaId] || window.LITURGICAL_SCHEMAS.ordinario;
-  
-  modalBody.innerHTML = `
-    <div class="esquema-detail-card">
-      <div class="esquema-detail-header">
-        <div class="esquema-title-box">
-          <span class="esquema-hero-icon">${sch.icon}</span>
-          <div>
-            <h3 class="esquema-detail-title">${sch.name}</h3>
-            <p class="esquema-detail-desc">${sch.description}</p>
-          </div>
-        </div>
-        <button type="button" class="btn-apply-schema-action" onclick="window.aplicarEsquemaAlRepertorio('${sch.id}')">
-          <i data-lucide="check"></i>
-          <span>Usar en Mi Repertorio</span>
-        </button>
-      </div>
-
-      ${sch.note ? `
-        <div class="esquema-liturgical-callout">
-          <i data-lucide="info"></i>
-          <p>${sch.note}</p>
-        </div>
-      ` : ''}
-
-      <div class="esquema-steps-timeline">
-        <h4 class="esquema-steps-title">
-          <i data-lucide="list-ordered"></i> Orden de Cantos para la Celebración
-        </h4>
-        <div class="esquema-steps-grid">
-          ${sch.steps.map((st, i) => `
-            <div class="esquema-step-item ${st.special ? 'special-step' : ''}">
-              <div class="step-num">${i + 1}</div>
-              <div class="step-info">
-                <span class="step-name">${st.label}</span>
-                <span class="step-badge ${st.required ? 'badge-req' : 'badge-opt'}">
-                  ${st.required ? 'Parte principal' : 'Opcional / Según día'}
-                </span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-
-  if (window.lucide) window.lucide.createIcons();
 };
 
 function renderizarRepertorio(lista, esBusqueda = false) {
@@ -2709,7 +2528,7 @@ function renderizarRepertorio(lista, esBusqueda = false) {
             </div>
           </div>
           <div class="song-row-category-col">
-            <span class="category-pill-tag cat-pill-${catSlug}">${displayCategory}</span>
+            <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
           </div>
           <div class="song-row-actions" onclick="event.stopPropagation();">
             <button type="button" class="song-action-btn btn-remove-repertorio-item" title="Quitar del repertorio" aria-label="Quitar del repertorio" onclick="borrarCancion('${title.replace(/'/g, "\\'")}', '${author.replace(/'/g, "\\'")}', ${index})">
@@ -2882,23 +2701,159 @@ window.cargarRepertorioEnActivo = async function(repertorioId) {
   showToast(`Repertorio "${target.name}" cargado en Activo`, "success");
 };
 
-window.renderizarRepertoriosGuardados = function() {
+function getLiturgicalFolderPalette(rep, index) {
+  const norm = (str) => (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const nameNorm = norm(rep.name);
+  const songs = Array.isArray(rep.songs) ? rep.songs : [];
+
+  let songsText = "";
+  songs.forEach(s => {
+    const resolved = (typeof window.resolveSong === "function" ? window.resolveSong(s) : null) || (typeof s === "object" ? s : null);
+    if (resolved) {
+      songsText += " " + norm(resolved.title) + " " + norm(resolved.category) + " " + norm(resolved.type) + " " + norm(resolved.tags);
+    } else if (typeof s === "string") {
+      songsText += " " + norm(s);
+    }
+  });
+
+  const fullText = (nameNorm + " " + songsText).trim();
+
+  // Sistema de puntuación contextual
+  const scores = {
+    purple: 0, // Morado
+    rose: 0,   // Rojo
+    amber: 0,  // Amarillo / Naranja
+    blue: 0,   // Celeste / Azul Mariano
+    green: 0   // Verde Ordinario
+  };
+
+  // 1. Morado: Señor de los Milagros, Octubre, Nazareno, Cuaresma, Adviento, Penitencial, Difuntos, Perdón, Piedad
+  const purpleKeywords = [
+    'milagr', 'octubre', 'morad', 'nazaren', 'cuaresm', 'advient', 'penitenc', 'difunt', 'ceniz',
+    'perdon', 'piedad', 'misericord', 'viacrucis', 'via crucis', 'dolorosa', 'triste', 'senor de los milagros'
+  ];
+  purpleKeywords.forEach(k => {
+    if (nameNorm.includes(k)) scores.purple += 5;
+    if (songsText.includes(k)) scores.purple += 1.5;
+  });
+
+  // 2. Rojo: Pascua, Pasión, Domingo de Ramos, Viernes Santo, Sangre, Cruz, Confirmación, Mártires, Resurrección
+  const redKeywords = [
+    'pascu', 'pasion', 'ramo', 'resurrec', 'resucit', 'viernes santo', 'cruz', 'sangre',
+    'confirmac', 'martir', 'triduo', 'aleluya', 'triunfo', 'victoria', 'cordero pascual'
+  ];
+  redKeywords.forEach(k => {
+    if (nameNorm.includes(k)) scores.rose += 5;
+    if (songsText.includes(k)) scores.rose += 1.5;
+  });
+
+  // 3. Amarillo / Naranja: Pentecostés, Espíritu Santo, Navidad, Nochebuena, Reyes, Epifanía, Santísimo, Eucaristía, Corpus
+  const amberKeywords = [
+    'pentecost', 'espiritu', 'fuego', 'carisma', 'viento', 'navidad', 'nochebuena',
+    'epifani', 'reyes', 'pesebre', 'belen', 'santism', 'santisim', 'eucarist',
+    'corpus', 'hostia', 'custodia', 'adorac', 'gloria', 'luz'
+  ];
+  amberKeywords.forEach(k => {
+    if (nameNorm.includes(k)) scores.amber += 5;
+    if (songsText.includes(k)) scores.amber += 1.5;
+  });
+
+  // 4. Azul / Celeste: Virgen María, Auxiliadora, Asunción, Guadalupe, Rosario, Marianos, Inmaculada
+  const blueKeywords = [
+    'mari', 'virgen', 'auxiliador', 'inmaculad', 'asuncion', 'guadalup', 'fatima',
+    'rosario', 'mariano', 'madre', 'magnificat', 'lourdes', 'carmen', 'reina del cielo'
+  ];
+  blueKeywords.forEach(k => {
+    if (nameNorm.includes(k)) scores.blue += 5;
+    if (songsText.includes(k)) scores.blue += 1.5;
+  });
+
+  // 5. Verde: Tiempo Ordinario, Misa Ordinaria, Misión, Envío, Esperanza, Don Bosco, Salesiano, Juvenil, Comunión
+  const greenKeywords = [
+    'ordinar', 'dominic', 'domingo', 'don bosco', 'salesian', 'mision', 'envi',
+    'esperanz', 'reino', 'joven', 'juventud', 'valdocco', 'comun', 'verde', 'semana'
+  ];
+  greenKeywords.forEach(k => {
+    if (nameNorm.includes(k)) scores.green += 5;
+    if (songsText.includes(k)) scores.green += 1.5;
+  });
+
+  // Encontrar la categoría con mayor puntuación
+  let maxScore = 0;
+  let bestColor = null;
+  const mapping = {
+    purple: 'palette-purple',
+    rose: 'palette-rose',
+    amber: 'palette-amber',
+    blue: 'palette-blue',
+    green: 'palette-green'
+  };
+
+  for (const [key, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      maxScore = score;
+      bestColor = mapping[key];
+    }
+  }
+
+  if (bestColor && maxScore >= 2) {
+    return bestColor;
+  }
+
+  // Fallback balanceado según hash del nombre + índice para mantener consistencia y variedad estética
+  const FALLBACK_PALETTES = ['palette-green', 'palette-rose', 'palette-blue', 'palette-amber', 'palette-purple', 'palette-coral'];
+  let hash = 0;
+  const str = rep.name || "";
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return FALLBACK_PALETTES[Math.abs(hash + (index || 0)) % FALLBACK_PALETTES.length];
+}
+
+window.renderizarRepertoriosGuardados = function(searchQuery = null) {
   const contenedor = document.getElementById("saved-repertorios-list");
   if (!contenedor) return;
   
-  contenedor.innerHTML = "";
   const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
   
   const tabCountGuardados = document.getElementById("tabCountGuardados");
   if (tabCountGuardados) tabCountGuardados.textContent = saved.length;
 
+  const searchInput = document.getElementById("searchSavedRepertoriosInput");
+  const clearBtn = document.getElementById("btnClearSavedRepSearch");
+  const query = (searchQuery !== null ? searchQuery : (searchInput ? searchInput.value : "")).trim().toLowerCase();
+
+  if (clearBtn) {
+    clearBtn.style.display = query ? "flex" : "none";
+  }
+
+  // Inicializar listeners del buscador si no se han conectado
+  if (searchInput && !searchInput.dataset.bound) {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (e) => {
+      window.renderizarRepertoriosGuardados(e.target.value);
+    });
+  }
+  if (clearBtn && !clearBtn.dataset.bound) {
+    clearBtn.dataset.bound = "true";
+    clearBtn.addEventListener("click", () => {
+      if (searchInput) {
+        searchInput.value = "";
+        window.renderizarRepertoriosGuardados("");
+        searchInput.focus();
+      }
+    });
+  }
+
+  // Si no hay repertorios en total
   if (saved.length === 0) {
     contenedor.innerHTML = `
       <div class="saved-repertorio-empty" style="grid-column: 1 / -1; text-align: center; padding: 44px 20px; background: rgba(0, 0, 0, 0.02); border: 1px dashed #cbd5e1; border-radius: 16px;">
         <i data-lucide="folder-plus" style="width: 40px; height: 40px; color: #94a3b8; margin-bottom: 12px;"></i>
         <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0 0 6px 0;">No tienes repertorios guardados</h3>
         <p style="font-size: 0.82rem; color: #64748b; max-width: 420px; margin: 0 auto 16px auto;">
-          Puedes armar tu lista de cantos en la pestaña <strong>Activo</strong> y guardarla con un nombre (ej. <em>Misa Juvenil</em>, <em>Domingo 05 Octubre</em>) para reutilizarla cuando quieras.
+          Puedes armar tu lista de cantos en la pestaña <strong>Activo</strong> y guardarla con un nombre (ej. <em>Misa Don Bosco</em>, <em>Vigilia de Navidad</em>) para reutilizarla cuando quieras.
         </p>
         <button type="button" class="btn-explore-catalog" onclick="window.switchRepertorioTab('activo')">
           <i data-lucide="music-4"></i>
@@ -2909,8 +2864,51 @@ window.renderizarRepertoriosGuardados = function() {
     if (window.lucide) window.lucide.createIcons();
     return;
   }
-  
-  saved.forEach(rep => {
+
+  // Filtrar si hay búsqueda
+  let displayList = saved;
+  if (query) {
+    const normQ = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    displayList = saved.filter(rep => {
+      const name = (rep.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      if (name.includes(normQ)) return true;
+      return (rep.songs || []).some(s => {
+        const title = (typeof s === "string" ? s : (s.title || "")).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return title.includes(normQ);
+      });
+    });
+  }
+
+  contenedor.innerHTML = "";
+
+  if (displayList.length === 0) {
+    const safeQ = query.replace(/[&<>"']/g, "");
+    contenedor.innerHTML = `
+      <div class="saved-repertorio-empty" style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: rgba(0, 0, 0, 0.02); border: 1px dashed #cbd5e1; border-radius: 16px;">
+        <i data-lucide="search-x" style="width: 36px; height: 36px; color: #94a3b8; margin-bottom: 10px;"></i>
+        <h3 style="font-size: 1rem; font-weight: 700; margin: 0 0 6px 0;">No se encontraron repertorios</h3>
+        <p style="font-size: 0.82rem; color: #64748b; margin: 0 auto 14px auto;">
+          No hay resultados para "<strong>${safeQ}</strong>".
+        </p>
+        <button type="button" class="btn-clean-saved-filter" onclick="const el=document.getElementById('searchSavedRepertoriosInput'); if(el){el.value=''; window.renderizarRepertoriosGuardados('');}">
+          <span>Ver todos los repertorios</span>
+        </button>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  const FOLDER_PALETTES = [
+    'palette-rose',
+    'palette-purple',
+    'palette-green',
+    'palette-blue',
+    'palette-amber',
+    'palette-coral'
+  ];
+
+  displayList.forEach((rep, idx) => {
     const card = document.createElement("div");
     card.className = "saved-repertorio-card";
     
@@ -2933,23 +2931,37 @@ window.renderizarRepertoriosGuardados = function() {
       });
     }
 
+    const paletteClass = getLiturgicalFolderPalette(rep, idx);
+    const safeName = (rep.name || "Repertorio").replace(/"/g, '&quot;');
+
     card.innerHTML = `
-      <div class="saved-repertorio-icon-box">
-        <i data-lucide="folder"></i>
-      </div>
-      <div class="saved-repertorio-body">
-        <div class="saved-repertorio-name" title="${rep.name}">${rep.name}</div>
-        <div class="saved-repertorio-bottom-row">
-          <div class="saved-repertorio-meta-col">
-            <div class="saved-repertorio-count">${countText}</div>
-            <div class="saved-repertorio-date">${displayDate}</div>
+      <div class="saved-rep-card-top">
+        <div class="saved-repertorio-icon-box ${paletteClass}">
+          <i data-lucide="folder"></i>
+        </div>
+        <div class="saved-rep-info-col">
+          <div class="saved-repertorio-name" title="${safeName}">${safeName}</div>
+          <div class="saved-rep-meta-line count-line">
+            <i data-lucide="music-2"></i>
+            <span>${countText}</span>
           </div>
-          <div class="saved-repertorio-actions" onclick="event.stopPropagation();">
-            <button type="button" class="btn-share-repertorio-card" title="Compartir enlace">
+          <div class="saved-rep-meta-line date-line">
+            <i data-lucide="calendar"></i>
+            <span>${displayDate}</span>
+          </div>
+        </div>
+        <div class="saved-rep-menu-wrapper" onclick="event.stopPropagation();">
+          <button type="button" class="btn-saved-rep-options" title="Opciones" aria-label="Opciones del repertorio">
+            <i data-lucide="more-horizontal"></i>
+          </button>
+          <div class="saved-rep-options-dropdown" style="display: none;">
+            <button type="button" class="saved-rep-dropdown-item opt-share">
               <i data-lucide="share-2"></i>
+              <span>Compartir</span>
             </button>
-            <button type="button" class="btn-delete-repertorio" title="Eliminar este repertorio">
+            <button type="button" class="saved-rep-dropdown-item opt-delete danger">
               <i data-lucide="trash-2"></i>
+              <span>Eliminar</span>
             </button>
           </div>
         </div>
@@ -2958,18 +2970,32 @@ window.renderizarRepertoriosGuardados = function() {
 
     card.onclick = () => window.abrirVerRepertorio(rep.id);
 
-    const btnShare = card.querySelector(".btn-share-repertorio-card");
+    const btnMore = card.querySelector(".btn-saved-rep-options");
+    const dropdown = card.querySelector(".saved-rep-options-dropdown");
+
+    if (btnMore && dropdown) {
+      btnMore.onclick = (e) => {
+        e.stopPropagation();
+        const isShown = dropdown.style.display === "flex";
+        document.querySelectorAll(".saved-rep-options-dropdown").forEach(d => (d.style.display = "none"));
+        dropdown.style.display = isShown ? "none" : "flex";
+      };
+    }
+
+    const btnShare = card.querySelector(".opt-share");
     if (btnShare) {
       btnShare.onclick = (e) => {
         e.stopPropagation();
+        if (dropdown) dropdown.style.display = "none";
         window.compartirRepertorioId(rep.id);
       };
     }
 
-    const btnDelete = card.querySelector(".btn-delete-repertorio");
+    const btnDelete = card.querySelector(".opt-delete");
     if (btnDelete) {
       btnDelete.onclick = (e) => {
         e.stopPropagation();
+        if (dropdown) dropdown.style.display = "none";
         window.eliminarRepertorioGuardado(rep.id);
       };
     }
@@ -2982,32 +3008,58 @@ window.renderizarRepertoriosGuardados = function() {
 
 window.currentSavedRepertorioId = null;
 window.editSavedRepertorioMode = false;
+window.rawCatalogSongs = [];
+
+// Recuperación instantánea del catálogo desde almacenamiento local si no hay internet
+try {
+  const localCachedCatalog = JSON.parse(localStorage.getItem("voxdei_cached_songs_catalog") || "[]");
+  if (Array.isArray(localCachedCatalog) && localCachedCatalog.length > 0) {
+    window.rawCatalogSongs = localCachedCatalog;
+    console.log(`[Offline] Catálogo precargado de inmediato (${localCachedCatalog.length} cantos).`);
+  }
+} catch (e) {}
+
+// Precarga y actualización automática del catálogo JSON (con respaldo local offline)
+fetch("songs-catalog.json")
+  .then(res => res.json())
+  .then(data => {
+    if (Array.isArray(data) && data.length > 0) {
+      window.rawCatalogSongs = data;
+      try {
+        localStorage.setItem("voxdei_cached_songs_catalog", JSON.stringify(data));
+      } catch (e) {}
+    }
+  })
+  .catch(err => console.warn("Pre-fetch catalog offline:", err));
 
 function getGlobalSongsList() {
-  // Intentar usar primero la lista cargada de canciones en la variable global o en window
+  if (Array.isArray(window.rawCatalogSongs) && window.rawCatalogSongs.length > 0) {
+    return window.rawCatalogSongs;
+  }
   let source = (typeof allSongs !== "undefined" && allSongs && allSongs.length > 0) ? allSongs : window.allSongs;
   if (!source || source.length === 0) {
-    source = Array.from(document.querySelectorAll(".song"));
-    // Evitar guardar un array vacío en window.allSongs de forma permanente si aún no se han cargado las canciones
-    if (source.length > 0) {
-      window.allSongs = source;
-    }
+    source = Array.from(document.querySelectorAll("#songsContainer .song"));
+  }
+  if (!source || source.length === 0) {
+    source = Array.from(document.querySelectorAll(".song:not(.saved-rep-song-row):not(.add-songs-modal-row)"));
   }
   return source.map(songSection => {
-    const info = window.getSongInfo(songSection);
+    if (!songSection) return null;
+    if (songSection.title && !songSection.tagName) return songSection;
+    const info = typeof window.getSongInfo === "function" ? window.getSongInfo(songSection) : { title: "", author: "", id: "" };
     const lyrics = songSection.querySelector(".lyrics-hidden, .lyrics, .lyrics1")?.innerHTML.trim() || "";
-    const type = songSection.dataset.type || "";
-    const rawAudio = songSection.dataset.audio || "";
-    let youtube = songSection.dataset.youtube || "";
+    const type = songSection.dataset?.type || "";
+    const rawAudio = songSection.dataset?.audio || "";
+    let youtube = songSection.dataset?.youtube || "";
     let audio = rawAudio;
-    if (!youtube && window.isYouTubeUrl(rawAudio)) {
+    if (!youtube && typeof window.isYouTubeUrl === "function" && window.isYouTubeUrl(rawAudio)) {
       youtube = rawAudio;
       audio = "";
     }
-    const tags = songSection.dataset.tags || window.getSongTag(songSection) || "";
-    const category = songSection.dataset.category || "";
+    const tags = songSection.dataset?.tags || (typeof window.getSongTag === "function" ? window.getSongTag(songSection) : "") || "";
+    const category = songSection.dataset?.category || "";
     return { id: info.id, title: info.title, author: info.author, lyrics, type, audio, youtube, tags, category };
-  }).filter(s => s.title);
+  }).filter(s => s && s.title);
 }
 
 window.resolveSong = function(storedSong) {
@@ -3102,27 +3154,56 @@ window.agregarCantoARepertorioGuardado = function(songData) {
   }
 };
 
-window.buscarCancionesParaRepertorioGuardado = function(query) {
+window.selectedSavedRepCategory = "";
+
+window.renderSavedRepCategoryChips = function() {
+  const chipsContainer = document.getElementById("savedRepCategoryFilters");
+  if (!chipsContainer) return;
+  const searchInput = document.getElementById("savedRepSongSearchInput");
+  chipsContainer.innerHTML = MODAL_CATEGORIES.map(cat => {
+    const isSelected = (window.selectedSavedRepCategory === cat.key) || (!window.selectedSavedRepCategory && cat.key === "todos");
+    return `<button type="button" class="saved-rep-cat-chip ${isSelected ? 'active' : ''}" data-cat="${cat.key}">${cat.label}</button>`;
+  }).join("");
+
+  chipsContainer.querySelectorAll(".saved-rep-cat-chip").forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const catKey = btn.dataset.cat;
+      window.selectedSavedRepCategory = catKey === "todos" ? "" : catKey;
+      window.renderSavedRepCategoryChips();
+      const q = searchInput ? searchInput.value : "";
+      window.buscarCancionesParaRepertorioGuardado(q);
+    };
+  });
+};
+
+window.buscarCancionesParaRepertorioGuardado = function(query = "") {
   const container = document.getElementById("savedRepSongSearchResults");
   if (!container) return;
 
-  if (!query || !query.trim()) {
-    container.innerHTML = "";
-    container.style.display = "none";
-    return;
+  const cleanQuery = (query || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+  const allAvailable = typeof getGlobalSongsList === "function" ? getGlobalSongsList() : [];
+
+  let filtradas = allAvailable;
+
+  if (window.selectedSavedRepCategory && window.selectedSavedRepCategory !== "todos") {
+    filtradas = filtradas.filter(song => {
+      return window.matchesSavedRepModalCategory(song.category, window.selectedSavedRepCategory);
+    });
   }
 
-  const cleanQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-  const allAvailable = getGlobalSongsList();
-
-  const filtradas = allAvailable.filter(song => {
-    const titleClean = song.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const authorClean = (song.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return titleClean.includes(cleanQuery) || authorClean.includes(cleanQuery);
-  });
+  if (cleanQuery) {
+    filtradas = filtradas.filter(song => {
+      const titleClean = (song.title || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const authorClean = (song.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const lyricsClean = (song.lyrics || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      return titleClean.includes(cleanQuery) || authorClean.includes(cleanQuery) || lyricsClean.includes(cleanQuery);
+    });
+  }
 
   if (filtradas.length === 0) {
-    container.innerHTML = `<p style="padding: 12px; text-align: center; color: #888; font-size: 0.85rem;">No se encontraron canciones.</p>`;
+    container.innerHTML = `<p style="padding: 14px; text-align: center; color: #888; font-size: 0.85rem;">No se encontraron canciones.</p>`;
     container.style.display = "block";
     return;
   }
@@ -3130,7 +3211,7 @@ window.buscarCancionesParaRepertorioGuardado = function(query) {
   container.innerHTML = "";
   container.style.display = "block";
 
-  filtradas.slice(0, 50).forEach(song => {
+  filtradas.slice(0, 40).forEach(song => {
     const item = document.createElement("div");
     item.className = "saved-rep-search-item";
 
@@ -3138,12 +3219,13 @@ window.buscarCancionesParaRepertorioGuardado = function(query) {
     info.className = "saved-rep-search-info";
     info.innerHTML = `
       <span class="saved-rep-search-title">${song.title}</span>
-      <span class="saved-rep-search-meta">${song.author ? `${song.author}` : ""} ${song.category ? `• ${song.category.toUpperCase()}` : ""}</span>
+      <span class="saved-rep-search-meta">${song.author ? `${song.author}` : "Desconocido"}</span>
     `;
 
     const addBtn = document.createElement("button");
-    addBtn.className = "btn-add-to-saved";
-    addBtn.innerHTML = `<i data-lucide="plus" style="width: 12px; height: 12px;"></i> Añadir`;
+    addBtn.className = "btn-modal-add-icon";
+    addBtn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+    addBtn.title = "Añadir";
     
     addBtn.onclick = () => {
       window.agregarCantoARepertorioGuardado(song);
@@ -3166,207 +3248,664 @@ window.renderVerRepertorioDetalle = function() {
   const detailSection = document.getElementById("saved-repertorio-detail");
   const mainSection = document.getElementById("saved-repertorios-main");
   const title = document.getElementById("saved-repertorio-detail-title");
+  const titleInput = document.getElementById("inputEditSavedRepTitle");
   const countBadge = document.getElementById("saved-repertorio-detail-count");
+  const dateBadge = document.getElementById("saved-repertorio-detail-date");
   const container = document.getElementById("saved-repertorio-detail-list");
 
   if (!detailSection || !mainSection || !container) return;
 
-  // Título estático y cliqueable para renombrar de forma simple y amigable
-  if (title) {
-    title.textContent = target.name;
-    title.style.cursor = "pointer";
-    title.title = "Haz clic aquí para cambiar el nombre";
-    title.onclick = async (e) => {
-      e.preventDefault();
-      const nuevoNombre = await showPromptModal({
-        title: "Renombrar repertorio",
-        message: "Ingresa el nuevo nombre para este repertorio:",
-        defaultValue: target.name,
-        placeholder: "Nombre del repertorio",
-        confirmText: "Guardar"
-      });
-      if (nuevoNombre && nuevoNombre.trim()) {
-        target.name = nuevoNombre.trim();
-        window.saveLocalAndCloudRepertorios(saved);
-        window.renderizarRepertoriosGuardados(); // Actualiza contadores en la lista principal
-        window.renderVerRepertorioDetalle();    // Re-renderiza detalle
-        showToast("Repertorio renombrado a: " + target.name, "success");
-      }
-    };
+  // Manejo del título (editable en modo edición unificado con el botón general de Editar)
+  if (window.editSavedRepertorioMode) {
+    if (title) title.style.display = "none";
+    if (titleInput) {
+      titleInput.style.display = "block";
+      titleInput.value = target.name;
+      setTimeout(() => titleInput.focus(), 50);
+    }
+  } else {
+    if (titleInput && titleInput.style.display !== "none" && titleInput.value.trim()) {
+      target.name = titleInput.value.trim();
+      window.saveLocalAndCloudRepertorios(saved);
+      window.renderizarRepertoriosGuardados();
+    }
+    if (title) {
+      title.style.display = "block";
+      title.textContent = target.name;
+      title.style.cursor = "default";
+      title.title = target.name;
+      title.onclick = null;
+    }
+    if (titleInput) titleInput.style.display = "none";
   }
 
-  // El botón al costado del nombre ahora controla el Modo Edición de cantos
+  // Fecha del repertorio
+  if (dateBadge) {
+    let displayDate = target.date || "";
+    if (!displayDate) {
+      displayDate = new Date(parseInt(target.id) || Date.now()).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+    dateBadge.textContent = displayDate;
+  }
+
+  // Contador de canciones
+  if (countBadge) {
+    const count = target.songs.length;
+    countBadge.textContent = `${count} ${count === 1 ? 'canción' : 'canciones'}`;
+  }
+
+  // Botón Editar principal (elegante en tono verde esmeralda profesional)
   const btnRename = document.getElementById("btnRenameSavedRepertorio");
   if (btnRename) {
     if (window.editSavedRepertorioMode) {
-      btnRename.innerHTML = `<i data-lucide="check"></i>`;
-      btnRename.title = "Terminar edición";
-      btnRename.classList.add("editing-active");
+      btnRename.innerHTML = `<i data-lucide="check"></i> <span class="btn-edit-text-label">Listo</span>`;
+      btnRename.title = "Guardar cambios y terminar edición";
+      btnRename.className = "btn-rep-detail-action btn-edit-saved-rep-primary editing-active";
     } else {
-      btnRename.innerHTML = `<i data-lucide="edit-3"></i>`;
-      btnRename.title = "Editar canciones";
-      btnRename.classList.remove("editing-active");
+      btnRename.innerHTML = `<i data-lucide="edit-3"></i> <span class="btn-edit-text-label">Editar</span>`;
+      btnRename.title = "Editar nombre y canciones";
+      btnRename.className = "btn-rep-detail-action btn-edit-saved-rep-primary";
     }
 
     btnRename.onclick = (e) => {
       e.preventDefault();
-      window.editSavedRepertorioMode = !window.editSavedRepertorioMode;
-      
-      if (!window.editSavedRepertorioMode) {
-        // Limpiar búsqueda rápida al salir
-        const searchInput = document.getElementById("savedRepSongSearchInput");
-        if (searchInput) {
-          searchInput.value = "";
-          window.buscarCancionesParaRepertorioGuardado("");
+      if (window.editSavedRepertorioMode) {
+        const inp = document.getElementById("inputEditSavedRepTitle");
+        if (inp && inp.value.trim()) {
+          target.name = inp.value.trim();
+          window.saveLocalAndCloudRepertorios(saved);
+          window.renderizarRepertoriosGuardados();
         }
       }
+      window.editSavedRepertorioMode = !window.editSavedRepertorioMode;
       window.renderVerRepertorioDetalle();
     };
   }
 
-  if (countBadge) {
-    const count = target.songs.length;
-    countBadge.textContent = `${count} ${count === 1 ? 'canto' : 'cantos'}`;
+  // Menú de 3 puntos (Compartir y Eliminar)
+  const btnMore = document.getElementById("btnSavedRepDetailMore");
+  const dropdownMore = document.getElementById("savedRepDetailMoreDropdown");
+  if (btnMore && dropdownMore) {
+    btnMore.onclick = (e) => {
+      e.stopPropagation();
+      const isVisible = dropdownMore.style.display === "flex";
+      dropdownMore.style.display = isVisible ? "none" : "flex";
+    };
+
+    if (!btnMore.dataset.bound) {
+      document.addEventListener("click", () => {
+        if (dropdownMore) dropdownMore.style.display = "none";
+      });
+      btnMore.dataset.bound = "true";
+    }
+  }
+
+  const btnShare = document.getElementById("btnCompartirRepertorio");
+  if (btnShare) {
+    btnShare.onclick = (e) => {
+      e.stopPropagation();
+      if (dropdownMore) dropdownMore.style.display = "none";
+      window.compartirRepertorioId(id);
+    };
+  }
+
+  const btnDelete = document.getElementById("btnDeleteCurrentSavedRepertorio");
+  if (btnDelete) {
+    btnDelete.onclick = (e) => {
+      e.stopPropagation();
+      if (dropdownMore) dropdownMore.style.display = "none";
+      window.eliminarRepertorioGuardado(id);
+    };
   }
 
   container.innerHTML = "";
 
   if (target.songs.length === 0) {
-    container.innerHTML = `<p style="text-align: center; color: #888; padding: 30px; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Este repertorio está vacío. Busca canciones abajo para agregarlas.</p>`;
+    container.innerHTML = `<p style="text-align: center; color: #888; padding: 32px 20px; font-family: 'Poppins', sans-serif; font-size: 0.9rem;">Este repertorio aún no tiene canciones.${window.editSavedRepertorioMode ? ' Pulsa <strong>Agregar canciones</strong> abajo para seleccionarlas.' : ''}</p>`;
   } else {
-    const list = document.createElement("ul");
-    list.className = "saved-rep-song-list";
-
     target.songs.forEach((song, idx) => {
       const resolvedSong = window.resolveSong(song) || song;
-      const li = document.createElement("li");
-      li.className = "saved-rep-song-item";
-      li.dataset.title = resolvedSong.title;
-      li.dataset.author = resolvedSong.author || "";
-      li.dataset.idx = idx; // Guardar el índice real para ordenar sin riesgo de homónimos
+      const section = document.createElement("section");
+      section.className = "song song-row repertorio-song-row saved-rep-song-row";
+      section.dataset.index = idx;
+      section.dataset.idx = idx;
 
-      // En modo edición, mostramos el tirador de arrastre para ordenar
-      if (window.editSavedRepertorioMode) {
-        const handle = document.createElement("span");
-        handle.className = "saved-rep-drag-handle";
-        handle.title = "Arrastrar para reordenar";
-        handle.innerHTML = `<i data-lucide="grip-vertical" style="width: 14px; height: 14px;"></i>`;
-        li.appendChild(handle);
-      }
+      const cleanAuthor = window.cleanAuthor ? window.cleanAuthor(resolvedSong.author) : (resolvedSong.author || "").replace(/[()]/g, "").trim();
+      const category = (resolvedSong.category || "Entrada").trim();
+      const catSlug = category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+      const displayCategory = window.getCategoryDisplayName ? window.getCategoryDisplayName(category) : category;
 
-      const infoA = document.createElement("a");
-      infoA.className = "saved-rep-song-info";
-      infoA.href = "#";
-      infoA.onclick = (e) => {
-        e.preventDefault();
-        const latestSong = window.resolveSong(song) || song;
-        window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags, target.songs, idx, latestSong.youtube);
-      };
-
-      // Limpiar doble paréntesis en el autor si existieran
-      const cleanAuthor = window.cleanAuthor(resolvedSong.author);
-      const displayedAuthor = cleanAuthor ? `(${cleanAuthor})` : "";
-
-      infoA.innerHTML = `
-        <span class="saved-rep-song-number">${idx + 1}</span>
-        <div class="saved-rep-song-text-container">
-          <span class="saved-rep-song-title" title="${resolvedSong.title}">${resolvedSong.title}</span>
-          ${displayedAuthor ? `<span class="saved-rep-song-author" title="${resolvedSong.author}">${displayedAuthor}</span>` : ""}
+      section.innerHTML = `
+        <div class="song-row-container">
+          <div class="song-row-left">
+            ${window.editSavedRepertorioMode ? `
+              <span class="drag-handle saved-rep-drag-handle" title="Arrastrar para ordenar" onclick="event.stopPropagation();">
+                <svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor">
+                  <circle cx="3" cy="3" r="1.5" />
+                  <circle cx="3" cy="9" r="1.5" />
+                  <circle cx="3" cy="15" r="1.5" />
+                  <circle cx="11" cy="3" r="1.5" />
+                  <circle cx="11" cy="9" r="1.5" />
+                  <circle cx="11" cy="15" r="1.5" />
+                </svg>
+              </span>
+            ` : ''}
+            <div class="song-cover-box saved-rep-number-squircle">
+              <span class="song-cover-number">${idx + 1}</span>
+            </div>
+            <div class="song-main-info">
+              <h2 class="song-row-title">${resolvedSong.title}</h2>
+              ${cleanAuthor ? `<p class="song-row-subtitle">${cleanAuthor}</p>` : ''}
+            </div>
+          </div>
+          <div class="song-row-right-cluster">
+            <div class="song-row-category-col saved-rep-cat-col">
+              <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
+            </div>
+            ${window.editSavedRepertorioMode ? `
+              <div class="song-row-actions" onclick="event.stopPropagation();">
+                <button type="button" class="song-action-btn btn-remove-repertorio-item btn-remove-saved-song" title="Quitar del repertorio" aria-label="Quitar del repertorio">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            ` : ''}
+          </div>
         </div>
       `;
 
-      li.appendChild(infoA);
+      // En modo normal, clic en la fila abre la letra
+      if (!window.editSavedRepertorioMode) {
+        section.style.cursor = "pointer";
+        section.onclick = (e) => {
+          e.preventDefault();
+          const latestSong = window.resolveSong(song) || song;
+          window.abrirLetra(latestSong.title, latestSong.lyrics, latestSong.author, latestSong.type, latestSong.audio, latestSong.tags, target.songs, idx, latestSong.youtube);
+        };
+      }
 
-      if (window.editSavedRepertorioMode) {
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "btn-remove-saved-song";
-        removeBtn.title = "Eliminar de la lista";
-        removeBtn.innerHTML = `<i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>`;
+      // Listener para eliminar canto en modo edición
+      const removeBtn = section.querySelector(".btn-remove-saved-song");
+      if (removeBtn) {
         removeBtn.onclick = (e) => {
           e.preventDefault();
           e.stopPropagation();
           window.eliminarCantoDeRepertorioGuardado(id, idx);
         };
-        li.appendChild(removeBtn);
       }
 
-      list.appendChild(li);
+      container.appendChild(section);
     });
 
-    container.appendChild(list);
+    // Inicializar SortableJS para reordenación interactiva en modo edición
+    if (window.editSavedRepertorioMode && window.Sortable) {
+      const oldSortable = window.Sortable.get(container);
+      if (oldSortable) oldSortable.destroy();
 
-    // Inicializar SortableJS para reordenación interactiva en tiempo real en modo edición
-    if (window.editSavedRepertorioMode) {
-      const SortableLib = window.Sortable;
-      if (SortableLib) {
-        const oldSortable = SortableLib.get(list);
-        if (oldSortable) oldSortable.destroy();
+      new window.Sortable(container, {
+        handle: '.saved-rep-drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
+        forceFallback: true,
+        fallbackTolerance: 3,
+        onEnd: function() {
+          const items = Array.from(container.querySelectorAll(".saved-rep-song-row"));
+          const newSongs = items.map(item => {
+            const oldIdx = parseInt(item.dataset.idx, 10);
+            return target.songs[oldIdx];
+          }).filter(Boolean);
 
-        new SortableLib(list, {
-          handle: '.saved-rep-drag-handle',
-          animation: 150,
-          ghostClass: 'sortable-ghost',
-          chosenClass: 'sortable-chosen',
-          dragClass: 'sortable-drag',
-          forceFallback: true, // Mejor compatibilidad táctil
-          fallbackTolerance: 3, // Evita disparos accidentales
-          onStart: function() {
-            list.classList.add('sorting-active');
-          },
-          onEnd: function() {
-            list.classList.remove('sorting-active');
-            const items = Array.from(list.querySelectorAll(".saved-rep-song-item"));
-            // Mapear por el índice de origen original exacto (libre de fallos por cantos homónimos)
-            const newSongs = items.map(item => {
-              const oldIdx = parseInt(item.dataset.idx, 10);
-              return target.songs[oldIdx];
-            }).filter(Boolean);
-
-            target.songs = newSongs;
-            window.saveLocalAndCloudRepertorios(saved);
-            window.renderizarRepertoriosGuardados(); // Actualiza contadores en la lista principal
-            window.renderVerRepertorioDetalle();    // Re-renderiza para actualizar los números
-          }
-        });
-      }
+          target.songs = newSongs;
+          window.saveLocalAndCloudRepertorios(saved);
+          window.renderizarRepertoriosGuardados();
+          window.renderVerRepertorioDetalle();
+        }
+      });
     }
   }
 
-  const addSection = document.getElementById("saved-repertorio-add-section");
-  if (addSection) {
-    addSection.style.display = window.editSavedRepertorioMode ? "block" : "none";
+  // El botón "Agregar canciones" SOLO es visible en MODO EDICIÓN
+  const addActionWrapper = document.getElementById("savedRepAddActionWrapper");
+  if (addActionWrapper) {
+    addActionWrapper.style.display = window.editSavedRepertorioMode ? "block" : "none";
   }
 
+  // Conectar apertura del modal emergente para agregar canciones
+  const cardTrigger = document.getElementById("cardTriggerAddSongs");
+  if (cardTrigger && !cardTrigger.dataset.bound) {
+    cardTrigger.onclick = () => {
+      window.abrirModalAgregarCancionesGuardadas();
+    };
+    cardTrigger.dataset.bound = "true";
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+};
+
+const MODAL_CATEGORIES = [
+  { label: "Todos", key: "todos" },
+  { label: "Entrada", key: "Entrada" },
+  { label: "Penitencial", key: "Penitencial" },
+  { label: "Gloria", key: "Gloria" },
+  { label: "Aclamación", key: "Aclamacion" },
+  { label: "Ofertorio", key: "Ofertorio" },
+  { label: "Santo", key: "Santo" },
+  { label: "Padre Nuestro", key: "PadreNuestro" },
+  { label: "Cordero", key: "Cordero" },
+  { label: "Comunión", key: "Comunión" },
+  { label: "Meditación y Adoración", key: "AdoracionMeditacion" },
+  { label: "Salida y Envío", key: "EnvioSalida" },
+  { label: "Mariano", key: "Marianos" },
+  { label: "Salesianos", key: "Salesianos" },
+  { label: "Cuaresma", key: "Cuaresma" },
+  { label: "Pascua", key: "Pascua" },
+  { label: "Espíritu Santo", key: "EspirituSanto" },
+  { label: "Adviento y Navidad", key: "Adviento" },
+  { label: "Himnos y Salmos", key: "HimnosSalmos" }
+];
+
+window.matchesSavedRepModalCategory = function(songCategory, filterKey) {
+  if (!filterKey || filterKey === "todos") return true;
+  const sCat = (songCategory || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+  const fKey = (filterKey || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+
+  if (sCat.includes(fKey) || fKey.includes(sCat)) return true;
+
+  const aliases = {
+    "penitencial": ["penitencial", "piedad", "perdon", "kyrie"],
+    "aclamacion": ["aclamacion", "aleluya", "honor"],
+    "padrenuestro": ["padrenuestro", "padre"],
+    "cordero": ["cordero", "paz"],
+    "comunion": ["comunion"],
+    "adoracionmeditacion": ["adoracionmeditacion", "meditacion", "adoracion"],
+    "enviosalida": ["enviosalida", "salida", "envio"],
+    "marianos": ["mariano", "marianos", "maria"],
+    "mariano": ["mariano", "marianos", "maria"],
+    "salesianos": ["salesiano", "salesianos"],
+    "espiritusanto": ["espiritusanto", "espiritu", "pentecostes"],
+    "adviento": ["adviento", "navidad"],
+    "himnossalmos": ["himnossalmos", "himnos", "salmos", "salmo", "himno"]
+  };
+
+  for (const [canonical, words] of Object.entries(aliases)) {
+    if (fKey.includes(canonical) || canonical.includes(fKey)) {
+      if (words.some(w => sCat.includes(w))) return true;
+    }
+  }
+
+  return false;
+};
+
+window.abrirModalAgregarCancionesGuardadas = async function() {
+  const modal = document.getElementById("popupAddSongsSavedModal");
+  if (!modal) return;
+
+  // Precargar catálogo de canciones si aún no está disponible
+  if (!window.rawCatalogSongs || window.rawCatalogSongs.length === 0) {
+    try {
+      const res = await fetch("songs-catalog.json");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          window.rawCatalogSongs = data;
+        }
+      }
+    } catch(e) {}
+  }
+
+  modal.style.display = "flex";
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+
+  const closeBtn = document.getElementById("closeAddSongsSavedModal");
+  if (closeBtn && !closeBtn.dataset.bound) {
+    closeBtn.onclick = () => window.cerrarModalAgregarCancionesGuardadas();
+    closeBtn.dataset.bound = "true";
+  }
+
+  if (!modal.dataset.boundBackdrop) {
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) window.cerrarModalAgregarCancionesGuardadas();
+    });
+    modal.dataset.boundBackdrop = "true";
+  }
+
+  if (!window.modalSavedRepEscBound) {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        const m = document.getElementById("popupAddSongsSavedModal");
+        if (m && m.style.display !== "none") {
+          window.cerrarModalAgregarCancionesGuardadas();
+        }
+      }
+    });
+    window.modalSavedRepEscBound = true;
+  }
+
+  const searchInput = document.getElementById("inputAddSongsModalSearch");
+  const clearBtn = document.getElementById("btnClearAddSongsModalSearch");
+  if (searchInput) {
+    searchInput.value = "";
+    if (clearBtn) clearBtn.style.display = "none";
+    if (!searchInput.dataset.bound) {
+      searchInput.addEventListener("input", (e) => {
+        if (clearBtn) clearBtn.style.display = e.target.value ? "flex" : "none";
+        window.renderAddSongsModalSongList(e.target.value);
+      });
+      searchInput.dataset.bound = "true";
+    }
+  }
+
+  if (clearBtn && !clearBtn.dataset.bound) {
+    clearBtn.addEventListener("click", () => {
+      if (searchInput) {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        window.renderAddSongsModalSongList("");
+        searchInput.focus();
+      }
+    });
+    clearBtn.dataset.bound = "true";
+  }
+
+  window.selectedAddSongsModalCategory = "";
+  window.renderAddSongsModalCategoryChips();
+  window.renderAddSongsModalSongList("");
+  if (searchInput) setTimeout(() => searchInput.focus(), 60);
+};
+
+window.cerrarModalAgregarCancionesGuardadas = function() {
+  const modal = document.getElementById("popupAddSongsSavedModal");
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.remove("active");
+  }
+  document.body.style.overflow = "";
+};
+
+window.renderAddSongsModalCategoryChips = function() {
+  const container = document.getElementById("addSongsModalCategoryChips");
+  if (!container) return;
+  const searchInput = document.getElementById("inputAddSongsModalSearch");
+
+  // Flechas de navegación para PC
+  const leftBtn = document.getElementById("modalCatLeftBtn");
+  const rightBtn = document.getElementById("modalCatRightBtn");
+  if (leftBtn && !leftBtn.dataset.bound) {
+    leftBtn.onclick = (e) => {
+      e.preventDefault();
+      container.scrollBy({ left: -220, behavior: "smooth" });
+    };
+    leftBtn.dataset.bound = "true";
+  }
+  if (rightBtn && !rightBtn.dataset.bound) {
+    rightBtn.onclick = (e) => {
+      e.preventDefault();
+      container.scrollBy({ left: 220, behavior: "smooth" });
+    };
+    rightBtn.dataset.bound = "true";
+  }
+
+  container.innerHTML = MODAL_CATEGORIES.map(cat => {
+    const isSelected = (window.selectedAddSongsModalCategory === cat.key) || (!window.selectedAddSongsModalCategory && cat.key === "todos");
+    return `<button type="button" class="saved-rep-cat-chip ${isSelected ? 'active' : ''}" data-cat="${cat.key}">${cat.label}</button>`;
+  }).join("");
+
+  container.querySelectorAll(".saved-rep-cat-chip").forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const catKey = btn.dataset.cat;
+      window.selectedAddSongsModalCategory = catKey === "todos" ? "" : catKey;
+      window.renderAddSongsModalCategoryChips();
+      
+      // Centrar automáticamente la categoría seleccionada para que nunca se quede cortada
+      setTimeout(() => {
+        const activeBtn = container.querySelector(".saved-rep-cat-chip.active");
+        if (activeBtn) {
+          activeBtn.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+        }
+      }, 30);
+
+      window.renderAddSongsModalSongList(searchInput ? searchInput.value : "");
+    };
+  });
+};
+
+window.renderAddSongsModalSongList = function(query = "") {
+  const listContainer = document.getElementById("addSongsModalSongList");
+  if (!listContainer) return;
+
+  const id = window.currentSavedRepertorioId;
+  const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+  const target = saved.find(r => r.id === id);
+  const currentSongs = target ? target.songs : [];
+
+  const rawQuery = (query || "").trim();
+  const cleanQuery = rawQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  const qWords = cleanQuery.split(/\s+/).filter(Boolean);
+
+  const allAvailable = typeof getGlobalSongsList === "function" ? getGlobalSongsList() : [];
+  let filtradas = allAvailable;
+
+  // Filtrado por categoría si se seleccionó un chip específico
+  if (window.selectedAddSongsModalCategory && window.selectedAddSongsModalCategory !== "todos") {
+    filtradas = filtradas.filter(song => {
+      return window.matchesSavedRepModalCategory(song.category, window.selectedAddSongsModalCategory);
+    });
+  }
+
+  // Motor de búsqueda con filtro jerárquico estricto:
+  // 1° Título de la canción, 2° Autor, 3° Categoría, 4° Letra
+  if (qWords.length > 0) {
+    const scoredSongs = [];
+    filtradas.forEach(song => {
+      const titleClean = (song.title || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const authorClean = (song.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const categoryClean = (song.category || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const categoryDisp = (window.getCategoryDisplayName ? window.getCategoryDisplayName(song.category) : "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const lyricsClean = (song.lyrics || "").replace(/<[^>]*>/g, " ").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+      const haystack = `${titleClean} ${authorClean} ${categoryClean} ${categoryDisp} ${lyricsClean}`;
+      const matchesAllWords = qWords.every(word => haystack.includes(word));
+      if (!matchesAllWords) return;
+
+      let score = 0;
+
+      // 1. TÍTULO (Tier 100,000+)
+      if (titleClean === cleanQuery) {
+        score += 200000;
+      } else if (titleClean.startsWith(cleanQuery)) {
+        score += 150000;
+      } else if (titleClean.includes(cleanQuery)) {
+        score += 120000;
+      } else if (qWords.every(w => titleClean.includes(w))) {
+        score += 100000;
+      } else {
+        const titleWords = titleClean.split(/[\s,.\-!¡?¿]+/);
+        let titleCount = 0;
+        qWords.forEach(w => {
+          if (titleWords.includes(w)) titleCount++;
+          else if (titleWords.some(tw => tw.includes(w))) titleCount += 0.5;
+        });
+        score += titleCount * 25000;
+      }
+
+      // 2. AUTOR (Tier 20,000+)
+      if (authorClean === cleanQuery) {
+        score += 40000;
+      } else if (authorClean.startsWith(cleanQuery)) {
+        score += 30000;
+      } else if (authorClean.includes(cleanQuery)) {
+        score += 25000;
+      } else if (qWords.every(w => authorClean.includes(w))) {
+        score += 20000;
+      } else {
+        const authorWords = authorClean.split(/[\s,.\-!¡?¿]+/);
+        let authorCount = 0;
+        qWords.forEach(w => {
+          if (authorWords.includes(w)) authorCount++;
+          else if (authorWords.some(aw => aw.includes(w))) authorCount += 0.5;
+        });
+        score += authorCount * 5000;
+      }
+
+      // 3. CATEGORÍA (Tier 5,000+)
+      if (categoryClean.includes(cleanQuery) || categoryDisp.includes(cleanQuery)) {
+        score += 8000;
+      } else if (qWords.some(w => categoryClean.includes(w) || categoryDisp.includes(w))) {
+        score += 4000;
+      }
+
+      // 4. LETRA (Tier < 2,000)
+      if (lyricsClean.includes(cleanQuery)) {
+        score += 500;
+      }
+      let lyricsCount = 0;
+      qWords.forEach(w => {
+        if (lyricsClean.includes(w)) lyricsCount++;
+      });
+      score += lyricsCount * 20;
+
+      scoredSongs.push({ song, score });
+    });
+
+    scoredSongs.sort((a, b) => b.score - a.score);
+    filtradas = scoredSongs.map(item => item.song);
+  }
+
+  listContainer.innerHTML = "";
+
+  if (filtradas.length === 0) {
+    listContainer.innerHTML = `<p style="padding: 24px; text-align: center; color: #888; font-size: 0.88rem; width: 100%;">No se encontraron canciones.</p>`;
+    return;
+  }
+
+  filtradas.slice(0, 60).forEach(song => {
+    const isAlreadyAdded = currentSongs.some(s => 
+      (s.id && song.id && s.id === song.id) || 
+      (!s.id && !song.id && s.title === song.title && (s.author || "").trim() === (song.author || "").trim())
+    );
+
+    const cleanAuthor = window.cleanAuthor ? window.cleanAuthor(song.author) : (song.author || "").replace(/[()]/g, "").trim();
+
+    const row = document.createElement("section");
+    row.className = "song song-row add-songs-modal-row";
+
+    // Fila sencilla y limpia sin etiquetas de categoría visibles
+    row.innerHTML = `
+      <div class="song-row-container">
+        <div class="song-row-left">
+          <div class="song-cover-box">
+            <svg class="music-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </div>
+          <div class="song-main-info">
+            <h2 class="song-row-title">${song.title}</h2>
+            ${cleanAuthor ? `<p class="song-row-subtitle">${cleanAuthor}</p>` : ''}
+          </div>
+        </div>
+        <div class="song-row-actions" onclick="event.stopPropagation();">
+          <button type="button" class="song-action-btn btn-modal-add-icon ${isAlreadyAdded ? 'already-added' : ''}" title="${isAlreadyAdded ? 'Ya está en este repertorio' : 'Añadir al repertorio'}" aria-label="Añadir al repertorio">
+            ${isAlreadyAdded ? `
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ` : `
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            `}
+          </button>
+        </div>
+      </div>
+    `;
+
+    const addBtn = row.querySelector(".btn-modal-add-icon");
+    if (addBtn && !isAlreadyAdded) {
+      addBtn.onclick = (e) => {
+        e.stopPropagation();
+        window.agregarCantoARepertorioGuardado(song);
+        window.renderAddSongsModalSongList(query);
+      };
+    }
+
+    if (!isAlreadyAdded) {
+      row.style.cursor = "pointer";
+      row.onclick = () => {
+        window.agregarCantoARepertorioGuardado(song);
+        window.renderAddSongsModalSongList(query);
+      };
+    }
+
+    listContainer.appendChild(row);
+  });
   if (window.lucide) window.lucide.createIcons();
 };
 
 window.abrirVerRepertorio = function(id) {
   window.currentSavedRepertorioId = id;
   window.editSavedRepertorioMode = false;
+  window.selectedSavedRepCategory = "";
+
+  const chevron = document.getElementById("chevronAddSongs");
+  if (chevron) chevron.classList.remove("open");
+  const addSection = document.getElementById("saved-repertorio-add-section");
+  if (addSection) addSection.style.display = "none";
 
   const searchInput = document.getElementById("savedRepSongSearchInput");
+  const clearBtn = document.getElementById("btnClearSavedRepSongSearch");
   if (searchInput) {
     searchInput.value = "";
-    // Asegurar que configuramos el event listener una vez
+    if (clearBtn) clearBtn.style.display = "none";
     if (!searchInput.dataset.listenerAttached) {
       searchInput.addEventListener("input", (e) => {
+        if (clearBtn) clearBtn.style.display = e.target.value ? "flex" : "none";
         window.buscarCancionesParaRepertorioGuardado(e.target.value);
       });
       searchInput.dataset.listenerAttached = "true";
     }
   }
 
+  if (clearBtn && !clearBtn.dataset.listenerAttached) {
+    clearBtn.addEventListener("click", () => {
+      if (searchInput) {
+        searchInput.value = "";
+        clearBtn.style.display = "none";
+        window.buscarCancionesParaRepertorioGuardado("");
+      }
+    });
+    clearBtn.dataset.listenerAttached = "true";
+  }
+
   window.renderVerRepertorioDetalle();
 
   const detailSection = document.getElementById("saved-repertorio-detail");
   const mainSection = document.getElementById("saved-repertorios-main");
-  if (mainSection) mainSection.style.display = "none";
-  if (detailSection) detailSection.style.display = "block";
+  if (mainSection) {
+    mainSection.style.setProperty("display", "none", "important");
+  }
+  if (detailSection) {
+    detailSection.style.setProperty("display", "block", "important");
+  }
+  // Desplazar arriba suavemente
+  window.scrollTo({ top: 0, behavior: "smooth" });
 
   if (window.lucide) window.lucide.createIcons();
 };
 
-window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
+window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = null) {
   const modal = document.getElementById("shareModal");
   if (!modal) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -3391,9 +3930,13 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
     return;
   }
 
-  // Título dinámico
+  // Título dinámico con indicación de código si existe
   const titleEl = document.getElementById("shareModalTitle");
-  if (titleEl) titleEl.textContent = `Compartir "${nombreRepertorio}"`;
+  if (titleEl) {
+    titleEl.textContent = shortCode 
+      ? `Compartir "${nombreRepertorio}"` 
+      : `Compartir "${nombreRepertorio}"`;
+  }
 
   // Asignar valor al input con auto-selección y copia al toque
   const inputEl = document.getElementById("shareUrlInput");
@@ -3411,8 +3954,10 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
     };
   }
 
-  // Codificar el texto de compartir para redes sociales
-  const shareText = `Te comparto mi repertorio de cantos "${nombreRepertorio}" del Coro Juvenil Vox Dei:\n${shareUrl}`;
+  // Codificar el texto de compartir para redes sociales (mensaje más conciso con link corto)
+  const shareText = shortCode
+    ? `Te comparto mi repertorio de cantos "${nombreRepertorio}" de Vox Dei (Código: ${shortCode}):\n${shareUrl}`
+    : `Te comparto mi repertorio de cantos "${nombreRepertorio}" del Coro Juvenil Vox Dei:\n${shareUrl}`;
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(shareUrl);
 
@@ -3560,7 +4105,17 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl) {
   if (window.lucide) window.lucide.createIcons();
 };
 
-window.compartirCancionesDirecto = function(nombreRepertorio, songsArray) {
+// Generador de código único de 6 caracteres alfanuméricos legibles (Opción A)
+window.generarCodigoRepertorioCorto = function() {
+  const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // Caracteres sin ambigüedad (sin 0, O, 1, I)
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+};
+
+window.compartirCancionesDirecto = async function(nombreRepertorio, songsArray) {
   if (!songsArray || songsArray.length === 0) {
     showToast("Este repertorio está vacío. Agrega canciones antes de compartirlo.", "warning");
     return;
@@ -3583,25 +4138,50 @@ window.compartirCancionesDirecto = function(nombreRepertorio, songsArray) {
     return;
   }
 
-  const payload = {
-    v: 3,
-    name: name,
-    songs: songList
-  };
+  // 1. GENERACIÓN DE ENLACE CORTO ONLINE CON CÓDIGO ÚNICO DE 6 CARACTERES (Opción A)
+  if (navigator.onLine && isFirebaseReal && db) {
+    try {
+      showToast("Generando enlace corto...", "info");
+      const code = window.generarCodigoRepertorioCorto();
+      const payload = {
+        code: code,
+        name: name,
+        songs: songList,
+        createdAt: new Date().toISOString(),
+        timestamp: Date.now()
+      };
 
+      // Guardar en Firestore colección 'shared_repertorios' con el código de 6 caracteres como ID
+      await setDoc(doc(db, "shared_repertorios", code), payload);
+
+      // Enlace reducido ultra corto de 6 caracteres: ?r=ABC123
+      const shortUrl = `${window.location.origin}${window.location.pathname}?r=${code}`;
+      
+      // Abrir el popup elegante de compartir con el link corto
+      window.mostrarModalCompartir(name, shortUrl, code);
+      return;
+    } catch (cloudErr) {
+      console.warn("Fallo al guardar enlace corto en Firestore, usando fallback local:", cloudErr);
+    }
+  }
+
+  // 2. FALLBACK OFFLINE O LOCAL (cuando no hay internet o falla Firestore)
   try {
+    const payload = {
+      v: 3,
+      name: name,
+      songs: songList
+    };
     const jsonStr = JSON.stringify(payload);
-    // Base64 robusto con soporte Unicode
     const base64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
       return String.fromCharCode('0x' + p1);
     }));
 
-    // Usar query param ?import= que no se trunca en WhatsApp, Messenger o SMS
     const shareUrl = `${window.location.origin}${window.location.pathname}?import=${encodeURIComponent(base64)}`;
-
-    // Abrir el popup elegante de compartir
-    window.mostrarModalCompartir(name, shareUrl);
-
+    window.mostrarModalCompartir(name, shareUrl, null);
+    if (!navigator.onLine) {
+      showToast("Modo sin internet: se generó enlace local", "info");
+    }
   } catch (err) {
     console.error("Error al generar enlace de compartir:", err);
     showToast("No se pudo generar el enlace de compartir.", "error");
@@ -3616,6 +4196,220 @@ window.compartirRepertorioId = function(id) {
     return;
   }
   window.compartirCancionesDirecto(target.name, target.songs);
+};
+
+// Función unificada para resolver e importar canciones en el repertorio
+window.procesarRepertorioResuelto = function(repName, songsToProcess) {
+  if (!songsToProcess || songsToProcess.length === 0) {
+    showToast("No se encontraron canciones en este repertorio.", "warning");
+    return;
+  }
+
+  const globalSongs = getGlobalSongsList();
+  const normalizeStr = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+  const resolvedSongs = [];
+  const missingTitles = [];
+
+  songsToProcess.forEach(sItem => {
+    const targetTitle = normalizeStr(sItem.title || sItem.t);
+    const targetAuthor = normalizeStr(sItem.author || sItem.a);
+    const targetId = (sItem.id || "").toLowerCase().trim();
+
+    let matched = null;
+
+    // Prioridad 1: Coincidencia por título y autor en el catálogo
+    if (targetTitle && targetAuthor) {
+      matched = globalSongs.find(gs => 
+        normalizeStr(gs.title) === targetTitle &&
+        normalizeStr(gs.author) === targetAuthor
+      );
+    }
+
+    // Prioridad 2: Coincidencia por ID estable o ID de documento
+    if (!matched && targetId) {
+      matched = globalSongs.find(gs => {
+        const gsId = (gs.id || "").toLowerCase().trim();
+        return gsId === targetId || gsId === "letra-" + targetId || gsId.replace("letra-", "") === targetId;
+      });
+      if (!matched) {
+        matched = globalSongs.find(gs => {
+          const slug = window.generateStableSongId(gs.title, gs.author).toLowerCase();
+          const slugNoAuth = window.generateStableSongId(gs.title, "").toLowerCase();
+          return slug === targetId || slugNoAuth === targetId;
+        });
+      }
+    }
+
+    // Prioridad 3: Coincidencia por título únicamente
+    if (!matched && targetTitle) {
+      matched = globalSongs.find(gs => normalizeStr(gs.title) === targetTitle);
+    }
+
+    // Prioridad 4: Si el título está contenido en otro
+    if (!matched && targetTitle && targetTitle.length > 4) {
+      matched = globalSongs.find(gs => {
+        const gTitle = normalizeStr(gs.title);
+        return gTitle.includes(targetTitle) || targetTitle.includes(gTitle);
+      });
+    }
+
+    if (matched) {
+      if (!resolvedSongs.some(r => r.id === matched.id && r.title === matched.title)) {
+        resolvedSongs.push(matched);
+      }
+    } else {
+      const fallbackTitle = sItem.title || sItem.t || (sItem.id ? sItem.id.replace("letra-", "").replace(/-/g, " ") : "Canto");
+      const formattedTitle = fallbackTitle.charAt(0).toUpperCase() + fallbackTitle.slice(1);
+      missingTitles.push(formattedTitle);
+
+      resolvedSongs.push({
+        id: sItem.id || window.generateStableSongId(formattedTitle, sItem.author || sItem.a),
+        title: formattedTitle,
+        author: sItem.author || sItem.a || "",
+        lyrics: "<i>(Letra no disponible en el catálogo local actual)</i>",
+        type: "",
+        audio: "",
+        youtube: "",
+        tags: "",
+        category: ""
+      });
+    }
+  });
+
+  if (resolvedSongs.length === 0) {
+    showToast("No se pudieron cargar las canciones de este enlace.", "error");
+    return;
+  }
+
+  // 1. Guardar en Repertorio Activo
+  localStorage.setItem("repertorio", JSON.stringify(resolvedSongs));
+  if (typeof renderizarRepertorio === "function") {
+    renderizarRepertorio(resolvedSongs);
+  }
+
+  // 2. Guardar también en Repertorios Guardados
+  const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
+  const finalName = repName || "Repertorio Compartido";
+  const existingIdx = saved.findIndex(r => r.name.toLowerCase().trim() === finalName.toLowerCase().trim());
+  const dateFormatted = new Date().toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+  
+  if (existingIdx === -1) {
+    saved.unshift({
+      id: "rep_" + Date.now(),
+      name: finalName,
+      songs: resolvedSongs,
+      date: dateFormatted
+    });
+    if (typeof window.saveLocalAndCloudRepertorios === "function") {
+      window.saveLocalAndCloudRepertorios(saved);
+    } else {
+      localStorage.setItem("saved_repertorios", JSON.stringify(saved));
+    }
+  } else {
+    saved[existingIdx].songs = resolvedSongs;
+    saved[existingIdx].date = dateFormatted;
+    if (typeof window.saveLocalAndCloudRepertorios === "function") {
+      window.saveLocalAndCloudRepertorios(saved);
+    } else {
+      localStorage.setItem("saved_repertorios", JSON.stringify(saved));
+    }
+  }
+
+  if (typeof window.renderizarRepertoriosGuardados === "function") {
+    window.renderizarRepertoriosGuardados();
+  }
+
+  // 3. Cambiar de inmediato vistas para ver el repertorio activo
+  if (window.switchRepertorioTab) {
+    window.switchRepertorioTab("activo");
+  }
+  switchView("repertorio");
+
+  // 4. Actualizar estado de botones en la lista principal
+  if (typeof window.initSongButtons === "function") {
+    window.initSongButtons();
+  }
+
+  // 5. Limpiar URL para evitar loops de recarga
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, "", window.location.pathname);
+  } else {
+    window.location.hash = "";
+  }
+
+  showToast(`¡Se importó "${finalName}" con ${resolvedSongs.length} cantos en tu Repertorio!`, "success");
+
+  if (missingTitles.length > 0) {
+    showToast(`Nota: ${missingTitles.length} canto(s) no se encontraron en el catálogo local pero se agregaron a la lista.`, "info");
+  }
+};
+
+// Cargar repertorio compartido a partir del código corto único de 6 caracteres
+window.importarRepertorioPorCodigo = async function(rawCode) {
+  if (!rawCode) return;
+  const code = rawCode.trim().toUpperCase();
+
+  if (!navigator.onLine) {
+    showToast("Para cargar un enlace corto con código se requiere conexión a internet.", "warning");
+    return;
+  }
+
+  // Si las canciones aún no se han cargado en el catálogo global, esperar de forma reactiva
+  const globalSongs = getGlobalSongsList();
+  if (!globalSongs || globalSongs.length === 0) {
+    console.log("Canciones aún no listas para importar por código. Esperando catálogo...");
+    window._pendingImportCode = code;
+    if (!window._importCodeRetryTimer) {
+      let attempts = 0;
+      window._importCodeRetryTimer = setInterval(() => {
+        attempts++;
+        const currentSongs = getGlobalSongsList();
+        if (currentSongs && currentSongs.length > 0) {
+          clearInterval(window._importCodeRetryTimer);
+          window._importCodeRetryTimer = null;
+          const toImport = window._pendingImportCode;
+          window._pendingImportCode = null;
+          if (toImport) window.importarRepertorioPorCodigo(toImport);
+        } else if (attempts > 60) {
+          clearInterval(window._importCodeRetryTimer);
+          window._importCodeRetryTimer = null;
+          console.warn("Tiempo de espera para cargar canciones expiró.");
+        }
+      }, 200);
+    }
+    return;
+  }
+
+  try {
+    showToast(`Cargando repertorio (Código: ${code})...`, "info");
+    if (!db) {
+      showToast("Error de conexión con la base de datos.", "error");
+      return;
+    }
+
+    const docRef = doc(db, "shared_repertorios", code);
+    const snap = await getDoc(docRef);
+
+    if (!snap.exists()) {
+      showToast(`El código "${code}" no existe o el enlace ha caducado.`, "error");
+      return;
+    }
+
+    const data = snap.data();
+    const repName = data.name || `Repertorio ${code}`;
+    const songsList = data.songs || [];
+
+    window.procesarRepertorioResuelto(repName, songsList);
+
+  } catch (err) {
+    console.error("Error al importar repertorio por código:", err);
+    showToast("No se pudo cargar el repertorio compartido.", "error");
+  }
 };
 
 window.importarRepertorioCompartido = function(rawBase64) {
@@ -3690,140 +4484,8 @@ window.importarRepertorioCompartido = function(rawBase64) {
       throw new Error("No se encontraron canciones en el enlace compartido.");
     }
 
-    const globalSongs = getGlobalSongsList();
-    const normalizeStr = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    window.procesarRepertorioResuelto(name, songsToProcess);
 
-    const resolvedSongs = [];
-    const missingTitles = [];
-
-    songsToProcess.forEach(sItem => {
-      const targetTitle = normalizeStr(sItem.title);
-      const targetAuthor = normalizeStr(sItem.author);
-      const targetId = (sItem.id || "").toLowerCase().trim();
-
-      let matched = null;
-
-      // Prioridad 1: Coincidencia por título y autor en el catálogo
-      if (targetTitle && targetAuthor) {
-        matched = globalSongs.find(gs => 
-          normalizeStr(gs.title) === targetTitle &&
-          normalizeStr(gs.author) === targetAuthor
-        );
-      }
-
-      // Prioridad 2: Coincidencia por ID estable o ID de documento
-      if (!matched && targetId) {
-        matched = globalSongs.find(gs => {
-          const gsId = (gs.id || "").toLowerCase().trim();
-          return gsId === targetId || gsId === "letra-" + targetId || gsId.replace("letra-", "") === targetId;
-        });
-        if (!matched) {
-          matched = globalSongs.find(gs => {
-            const slug = window.generateStableSongId(gs.title, gs.author).toLowerCase();
-            const slugNoAuth = window.generateStableSongId(gs.title, "").toLowerCase();
-            return slug === targetId || slugNoAuth === targetId;
-          });
-        }
-      }
-
-      // Prioridad 3: Coincidencia por título únicamente
-      if (!matched && targetTitle) {
-        matched = globalSongs.find(gs => normalizeStr(gs.title) === targetTitle);
-      }
-
-      // Prioridad 4: Si el título está contenido en otro
-      if (!matched && targetTitle && targetTitle.length > 4) {
-        matched = globalSongs.find(gs => {
-          const gTitle = normalizeStr(gs.title);
-          return gTitle.includes(targetTitle) || targetTitle.includes(gTitle);
-        });
-      }
-
-      if (matched) {
-        if (!resolvedSongs.some(r => r.id === matched.id && r.title === matched.title)) {
-          resolvedSongs.push(matched);
-        }
-      } else {
-        const fallbackTitle = sItem.title || (sItem.id ? sItem.id.replace("letra-", "").replace(/-/g, " ") : "Canto");
-        const formattedTitle = fallbackTitle.charAt(0).toUpperCase() + fallbackTitle.slice(1);
-        missingTitles.push(formattedTitle);
-
-        resolvedSongs.push({
-          id: sItem.id || window.generateStableSongId(formattedTitle, sItem.author),
-          title: formattedTitle,
-          author: sItem.author || "",
-          lyrics: "<i>(Letra no disponible en el catálogo local actual)</i>",
-          type: "",
-          audio: "",
-          youtube: "",
-          tags: "",
-          category: ""
-        });
-      }
-    });
-
-    if (resolvedSongs.length === 0) {
-      showToast("No se pudieron cargar las canciones de este enlace.", "error");
-      return;
-    }
-
-    // 1. Guardar en Repertorio Activo
-    localStorage.setItem("repertorio", JSON.stringify(resolvedSongs));
-    if (typeof renderizarRepertorio === "function") {
-      renderizarRepertorio(resolvedSongs);
-    }
-
-    // 2. Guardar también en Repertorios Guardados para que no se pierda al limpiar el activo
-    const saved = JSON.parse(localStorage.getItem("saved_repertorios")) || [];
-    const repName = name || "Repertorio Compartido";
-    const existingIdx = saved.findIndex(r => r.name.toLowerCase().trim() === repName.toLowerCase().trim());
-    const dateFormatted = new Date().toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-    
-    if (existingIdx === -1) {
-      saved.unshift({
-        id: "rep_" + Date.now(),
-        name: repName,
-        songs: resolvedSongs,
-        date: dateFormatted
-      });
-      window.saveLocalAndCloudRepertorios(saved);
-    } else {
-      saved[existingIdx].songs = resolvedSongs;
-      saved[existingIdx].date = dateFormatted;
-      window.saveLocalAndCloudRepertorios(saved);
-    }
-
-    if (typeof window.renderizarRepertoriosGuardados === "function") {
-      window.renderizarRepertoriosGuardados();
-    }
-
-    // 3. Cambiar de inmediato vistas para ver el repertorio activo
-    if (window.switchRepertorioTab) {
-      window.switchRepertorioTab("activo");
-    }
-    switchView("repertorio");
-
-    // 4. Actualizar estado de botones en la lista principal
-    if (typeof window.initSongButtons === "function") {
-      window.initSongButtons();
-    }
-
-    // 5. Limpiar URL para evitar loops de recarga
-    if (window.history && window.history.replaceState) {
-      window.history.replaceState(null, "", window.location.pathname);
-    } else {
-      window.location.hash = "";
-    }
-
-    showToast(`¡Se importó "${repName}" con ${resolvedSongs.length} cantos en tu Repertorio!`, "success");
-
-    if (missingTitles.length > 0) {
-      showToast(`Nota: ${missingTitles.length} canto(s) no se encontraron en el catálogo local pero se agregaron a la lista.`, "info");
-    }
   } catch (e) {
     console.error("Error al importar repertorio compartido:", e);
     showToast("Hubo un problema al procesar el enlace del repertorio compartido.", "error");
@@ -3831,22 +4493,29 @@ window.importarRepertorioCompartido = function(rawBase64) {
 };
 
 window.chequearImportacionCompartida = function() {
-  let base64 = "";
-
-  // 1. Revisar query parameter ?import=
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has("import")) {
-    base64 = urlParams.get("import");
-  }
+  let shortCode = urlParams.get("r") || urlParams.get("c") || urlParams.get("rep") || "";
+  let base64 = urlParams.get("import") || "";
 
-  // 2. Revisar hash #import=
-  if (!base64 && window.location.hash) {
-    const hash = window.location.hash;
-    if (hash.includes("import=")) {
+  // Revisar hash también (#r=ABC123 o #import=...)
+  if (!shortCode && !base64 && window.location.hash) {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (hash.includes("r=")) {
+      shortCode = hash.split("r=")[1]?.split("&")[0] || "";
+    } else if (hash.includes("import=")) {
       base64 = hash.split("import=")[1]?.split("&")[0] || "";
+    } else if (hash.length === 6 && /^[A-Z0-9]{6}$/i.test(hash)) {
+      shortCode = hash;
     }
   }
 
+  // 1. Si hay código corto único de 6 caracteres (Opción A)
+  if (shortCode) {
+    window.importarRepertorioPorCodigo(shortCode);
+    return;
+  }
+
+  // 2. Si hay importación base64
   if (!base64) return;
 
   // Si las canciones aún no se han cargado en el catálogo global, esperar de forma reactiva
@@ -3900,8 +4569,8 @@ window.eliminarRepertorioGuardado = async function(id) {
     const detailSection = document.getElementById("saved-repertorio-detail");
     const mainSection = document.getElementById("saved-repertorios-main");
     if (detailSection && detailSection.style.display !== "none") {
-      detailSection.style.display = "none";
-      if (mainSection) mainSection.style.display = "block";
+      detailSection.style.setProperty("display", "none", "important");
+      if (mainSection) mainSection.style.setProperty("display", "flex", "important");
     }
     showToast(`Repertorio "${target.name}" eliminado`, "info");
   }
@@ -3935,8 +4604,8 @@ document.addEventListener("DOMContentLoaded", () => {
       
       const detailSection = document.getElementById("saved-repertorio-detail");
       const mainSection = document.getElementById("saved-repertorios-main");
-      if (detailSection) detailSection.style.display = "none";
-      if (mainSection) mainSection.style.display = "block";
+      if (detailSection) detailSection.style.setProperty("display", "none", "important");
+      if (mainSection) mainSection.style.setProperty("display", "flex", "important");
       
       window.renderizarRepertoriosGuardados();
     }
@@ -3947,10 +4616,11 @@ document.addEventListener("DOMContentLoaded", () => {
   tabRepertoriosGuardados?.addEventListener("click", () => window.switchRepertorioTab("guardados"));
 
   document.getElementById("btnVolverRepertorios")?.addEventListener("click", () => {
+    window.editSavedRepertorioMode = false;
     const detailSection = document.getElementById("saved-repertorio-detail");
     const mainSection = document.getElementById("saved-repertorios-main");
-    if (detailSection) detailSection.style.display = "none";
-    if (mainSection) mainSection.style.display = "block";
+    if (detailSection) detailSection.style.setProperty("display", "none", "important");
+    if (mainSection) mainSection.style.setProperty("display", "flex", "important");
     window.renderizarRepertoriosGuardados();
   });
 
@@ -4112,12 +4782,22 @@ document.addEventListener("DOMContentLoaded", () => {
     
     window.saveLocalAndCloudRepertorios(saved);
     
-    // Mantener la lista activa y actualizar su estado a 'Guardado'
-    window.touchRepertorioModified(name, true);
+    // Al guardar el repertorio se elimina de activo (se traslada a Guardados)
+    localStorage.setItem("repertorio", "[]");
+    window.touchRepertorioModified("Repertorio actual", false);
+    if (typeof window.renderizarRepertorio === "function") {
+      window.renderizarRepertorio([]);
+    }
+    if (typeof window.initSongButtons === "function") {
+      window.initSongButtons();
+    }
     
     window.cerrarGuardarRepertorio();
+    if (typeof window.switchRepertorioTab === "function") {
+      window.switchRepertorioTab("guardados");
+    }
     window.renderizarRepertoriosGuardados();
-    showToast(`Repertorio "${name}" guardado con éxito`, "success");
+    showToast(`Repertorio "${name}" guardado. Las canciones se trasladaron a Guardados`, "success");
   });
 
   document.getElementById("repertorioNameInput")?.addEventListener("keydown", (e) => {
@@ -5309,37 +5989,26 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("Iniciando auto-sincronización de cancionero organizado por categorías a Firestore...");
       
-      // 1. Obtener canciones directamente desde los elementos .song cargados de Categorias/*.html
-      let songElements = Array.from(document.querySelectorAll(".song"));
-      if (songElements.length === 0) {
-        // Si loadSongs está terminando de procesar los HTML, esperar unos instantes
-        for (let wait = 0; wait < 15; wait++) {
-          await new Promise(r => setTimeout(r, 200));
-          songElements = Array.from(document.querySelectorAll(".song"));
-          if (songElements.length > 0) break;
-        }
-      }
-
       let catalog = [];
-      if (songElements.length > 0) {
-        catalog = songElements.map(songEl => {
-          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(songEl) : {};
-          const title = info.title || songEl.querySelector(".song-title-text, h2")?.textContent?.trim() || "";
-          const author = info.author || songEl.querySelector(".autor, small")?.textContent?.replace(/[()]/g, "")?.trim() || "";
-          const category = songEl.dataset.category || "Entrada";
-          const audio = songEl.dataset.audio || "";
-          const youtube = window.isYouTubeUrl(audio) ? audio : (songEl.dataset.youtube || "");
-          const lyrics = songEl.querySelector(".lyrics-hidden, .lyrics, .lyrics1, [id^='letra-']")?.innerHTML || "";
-          const tags = songEl.dataset.tags || "";
-          const id = info.id || songEl.dataset.id || (window.generateStableSongId ? window.generateStableSongId(title, author) : null);
-          return { id, title, author, category, audio, youtube, lyrics, tags };
+      try {
+        const res = await fetch("songs-catalog.json");
+        if (res.ok) catalog = await res.json();
+      } catch (e) {}
+
+      if (catalog.length === 0 && Array.isArray(window.allSongs) && window.allSongs.length > 0) {
+        catalog = window.allSongs.map(s => {
+          const info = typeof window.getSongInfo === "function" ? window.getSongInfo(s) : {};
+          return {
+            id: info.id || s.dataset.id,
+            title: info.title,
+            author: info.author,
+            category: s.dataset.category || "Entrada",
+            audio: s.dataset.audio || "",
+            youtube: s.dataset.youtube || "",
+            lyrics: s.querySelector(".lyrics, pre")?.innerHTML || "",
+            tags: s.dataset.tags || ""
+          };
         }).filter(s => s.title);
-      } else {
-        // Como respaldo si existe el archivo JSON
-        try {
-          const res = await fetch("songs-catalog.json");
-          if (res.ok) catalog = await res.json();
-        } catch (e) {}
       }
 
       if (catalog.length === 0) {
@@ -6968,7 +7637,7 @@ window.createSongRowHtml = function(songData) {
       </div>
 
       <div class="song-row-category-col">
-        <span class="category-pill-tag cat-pill-${catSlug}">${displayCategory}</span>
+        <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
       </div>
 
       <div class="song-row-actions" onclick="event.stopPropagation();">
@@ -6984,37 +7653,6 @@ window.createSongRowHtml = function(songData) {
             </svg>
           `}
         </button>
-        <div class="song-options-wrapper">
-          <button type="button" class="song-action-btn btn-song-more" title="Más opciones" aria-label="Opciones" data-title="${title.replace(/"/g, '&quot;')}" data-author="${author.replace(/"/g, '&quot;')}">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="12" cy="5" r="1"></circle>
-              <circle cx="12" cy="19" r="1"></circle>
-            </svg>
-          </button>
-          <div class="song-dropdown-menu" style="display: none;">
-            <button type="button" class="song-dropdown-item opt-view-lyrics" data-title="${title.replace(/"/g, '&quot;')}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Ver letra y acordes</span>
-            </button>
-            <button type="button" class="song-dropdown-item opt-add-rep ${isInRep ? 'added' : ''}" data-title="${title.replace(/"/g, '&quot;')}" data-author="${author.replace(/"/g, '&quot;')}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>${isInRep ? 'Quitar del repertorio' : 'Añadir al repertorio'}</span>
-            </button>
-            ${hasAudio ? `
-            <button type="button" class="song-dropdown-item opt-play-audio" data-title="${title.replace(/"/g, '&quot;')}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <span>Escuchar audio</span>
-            </button>
-            ` : ''}
-            ${(typeof window.isCurrentUserEditor === "function" && window.isCurrentUserEditor()) ? `
-            <button type="button" class="song-dropdown-item opt-edit-song" data-title="${title.replace(/"/g, '&quot;')}">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              <span>Editar canción</span>
-            </button>
-            ` : ''}
-          </div>
-        </div>
       </div>
     </div>
     <div class="lyrics-hidden" style="display:none;">${lyrics}</div>
@@ -7406,12 +8044,26 @@ async function loadSongs(files) {
     if (catRes.ok) {
       const catalog = await catRes.json();
       if (Array.isArray(catalog) && catalog.length > 0) {
+        window.rawCatalogSongs = catalog;
+        try { localStorage.setItem("voxdei_cached_songs_catalog", JSON.stringify(catalog)); } catch (e) {}
         loadedSongs = catalog.map(createSongElement);
         console.log(`Cargadas ${catalog.length} canciones desde catálogo JSON.`);
       }
     }
   } catch (err) {
     console.warn("Fallo lectura de catálogo JSON offline:", err);
+  }
+
+  // 1.1 Si no hubo respuesta de red (modo 100% offline), recuperar del almacenamiento local
+  if (loadedSongs.length === 0) {
+    try {
+      const localCached = JSON.parse(localStorage.getItem("voxdei_cached_songs_catalog") || "[]");
+      if (Array.isArray(localCached) && localCached.length > 0) {
+        window.rawCatalogSongs = localCached;
+        loadedSongs = localCached.map(createSongElement);
+        console.log(`Cargadas ${localCached.length} canciones desde almacenamiento local offline.`);
+      }
+    } catch (e) {}
   }
 
   // 2. Si no hay catálogo JSON, intentar Firestore
@@ -7422,35 +8074,6 @@ async function loadSongs(files) {
         window.chequearImportacionCompartida();
       }
       return;
-    }
-  }
-
-  // 3. Fallback de compatibilidad con archivos HTML si los hubiera
-  if (loadedSongs.length === 0 && Array.isArray(files) && files.length > 0) {
-    try {
-      const htmls = await Promise.all(files.map(f => fetch(f).then(r => r.ok && r.status === 200 ? r.text() : "").catch(() => "")));
-      const combined = htmls.join("");
-      if (combined.trim().length > 0) {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = combined;
-        tempDiv.querySelectorAll(".song").forEach(songEl => {
-          const h2 = songEl.querySelector("h2");
-          const rawTitle = h2 ? h2.textContent.replace(/\(.*?\)/g, "").trim() : "";
-          const autorEl = songEl.querySelector(".autor, small");
-          const rawAuthor = autorEl ? autorEl.textContent.replace(/[()]/g, "").trim() : "";
-          const lyricsHidden = songEl.querySelector(".lyrics-hidden, [id^='letra-']");
-          loadedSongs.push(createSongElement({
-            title: rawTitle,
-            author: rawAuthor,
-            category: songEl.dataset.category || "Entrada",
-            audio: songEl.dataset.audio || "",
-            youtube: songEl.dataset.youtube || "",
-            lyrics: lyricsHidden ? lyricsHidden.innerHTML : ""
-          }));
-        });
-      }
-    } catch (e) {
-      console.warn("Fallo fallback de archivos HTML:", e);
     }
   }
 
@@ -7509,26 +8132,15 @@ function initSongButtons() {
 
     // Clic en la fila completa abre la canción
     songSection.onclick = (e) => {
-      if (e.target.closest(".song-row-actions") || e.target.closest("button") || e.target.closest(".song-options-wrapper")) return;
+      if (e.target.closest(".song-row-actions") || e.target.closest("button")) return;
       window.abrirLetra(title, lyrics, author, "", audio, tags, null, null, youtube, category);
     };
 
     // Botón directo en la fila: Añadir / Quitar del repertorio (+)
     const addRepBtn = songSection.querySelector(".btn-song-add-rep");
-    // Opción en menú desplegable de 3 puntos
-    const optAddRep = songSection.querySelector(".opt-add-rep");
-    // Menú de 3 puntos (Opciones)
-    const moreBtn = songSection.querySelector(".btn-song-more");
-    const dropdown = songSection.querySelector(".song-dropdown-menu");
 
     const toggleRepertorioState = (e) => {
       if (e) e.stopPropagation();
-      if (dropdown) dropdown.style.display = "none";
-      const pRow = songSection.closest(".song-row") || songSection;
-      if (pRow) {
-        pRow.classList.remove("menu-open");
-        pRow.style.zIndex = "";
-      }
 
       let currentRep = JSON.parse(localStorage.getItem("repertorio")) || [];
       const songId = info.id || songSection.dataset.id || window.generateStableSongId(title, author);
@@ -7551,11 +8163,6 @@ function initSongButtons() {
             </svg>
           `;
         }
-        if (optAddRep) {
-          optAddRep.classList.add("added");
-          const spanText = optAddRep.querySelector("span");
-          if (spanText) spanText.textContent = "Quitar del repertorio";
-        }
         showToast(`"${title}" añadida al repertorio`, "success");
       } else {
         currentRep.splice(index, 1);
@@ -7571,11 +8178,6 @@ function initSongButtons() {
             </svg>
           `;
         }
-        if (optAddRep) {
-          optAddRep.classList.remove("added");
-          const spanText = optAddRep.querySelector("span");
-          if (spanText) spanText.textContent = "Añadir al repertorio";
-        }
         showToast(`"${title}" eliminada del repertorio`, "info");
       }
 
@@ -7586,169 +8188,14 @@ function initSongButtons() {
     if (addRepBtn) {
       addRepBtn.onclick = toggleRepertorioState;
     }
-    if (optAddRep) {
-      optAddRep.onclick = toggleRepertorioState;
-    }
-
-    if (moreBtn && dropdown) {
-      moreBtn.onclick = (e) => {
-        e.stopPropagation();
-        const isOpen = dropdown.style.display === "flex";
-
-        // Cerrar todos los demás menús y limpiar z-index de filas
-        document.querySelectorAll(".song-dropdown-menu").forEach(d => {
-          d.style.display = "none";
-          const parentRow = d.closest(".song-row");
-          if (parentRow) {
-            parentRow.classList.remove("menu-open");
-            parentRow.style.zIndex = "";
-          }
-        });
-
-        if (!isOpen) {
-          dropdown.style.display = "flex";
-          const currentRow = songSection.closest(".song-row") || songSection;
-          currentRow.classList.add("menu-open");
-          currentRow.style.zIndex = "500";
-          currentRow.style.position = "relative";
-
-          // Abrir hacia arriba si está cerca del borde inferior para que nunca se corte
-          const rect = moreBtn.getBoundingClientRect();
-          const spaceBelow = window.innerHeight - rect.bottom;
-          if (spaceBelow < 200 && rect.top > 200) {
-            dropdown.style.top = "auto";
-            dropdown.style.bottom = "calc(100% + 4px)";
-          } else {
-            dropdown.style.top = "calc(100% + 4px)";
-            dropdown.style.bottom = "auto";
-          }
-        }
-      };
-    }
-
-    // Opción: Escuchar audio desde el menú de opciones
-    const optPlayAudio = songSection.querySelector(".opt-play-audio");
-    if (optPlayAudio) {
-      optPlayAudio.onclick = (e) => {
-        e.stopPropagation();
-        if (dropdown) dropdown.style.display = "none";
-        window.abrirLetra(title, lyrics, author, "", audio, tags, null, null, youtube, category);
-        setTimeout(() => {
-          const player = document.getElementById("playerPrincipal");
-          if (player) player.play().catch(() => {});
-        }, 300);
-      };
-    }
-
-    // Opción: Ver letra y acordes
-    const optViewLyrics = songSection.querySelector(".opt-view-lyrics");
-    if (optViewLyrics) {
-      optViewLyrics.onclick = (e) => {
-        e.stopPropagation();
-        if (dropdown) dropdown.style.display = "none";
-        window.abrirLetra(title, lyrics, author, "", audio, tags, null, null, youtube, category);
-      };
-    }
-
-    // Opción: Editar canción (Exclusivo Administrador)
-    const optEditSong = songSection.querySelector(".opt-edit-song");
-    if (optEditSong) {
-      if (!window.isCurrentUserEditor?.()) {
-        optEditSong.style.display = "none";
-      }
-      optEditSong.onclick = (e) => {
-        e.stopPropagation();
-        if (dropdown) dropdown.style.display = "none";
-        if (!window.isCurrentUserEditor?.()) {
-          showToast("Acceso exclusivo para el administrador (jhonbastidas2805@gmail.com).", "warning");
-          return;
-        }
-        const songData = {
-          id: info.id || songSection.dataset.id,
-          title,
-          author,
-          category,
-          lyrics,
-          audio,
-          youtube,
-          tags,
-          cover: songSection.dataset.cover || ""
-        };
-        window.openSongEditorModal(songData);
-      };
-    }
-  });
-
-  // Compatibilidad con botones de repertorio estándar
-  document.querySelectorAll(".add-repertorio").forEach(btn => {
-    const songSection = btn.closest(".song");
-    const info = window.getSongInfo(songSection);
-    const title = info.title || btn.dataset.title || "";
-    const author = info.author || btn.dataset.author || "";
-
-    let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
-    const isInRep = rep.some(s => 
-      (s.id && info.id && s.id === info.id) || 
-      (s.title === title && (s.author || "").trim() === author.trim())
-    );
-    actualizarBoton(btn, isInRep);
-
-    btn.onclick = async (e) => {
-      e.preventDefault();
-      let currentRep = JSON.parse(localStorage.getItem("repertorio")) || [];
-      const index = currentRep.findIndex(s => 
-        (s.id && info.id && s.id === info.id) || 
-        (s.title === title && (s.author || "").trim() === author.trim())
-      );
-      if (index === -1) {
-        const lyrics = songSection.querySelector(".lyrics-hidden, .lyrics, .lyrics1")?.innerHTML.trim();
-        const type = songSection.dataset.type || "";
-        const audio = songSection.dataset.audio || "";
-        const tags = songSection.dataset.tags || window.getSongTag(songSection) || "";
-        const category = songSection.dataset.category || "";
-        const songId = info.id || songSection.dataset.id || "";
-        currentRep.push({ id: songId, title, author, lyrics, type, audio, tags, category });
-        localStorage.setItem("repertorio", JSON.stringify(currentRep));
-        actualizarBoton(btn, true);
-        showToast(`"${title}" agregada al repertorio`, "success");
-      } else {
-        const ok = await showConfirmModal({
-          title: "Quitar del repertorio",
-          message: `¿Deseas eliminar "${title}" del repertorio?`,
-          confirmText: "Eliminar",
-          cancelText: "Cancelar",
-          danger: true,
-          icon: "trash-2"
-        });
-        if (!ok) return;
-        currentRep.splice(index, 1);
-        localStorage.setItem("repertorio", JSON.stringify(currentRep));
-        actualizarBoton(btn, false);
-        showToast(`"${title}" eliminada del repertorio`, "info");
-      }
-      if (viewRepertorio?.style.display !== "none") renderizarRepertorio(currentRep);
-    };
   });
 }
 
 // Cerrar menús desplegables al hacer clic afuera
 document.addEventListener("click", () => {
   document.querySelectorAll(".song-dropdown-menu").forEach(d => (d.style.display = "none"));
+  document.querySelectorAll(".saved-rep-options-dropdown").forEach(d => (d.style.display = "none"));
 });
-
-function actualizarBoton(btn, activo) {
-  const icon = btn.querySelector(".icon");
-  const text = btn.querySelector(".text");
-  if (activo) {
-    btn.classList.add("active");
-    if(icon) icon.textContent = "✔";
-    if(text) text.textContent = "En repertorio";
-  } else {
-    btn.classList.remove("active");
-    if(icon) icon.textContent = "+";
-    if(text) text.textContent = "Añadir al repertorio";
-  }
-}
 
 /* ========================
    10. MODO CLARO / OSCURO
@@ -7796,33 +8243,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  function updateLogos() {
-    if (typeof window.updateLogos === "function") {
-      window.updateLogos();
-    } else {
-      const isLight = document.body.classList.contains("light-mode");
-      document.querySelectorAll("img[data-light]").forEach(logo => {
-        const lightSrc = logo.getAttribute("data-light");
-        const darkSrc = logo.getAttribute("data-dark");
-        if (isLight && lightSrc) {
-          logo.setAttribute("src", lightSrc);
-        } else if (!isLight && darkSrc) {
-          logo.setAttribute("src", darkSrc);
-        }
-      });
-    }
-  }
-  window.updateAppLogos = updateLogos;
-  updateLogos();
+  window.updateLogos = function() {
+    const isLight = document.body.classList.contains("light-mode");
+    document.querySelectorAll("img[data-light]").forEach(logo => {
+      const lightSrc = logo.getAttribute("data-light");
+      const darkSrc = logo.getAttribute("data-dark");
+      if (isLight && lightSrc) {
+        logo.setAttribute("src", lightSrc);
+      } else if (!isLight && darkSrc) {
+        logo.setAttribute("src", darkSrc);
+      }
+    });
+  };
+  window.updateAppLogos = window.updateLogos;
+  window.updateLogos();
 
-  loadSongs([
-       
-   "Categorias/Entrada.html", "Categorias/Penitencial.html", "Categorias/Gloria.html", "Categorias/Aclamacion.html",
-    "Categorias/Ofertorio.html", "Categorias/Santo.html", "Categorias/PadreNuestro.html", "Categorias/Cordero.html",
-    "Categorias/Comunion.html", "Categorias/AdoracionMeditacion.html", "Categorias/EnvioSalida.html", "Categorias/Marianos.html",
-    "Categorias/Salesianos.html","Categorias/Cuaresma.html", "Categorias/Pascua.html" , "Categorias/EspirituSanto.html" ,
-    "Categorias/Adviento.html", "Categorias/HimnosSalmos.html", "Categorias/Contemporáneo.html",
-  ]);
+  loadSongs();
 
   // Botón Flotante Redondo con + para agregar o editar canción (Estilo Image 1)
   document.getElementById("btnFloatingAddSong")?.addEventListener("click", () => {
@@ -9814,8 +10250,6 @@ document.addEventListener("DOMContentLoaded", () => {
           window.cerrarGuardarRepertorio();
         } else if (closestOverlay.id === "popupVerRepertorio" && window.cerrarVerRepertorio) {
           window.cerrarVerRepertorio();
-        } else if (closestOverlay.id === "popupEsquemasMisa" && window.cerrarEsquemasMisa) {
-          window.cerrarEsquemasMisa();
         }
       }
     }
