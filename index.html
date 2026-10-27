@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="El Cancionero Oficial del Coro Juvenil Vox Dei, ahora con cuentas de músico, sincronización en la nube y estadísticas comunitarias.">
-  <meta name="author" content="Coro Juvenil Vox Dei">
+  <meta name="description" content="El Cancionero Oficial del Coro Juvenil Salesiano Vox Dei, ahora con cuentas de músico, sincronización en la nube y estadísticas comunitarias.">
+  <meta name="author" content="Coro Juvenil Salesiano Vox Dei">
   <meta name="theme-color" content="#A51E17">
   <!-- Open Graph -->
   <meta property="og:title" content="Cancionero Digital Vox Dei">
-  <meta property="og:description" content="El Cancionero Oficial del Coro Juvenil Vox Dei, ahora con cuentas de músico, sincronización en la nube y estadísticas comunitarias.">
+  <meta property="og:description" content="El Cancionero Oficial del Coro Juvenil Salesiano Vox Dei, ahora con cuentas de músico, sincronización en la nube y estadísticas comunitarias.">
   <meta property="og:type" content="website">
   <title>Cancionero Digital Vox Dei</title>
   <!-- PWA & Mobile Capabilities (Funciona Sin Internet) -->
@@ -25,7 +25,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&family=Poppins:wght@400;600&family=Raleway:wght@700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="Principal.css?v=3.5">
+  <link rel="stylesheet" href="Principal.css?v=5.3">
+  <link rel="stylesheet" href="admin.css?v=5.3">
   <!-- Librería para convertir HTML a Imagen -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
   <!-- Librería para Arrastrar y Soltar (SortableJS) -->
@@ -34,9 +35,9 @@
 
 <body>
 
-  <!-- ==============================
-       SPLASH LAUNCH SCREEN
-  =============================== -->
+  <!-- =========================================================
+       PANTALLA DE CARGA INICIAL (BIENVENIDA)
+  ========================================================== -->
   <div id="splashScreen" class="splash-screen">
     <div class="splash-content">
       <div class="splash-logo-container">
@@ -97,12 +98,15 @@
     })();
   </script>
 
-  <!-- ==============================
-       1. ENCABEZADO SUPERIOR
-  =============================== -->
+  <!-- =========================================================
+       1. ENCABEZADO PRINCIPAL (BARRA SUPERIOR)
+       - Desglose de elementos:
+         * Zona izquierda: Botón de menú lateral (☰) y Logotipo principal "Vox Dei"
+         * Zona derecha: Botón de Índice de cantos, Botón de Mi Repertorio y Menú desplegable de Perfil / Ajustes
+  ========================================================== -->
   <header class="topbar">
     <div class="top-left">
-      <!-- BOTÓN MENÚ A LA IZQUIERDA Y LOGO AGRANDADO AL COSTADO DEL MENÚ -->
+      <!-- Botón de menú lateral y logotipo principal -->
       <button id="menuBtn" class="icon-btn menu-btn" aria-label="Abrir menú" title="Menú">☰</button>
       <div class="logo-left logo-header" id="headerBrandLogo" title="Inicio Cancionero Vox Dei">
         <img src="Principal/LogocompletoBlanco.png" alt="Vox Dei" class="logo header-main-logo" data-light="Principal/Logocompleto.png" data-dark="Principal/LogocompletoBlanco.png">
@@ -110,13 +114,25 @@
     </div>
 
     <div class="top-right">
-      <!-- Botón Mi Repertorio en el mismo color neutro del menú lateral -->
-      <button id="homeBtn" class="header-repertorio-btn" aria-label="Mi repertorio" title="Mi repertorio">
+      <!-- 1. Botón Inicio -->
+      <button id="headerHomeBtn" class="header-repertorio-btn" aria-label="Inicio" title="Inicio">
+        <i data-lucide="home" class="header-rep-icon"></i>
+        <span class="header-rep-text">Inicio</span>
+      </button>
+
+      <!-- 2. Botón Mi Repertorio -->
+      <button id="headerRepertorioBtn" class="header-repertorio-btn" aria-label="Mi repertorio" title="Mi repertorio">
         <i data-lucide="list-music" class="header-rep-icon"></i>
         <span class="header-rep-text">Mi repertorio</span>
       </button>
 
-      <!-- Botón Perfil con flechita desplegable -->
+      <!-- 3. Botón Índice General de Cantos -->
+      <button id="headerIndiceBtn" class="header-repertorio-btn" aria-label="Índice de cantos" title="Índice de cantos">
+        <i data-lucide="book-open" class="header-rep-icon"></i>
+        <span class="header-rep-text">Índice</span>
+      </button>
+
+      <!-- 4. Botón de Perfil de Usuario con foto y menú desplegable -->
       <div class="profile-dropdown-wrapper">
         <button id="topbarAuthBtn" class="topbar-profile-trigger" aria-label="Mi Perfil y Configuración" title="Mi Perfil / Configuración" aria-expanded="false" aria-haspopup="true">
           <div class="profile-avatar-circle">
@@ -144,10 +160,6 @@
               <i data-lucide="user"></i>
               <span>Mi perfil</span>
             </button>
-            <button type="button" id="menuItemConfigView" class="dropdown-item-btn">
-              <i data-lucide="settings"></i>
-              <span>Configuración</span>
-            </button>
             <button type="button" id="menuItemThemeToggle" class="dropdown-item-btn">
               <i data-lucide="sun-moon" id="menuThemeIcon"></i>
               <span id="menuThemeText">Cambiar tema</span>
@@ -172,29 +184,40 @@
   </header>
 
   <!-- =========================================================
-       2. VISTA INICIO (HOME)
+       2. VISTA PRINCIPAL (INICIO - CATÁLOGO DE CANTOS)
+       - Desglose de elementos:
+         * 2.1. Portada principal (Hero banner con imagen del Santuario, título institucional y lema)
+         * 2.2. Barra de búsqueda en vivo y botón de filtros (Título, Autor, Letra)
+         * 2.3. Carrusel deslizable de categorías litúrgicas (Todos, Entrada, Penitencial...)
+         * 2.4. Barra de opciones de canciones ("Ordenar por" más recientes, A-Z, autor)
+         * 2.5. Contenedor principal de canciones (Carga dinámica de cantos)
+         * 2.6. Paginación de canciones
+         * 2.7. Botón flotante rojo (+) para agregar cantos (Exclusivo Administrador)
   ========================================================== -->
   <div id="view-home" class="page-view">
+    <!-- 2.1. Portada Principal (Hero Banner) -->
     <section id="homeHero" class="hero hero-compact-banner">
       <div class="hero-card hero-card-modern">
-        <img src="Principal/Santuario.png" alt="Santuario María Auxiliadora" class="hero-img" loading="eager" fetchpriority="high">
+        <img src="Principal/Santuario.png" alt="Santuario María Auxiliadora" id="homeHeroImg" class="hero-img" loading="eager" fetchpriority="high">
         <div class="hero-content-row">
           <div class="hero-left-branding">
             <div class="hero-brand-text">
               <h1 class="hero-main-title">CANCIONERO <span class="highlight-red">DIGITAL</span></h1>
-              <p class="hero-sub-title">Coro Juvenil Vox Dei</p>
+              <p class="hero-sub-title">Coro Juvenil Salesiano Vox Dei</p>
               <div class="hero-red-line"></div>
             </div>
           </div>
           <div class="hero-right-quote">
-            <p class="hero-scripture-quote">“La música también<br>es una forma de orar”</p>
-            <div class="hero-cross-ornament">
-              <span class="cross-line-left"></span>
-              <span class="cross-symbol">✝</span>
-              <span class="cross-line-right"></span>
+            <div class="hero-quote-text-wrap">
+              <p class="hero-scripture-quote" id="homeHeroQuote">“La música también<br>es una forma de orar”</p>
             </div>
           </div>
         </div>
+        <!-- Botón flotante para editar portada de Inicio (exclusivo Administrador) -->
+        <button type="button" id="btnEditHomeCover" class="btn-hero-cover-edit" style="display: none;" title="Editar foto de portada y frase" aria-label="Editar foto de portada y frase">
+          <i data-lucide="camera"></i>
+          <span>Editar portada</span>
+        </button>
       </div>
     </section>
 
@@ -241,15 +264,13 @@
           <i data-lucide="file-text" class="btn-icon"></i>
           Letra
         </button>
-        <button class="search-filter-btn" data-filter="category">
-          <i data-lucide="tag" class="btn-icon"></i>
-          Categoría
-        </button>
       </div>
     </div>
 
     <div class="categories-wrapper">
-      <button class="cat-arrow left" id="catLeftBtn">‹</button>
+      <button class="cat-arrow left" id="catLeftBtn" title="Anterior categoría" aria-label="Anterior categoría">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
       <section class="search-categories" id="catScroll">
         <button class="category-btn active" data-category="todos">Todos</button>
         <button class="category-btn" data-category="Entrada">Entrada</button>
@@ -272,7 +293,9 @@
         <button class="category-btn" data-category="HimnosSalmos">Himnos y Salmos</button>
         <button class="category-btn" data-category="Contemporáneo">Contemporáneo</button>
       </section>
-      <button class="cat-arrow right" id="catRightBtn">›</button>
+      <button class="cat-arrow right" id="catRightBtn" title="Siguiente categoría" aria-label="Siguiente categoría">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
     </div>
 
     <!-- Barra de opciones de canciones: Ordenar por -->
@@ -282,8 +305,8 @@
         <div class="sort-select-wrapper">
           <select id="sortSongsSelect" class="sort-select" title="Ordenar canciones">
             <option value="recent">Más recientes</option>
-            <option value="alpha-asc">Título (A-Z)</option>
-            <option value="alpha-desc">Título (Z-A)</option>
+            <option value="alpha-asc">A-Z</option>
+            <option value="alpha-desc">Z-A</option>
             <option value="author">Autor</option>
           </select>
           <i data-lucide="chevron-down" class="sort-select-chevron"></i>
@@ -303,30 +326,38 @@
   </div>
 
   <!-- =========================================================
-       3. VISTA REPERTORIO
+       3. VISTA DE MI REPERTORIO
+       - Desglose de elementos:
+         * 3.1. Portada de repertorio (Hero banner con imagen, título y lema institucional)
+         * 3.2. Pestañas de navegación (Repertorio Activo / Repertorios Guardados)
+         * 3.3. Barra de acciones rápidas (Guardar, Compartir por enlace/código, Agregar cantos, Limpiar)
+         * 3.4. Lista interactiva de cantos en el repertorio activo (con arrastrar y soltar)
+         * 3.5. Vista de repertorios guardados en memoria
   ========================================================== -->
   <div id="view-repertorio" class="page-view" style="display:none;">
-    <!-- Banner de Mi Repertorio (Misma estética y proporción institucional de Inicio) -->
+    <!-- 3.1. Portada de Repertorio (Hero Banner) -->
     <section id="repertorioHero" class="hero hero-compact-banner">
       <div class="hero-card hero-card-modern">
-        <img src="Principal/Santisimo.png" alt="Repertorio Santísimo Vox Dei" class="hero-img" loading="lazy">
+        <img src="Principal/Santisimo.png" alt="Repertorio Santísimo Vox Dei" id="repertorioHeroImg" class="hero-img" loading="lazy">
         <div class="hero-content-row">
           <div class="hero-left-branding">
             <div class="hero-brand-text">
               <h1 class="hero-main-title">REPERTORIO <span class="highlight-red">DIGITAL</span></h1>
-              <p class="hero-sub-title">Coro Juvenil Salesiano Vox Dei</p>
+              <p class="hero-sub-title">Organiza y prepara tus cantos para la celebración</p>
               <div class="hero-red-line"></div>
             </div>
           </div>
           <div class="hero-right-quote">
-            <p class="hero-scripture-quote">“Cantar es orar<br>dos veces”</p>
-            <div class="hero-cross-ornament">
-              <span class="cross-line-left"></span>
-              <span class="cross-symbol">✝</span>
-              <span class="cross-line-right"></span>
+            <div class="hero-quote-text-wrap">
+              <p class="hero-scripture-quote" id="repertorioHeroQuote">“Cantar es orar<br>dos veces”</p>
             </div>
           </div>
         </div>
+        <!-- Botón flotante para editar portada de Repertorio (exclusivo Administrador) -->
+        <button type="button" id="btnEditRepCover" class="btn-hero-cover-edit" style="display: none;" title="Editar foto de portada y frase" aria-label="Editar foto de portada y frase">
+          <i data-lucide="camera"></i>
+          <span>Editar portada</span>
+        </button>
       </div>
     </section>
 
@@ -494,7 +525,91 @@
   </div>
 
   <!-- =========================================================
-       3.5. VISTA MI PERFIL / MI CUENTA
+       4. VISTA DEL ÍNDICE GENERAL DE CANTOS
+       - Desglose de elementos:
+         * 4.1. Portada del índice (Hero banner con imagen y contador total de cantos)
+         * 4.2. Buscador en tiempo real del índice
+         * 4.3. Selector de modos de ordenamiento (Ritos litúrgicos / Alfabético)
+         * 4.4. Riel selector de letras A-Z (Modo alfabético)
+         * 4.5. Contenedor dinámico de cantos (Listado directo o acordeón litúrgico)
+  ========================================================== -->
+  <div id="view-indice" class="page-view" style="display:none;">
+    
+    <!-- 4.1. Portada del Índice (Hero Banner) -->
+    <section id="indiceHero" class="hero hero-compact-banner">
+      <div class="hero-card hero-card-modern">
+        <img src="Principal/Santuario.png" alt="Directorio General del Cancionero Litúrgico" id="indiceHeroImg" class="hero-img" loading="lazy">
+        <div class="hero-content-row">
+          <div class="hero-left-branding">
+            <div class="hero-brand-text">
+              <h1 class="hero-main-title">ÍNDICE DE <span class="highlight-red">CANTOS</span></h1>
+              <p class="hero-sub-title" id="indiceHeroSubheading">Directorio General del Cancionero Litúrgico</p>
+              <div class="hero-red-line"></div>
+            </div>
+          </div>
+          <div class="hero-right-quote">
+            <div class="hero-quote-text-wrap">
+              <p class="hero-scripture-quote" id="indiceHeroQuote">“Alaben al Señor con alegría”</p>
+            </div>
+          </div>
+        </div>
+        <!-- Botón flotante para editar portada de Índice (exclusivo Administrador) -->
+        <button type="button" id="btnEditIndiceCover" class="btn-hero-cover-edit" style="display: none;" title="Editar foto de portada y frase" aria-label="Editar foto de portada y frase">
+          <i data-lucide="camera"></i>
+          <span>Editar portada</span>
+        </button>
+      </div>
+    </section>
+
+    <main class="content indice-main-content">
+      <!-- Buscador en tiempo real del Índice -->
+      <div class="search-and-filter-wrapper indice-search-wrapper">
+        <section class="search-bar">
+          <i data-lucide="search" class="search-icon-svg"></i>
+          <input type="text" id="searchIndiceInput" placeholder="Buscar por título, autor o letra..." autocomplete="off">
+          <button type="button" class="btn-clear-search-input" id="btnClearSearchIndiceInput" style="display: none;" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">
+            <i data-lucide="x"></i>
+          </button>
+        </section>
+      </div>
+
+      <!-- Selector de Modos de Ordenamiento (Píldoras Segmentadas) -->
+      <div class="indice-modes-wrapper">
+        <div class="indice-modes-bar" role="tablist">
+          <span class="indice-sort-label">Ordenar por:</span>
+          <button type="button" class="indice-mode-btn active" data-mode="ritos" role="tab" aria-selected="true">
+            <i data-lucide="book-marked"></i>
+            <span>Ritos litúrgicos</span>
+          </button>
+          <button type="button" class="indice-mode-btn" data-mode="alfabetico" role="tab" aria-selected="false">
+            <i data-lucide="arrow-down-a-z"></i>
+            <span>Alfabético</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Selector Rápido de Letras A-Z (Solo visible en modo Alfabético) -->
+      <div id="indiceSubControls" class="indice-sub-controls" style="display: none;">
+        <div class="indice-alphabet-rail-wrapper">
+          <div id="indiceLetterRail" class="indice-letter-rail">
+            <!-- Botones de letras dinámicos -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista dinámica de bloques interactivos tipo acordeón -->
+      <div id="indiceListContainer" class="indice-list-container">
+        <!-- Carga dinámica interactiva vía JavaScript -->
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================
+       5. VISTA DE MI PERFIL Y AJUSTES
+       - Desglose de elementos:
+         * 5.1. Ficha del usuario (Avatar, nombre, correo y estadísticas comunitarias)
+         * 5.2. Panel de administración y control de editores (Exclusivo Administrador)
+         * 5.3. Ajustes de la cuenta y opciones de cierre de sesión
   ========================================================== -->
   <div id="view-profile" class="page-view" style="display:none;">
     
@@ -588,6 +703,10 @@
                 <i data-lucide="plus-circle"></i>
                 <span>+ Crear y Publicar Nueva Canción</span>
               </button>
+              <button type="button" id="btnAdminCustomHeaders" class="btn-admin-cta-secondary">
+                <i data-lucide="image"></i>
+                <span>Personalizar Portadas y Frases</span>
+              </button>
               <button type="button" id="btnToggleManageEditors" class="btn-admin-cta-secondary" style="display: none;">
                 <i data-lucide="user-plus"></i>
                 <span>Gestionar Editores</span>
@@ -679,6 +798,14 @@
               </div>
 
               <div class="profile-settings-list">
+                <!-- Opción de Configuración: Editar portadas y frases -->
+                <button type="button" id="btnProfileEditCovers" class="settings-option-item admin-only-setting-item">
+                  <div class="settings-option-left">
+                    <i data-lucide="image"></i>
+                    <span>Editar portadas y frases</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="settings-chevron"></i>
+                </button>
                 <button type="button" id="btnProfileChangePass" class="settings-option-item">
                   <div class="settings-option-left">
                     <i data-lucide="lock"></i>
@@ -822,9 +949,14 @@
 
   </div>
 
-  <!-- ==============================
-       4. MENÚ LATERAL & OVERLAY
-  =============================== -->
+  <!-- =========================================================
+       6. MENÚ LATERAL DESPLEGABLE (BARRA DE NAVEGACIÓN RÁPIDA)
+       - Desglose de elementos:
+         * Cabecera con logotipo y botón para cerrar (✕)
+         * Lista de navegación (Inicio, Índice, Mi repertorio, Perfil, Configuración)
+         * Opciones rápidas (Ocultar acordes, Alternar modo claro/oscuro)
+         * Acciones inferiores (Nueva canción administrador, Mensaje/Sugerencias, Instalar App PWA)
+  ========================================================== -->
   <aside id="sidebar" class="sidebar" aria-hidden="true">
     <div class="sidebar-header-row">
       <div class="sidebar-brand-mini">
@@ -838,8 +970,7 @@
         <li><a href="#" id="nav-inicio" class="active"><i data-lucide="home"></i> Inicio</a></li>
         <li><a href="#" id="nav-indice-btn"><i data-lucide="book-open"></i> Índice</a></li>
         <li><a href="#" id="nav-repertorio"><i data-lucide="list-music"></i> Mi repertorio</a></li>
-        <li><a href="#" id="nav-auth"><i data-lucide="user"></i> <span id="navAuthLabel">Perfil</span> <span id="authBadge" class="auth-badge-dot" style="display: none; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 6px; vertical-align: middle;"></span></a></li>
-        <li><a href="#" id="nav-config"><i data-lucide="settings"></i> Configuración</a></li>
+        <li><a href="#" id="nav-auth"><i data-lucide="user"></i> <span id="navAuthLabel">Mi Perfil</span> <span id="authBadge" class="auth-badge-dot" style="display: none; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-left: 6px; vertical-align: middle;"></span></a></li>
         <li class="sidebar-divider"></li>
         <li><a href="#" id="toggleChordsBtn"><i data-lucide="music-2"></i> Ocultar acordes</a></li>
         <li><a href="#" id="themeToggle"><i data-lucide="sun"></i> Modo Claro</a></li>
@@ -869,13 +1000,17 @@
   </aside>
   <div id="overlay" class="overlay"></div>
 
-  <!-- ==============================
-       5. PIE DE PÁGINA
-  =============================== -->
+  <!-- =========================================================
+       7. PIE DE PÁGINA (FOOTER INSTITUCIONAL)
+       - Desglose de elementos:
+         * Identidad institucional del Coro Juvenil Salesiano Vox Dei
+         * Enlace a redes sociales (Instagram)
+         * Créditos y derechos de autor
+  ========================================================== -->
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-section">
-        <h3>Coro Juvenil Vox Dei</h3>
+        <h3>Coro Juvenil Salesiano Vox Dei</h3>
         <a href="https://www.instagram.com/coro_salesiano_voxdei/" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
       </div>
       <div class="footer-section">
@@ -890,24 +1025,27 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2025 <strong>Cancionero Digital</strong> | Coro Juvenil Vox Dei | Desarrollado con <span>❤</span></p>
+      <p>© 2025 <strong>Cancionero Digital</strong> | Coro Juvenil Salesiano Vox Dei | Desarrollado con <span>❤</span></p>
     </div>
   </footer>
 
-  <!-- POPUP DE INDICE -->
-  <div id="popupIndice" class="popup-overlay">
-    <div class="popup-content index-popup">
-      <button onclick="cerrarIndice()" class="popup-cerrar index-floating-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
-      <div class="popup-header">
-        <h2 id="indexTitle" class="popup-title">Índice General</h2>
-      </div>
-      <div id="indexBody" class="index-body">
-        <!-- Contenido dinámico del índice -->
-      </div>
-    </div>
-  </div>
+  <!-- =========================================================
+       8. VENTANAS EMERGENTES Y MODALES DEL SISTEMA (POPUPS)
+       - Desglose de modales:
+         * 8.1. Modal para Guardar Repertorio (popupGuardarRepertorio)
+         * 8.2. Visor de Canción (popupLetra - Pantalla completa con letra y acordes)
+         * 8.3. Modal de Anotaciones Personales del Canto (songNotesModal)
+         * 8.4. Asistente Editor de Canciones en 5 Pasos (songEditorModal - Admin)
+         * 8.5. Menú Inferior Móvil para Agregar/Editar Canciones (newSongBottomSheet)
+         * 8.6. Modal para Agregar Canciones al Repertorio (popupAddSongsSavedModal)
+         * 8.7. Modal Selector para Elegir Canción a Modificar (editSongSelectModal)
+         * 8.8. Modal de Inicio de Sesión y Registro (authModal)
+         * 8.9. Modal de Sugerencias y Mensajes al Coro (feedbackModal)
+         * 8.10. Modal para Compartir Repertorio por Código o Enlace (shareRepModal)
+         * 8.11. Modal para Personalizar Portadas Hero (modalHeaderCustomizer)
+  ========================================================== -->
 
-  <!-- POPUP DE GUARDAR REPERTORIO -->
+  <!-- 8.1. Modal para Guardar Repertorio -->
   <div id="popupGuardarRepertorio" class="popup-overlay">
     <div class="popup-content save-repertorio-popup">
       <button onclick="window.cerrarGuardarRepertorio()" class="popup-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
@@ -932,13 +1070,21 @@
     </div>
   </div>
 
-  <!-- POPUP DE LETRAS -->
+  <!-- 8.2. Visor de Canción (Pantalla Completa de Letra, Acordes y Reproductor) -->
   <div id="popupLetra" class="popup-overlay">
     <div class="popup-content">
       
-      <!-- Botones de Navegación Lateral (Visibles solo en PC / Escritorio) -->
-      <button id="btnPopupPrevSong" class="popup-nav-arrow prev" title="Anterior canción (←)" aria-label="Anterior canción">‹</button>
-      <button id="btnPopupNextSong" class="popup-nav-arrow next" title="Siguiente canción (→)" aria-label="Siguiente canción">›</button>
+      <!-- Botones de Navegación Lateral (Estilo flechas limpias de galería, sin círculos) -->
+      <button id="btnPopupPrevSong" class="popup-nav-arrow prev" title="Anterior canción (←)" aria-label="Anterior canción">
+        <svg class="popup-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button id="btnPopupNextSong" class="popup-nav-arrow next" title="Siguiente canción (→)" aria-label="Siguiente canción">
+        <svg class="popup-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
 
       <div id="captureArea" class="popup-body">
         <div class="doc-header">
@@ -946,10 +1092,6 @@
            <div class="popup-left-actions-group">
              <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen">
                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-             </button>
-             <!-- Botón Editar Canción (ÚNICO botón de edición para Editores) -->
-             <button type="button" id="btnEditCurrentSong" class="popup-edit-song-btn popup-action-btn" title="Editar / Corregir Canción (Modo Editor)" style="display: none;">
-               <i data-lucide="edit-3"></i>
              </button>
              <button type="button" id="btnPopupAddRep" class="popup-rep-btn" style="display: none;">
                <i data-lucide="plus" class="rep-icon"></i>
@@ -1063,9 +1205,8 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- MODAL DE CUADERNO DE ENSAYO Y NOTAS (ESTILO BLOCK DE NOTAS MINIMALISTA Y PROFESIONAL) -->
+  <!-- 8.3. Modal de Anotaciones Personales y Cuaderno de Ensayo (popupSongNotesModal) -->
   <div id="popupSongNotesModal" class="modal-overlay song-notes-modal-overlay">
     <div class="modal-content song-notes-card minimal-notes-theme">
       
@@ -1177,20 +1318,15 @@
       </div>
     </div>
   </div>
-    </div>
-
-  <!-- Botón Flotante de Sugerencias/Correcciones (Oculto en pantalla principal para mantenerla despejada, accesible desde el Menú lateral) -->
-  <div id="feedbackContainer" class="feedback-container" style="display: none !important;">
-    <button id="feedbackToggle" class="feedback-toggle" title="Sugerencias">
-      <i data-lucide="chevron-right"></i>
-    </button>
-    <button id="feedbackFab" class="feedback-fab" title="Enviar Sugerencia">
-      <i data-lucide="message-square"></i>
-    </button>
-  </div>
 
   <!-- =========================================================
-       MODAL DE EDITOR DE CANCIONES (WIZARD MODERNO EN PASOS PARA MÓVIL Y DESKTOP)
+       8.4. ASISTENTE EDITOR DE CANCIONES (EN 5 PASOS - EXCLUSIVO ADMINISTRADOR)
+       - Desglose de pasos:
+         * Paso 1: Información básica (Nombre, autor, categoría litúrgica, etiquetas)
+         * Paso 2: Letra y acordes (Editor con formato corchetes y vista previa en vivo)
+         * Paso 3: Referencia musical (Subida de audio MP3, enlace YouTube y foto de portada)
+         * Paso 4: Vista previa y detalles de verificación
+         * Paso 5: Pantalla de confirmación de guardado con éxito
   ========================================================== -->
   <div id="songEditorModal" class="modal-overlay song-editor-modal-overlay">
     <div class="modal-content song-editor-card modern-editor-card">
@@ -1253,14 +1389,13 @@
                 </div>
               </div>
 
-              <!-- Categoría -->
+              <!-- Categoría (Icono exclusivamente en el nombre/etiqueta, no repetido adentro) -->
               <div class="modern-form-group">
                 <label for="editorSongCategory" class="modern-form-label">
                   <i data-lucide="folder" class="field-label-icon"></i>
                   <span>Categoría</span> <span class="text-required">*</span>
                 </label>
                 <div class="modern-select-wrap">
-                  <i data-lucide="folder" class="modern-field-icon"></i>
                   <select id="editorSongCategory" class="modern-select" required>
                     <option value="Entrada">Entrada</option>
                     <option value="Penitencial">Penitencial</option>
@@ -1286,49 +1421,85 @@
                 </div>
               </div>
 
-              <!-- Autor -->
-              <div class="modern-form-group">
+              <!-- Autor (Icono exclusivamente en el nombre/etiqueta, no repetido adentro) -->
+              <div class="modern-form-group full-width">
                 <label for="editorSongAuthor" class="modern-form-label">
                   <i data-lucide="user" class="field-label-icon"></i>
                   <span>Autor</span> <span class="text-optional">(opcional)</span>
                 </label>
-                <div class="modern-input-wrap has-icon">
-                  <i data-lucide="user" class="modern-field-icon"></i>
+                <div class="modern-input-wrap">
                   <input type="text" id="editorSongAuthor" class="modern-input" placeholder="Cesáreo Gabaráin" autocomplete="off">
                 </div>
               </div>
-            </div>
 
-            <!-- Fila de Etiquetas de uso litúrgico / devocional -->
-            <div class="modern-tags-row">
-              <div class="modern-form-group compact-group">
-                <div class="modern-label-compact-row">
-                  <label for="editorSongTags" class="modern-form-label" style="margin-bottom: 0;">
-                    <i data-lucide="tag" class="field-label-icon"></i>
-                    <span>Etiquetas de uso</span> <span class="text-optional">(opcional)</span>
-                  </label>
-                </div>
-                <div class="modern-input-wrap has-icon has-action-btn">
-                  <i data-lucide="tag" class="modern-field-icon"></i>
-                  <input type="text" id="editorSongTags" class="modern-input" placeholder="Ej: Devocional, Litúrgico..." autocomplete="off">
-                  <button type="button" id="btnToggleSuggestedTags" class="btn-suggested-tags-toggle" title="Ver etiquetas sugeridas" aria-label="Ver etiquetas sugeridas">
+              <!-- Fila de Etiquetas de uso (Icono exclusivamente en el nombre/etiqueta, no repetido adentro) -->
+              <div class="modern-form-group full-width">
+                <label for="editorSongTags" class="modern-form-label">
+                  <i data-lucide="tag" class="field-label-icon"></i>
+                  <span>Etiquetas de uso</span> <span class="text-optional">(opcional)</span>
+                </label>
+                <div class="modern-input-wrap modern-tags-dropdown-wrap" id="tagsDropdownWrapper">
+                  <input type="text" id="editorSongTags" class="modern-input" placeholder="Elegir o escribir etiquetas: Devocional, Litúrgico..." autocomplete="off">
+                  <button type="button" id="btnToggleSuggestedTags" class="btn-tags-select-trigger" title="Elegir etiquetas (opción múltiple)" aria-label="Elegir etiquetas">
                     <i data-lucide="chevron-down" id="tagsChevronIcon"></i>
                   </button>
-                </div>
-              </div>
-              <div id="suggestedTagsDrawer" class="suggested-tags-drawer" style="display: none;">
-                <div class="suggested-tags-title">Etiquetas sugeridas (toca para seleccionar varias):</div>
-                <div class="quick-tags-pills">
-                  <button type="button" class="quick-tag-pill" data-tag="Devocional">Devocional</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Litúrgico">Litúrgico</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Alabanza">Alabanza</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Meditación">Meditación</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Adoración">Adoración</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Comunión">Comunión</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Pascua">Pascua</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Cuaresma">Cuaresma</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Navidad">Navidad</button>
-                  <button type="button" class="quick-tag-pill" data-tag="Mariano">Mariano</button>
+
+                  <!-- Menú Desplegable Flotante tipo Formulario con Casillas de Verificación -->
+                  <div id="tagsDropdownMenu" class="tags-multiselect-menu" style="display: none;">
+                    <div class="tags-menu-header">
+                      <span>Selecciona una o más opciones:</span>
+                    </div>
+                    <div class="tags-menu-list">
+                      <div class="tag-menu-option" data-tag="Devocional">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Devocional</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Litúrgico">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Litúrgico</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Alabanza">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Alabanza</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Meditación">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Meditación</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Adoración">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Adoración</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Comunión">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Comunión</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Pascua">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Pascua</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Cuaresma">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Cuaresma</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Navidad">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Navidad</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Mariano">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Mariano</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Salida y Envío">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Salida y Envío</span>
+                      </div>
+                      <div class="tag-menu-option" data-tag="Penitencial">
+                        <div class="tag-checkbox-indicator"><i data-lucide="check" class="check-mark-icon"></i></div>
+                        <span class="tag-label">Penitencial</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1359,7 +1530,7 @@
                     <span class="icon-underline">U</span>
                   </button>
                   <button type="button" id="btnWordChordsWrap" class="toolbar-btn" title="Envolver en corchetes [Acorde]">
-                    <span>[ ]</span>
+                    <span class="chords-bracket-label">[&thinsp;]</span>
                   </button>
 
                   <span class="toolbar-divider"></span>
@@ -1378,14 +1549,16 @@
 
                   <div class="toolbar-divider"></div>
 
-                  <!-- Controles de tamaño de letra estilizados con el resto de la barra (Aa, etc.) -->
-                  <button type="button" id="btnLyricZoomOut" class="toolbar-btn" title="Reducir tamaño de letra">
-                    <span>A-</span>
-                  </button>
-                  <span id="editorFontSizeBadge" class="toolbar-font-indicator" title="Tamaño actual">12px</span>
-                  <button type="button" id="btnLyricZoomIn" class="toolbar-btn" title="Aumentar tamaño de letra">
-                    <span>A+</span>
-                  </button>
+                  <!-- Controles de tamaño de letra planos, sin cajas ni bordes, integrados con la barra -->
+                  <div class="font-size-group" id="fontSizeControlGroup">
+                    <button type="button" id="btnLyricZoomOut" class="toolbar-btn" title="Reducir tamaño de letra">
+                      <span>A-</span>
+                    </button>
+                    <span id="editorFontSizeBadge" class="toolbar-font-indicator" title="Tamaño actual">13px</span>
+                    <button type="button" id="btnLyricZoomIn" class="toolbar-btn" title="Aumentar tamaño de letra">
+                      <span>A+</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="modern-toolbar-right">
@@ -1395,21 +1568,16 @@
                 </div>
               </div>
 
-              <!-- Área de escritura sin texto de ejemplo -->
+              <!-- Área de escritura con formato visual en vivo sin códigos de texto -->
               <div id="editorWriteTabContent" class="modern-pane active">
-                <textarea id="editorSongLyrics" class="modern-lyrics-textarea" spellcheck="false" placeholder="Escribe aquí la letra con los acordes encima de cada palabra."></textarea>
+                <div id="editorSongLyrics" class="modern-lyrics-textarea" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" placeholder="Escribe aquí la letra con los acordes encima de cada palabra."></div>
               </div>
 
-              <!-- Vista previa de acordes -->
+              <!-- Vista previa de acordes (solo cuántos acordes han sido detectados encimita y luego la letra) -->
               <div id="editorPreviewTabContent" class="modern-pane" style="display: none;">
                 <div class="modern-preview-container">
-                  <div class="modern-preview-info">
-                    <h3 id="previewSongTitle" class="preview-title">Título</h3>
-                    <p id="previewSongAuthor" class="preview-author">Autor</p>
-                    <div class="preview-chips-row">
-                      <span id="previewSongCategory" class="preview-chip">Entrada</span>
-                      <span id="previewChordsCount" class="preview-chip chords-chip">0 acordes detectados</span>
-                    </div>
+                  <div class="preview-chords-badge-wrap">
+                    <span id="previewChordsCount" class="preview-chip chords-chip">0 acordes detectados</span>
                   </div>
                   <div class="modern-preview-body">
                     <pre id="previewSongBody" class="preview-rendered-lyrics"></pre>
@@ -1421,26 +1589,31 @@
         </div>
 
         <!-- ==========================================
-             PASO 3: REFERENCIA MUSICAL
+             PASO 3: DOS SECCIONES TOTALMENTE INDEPENDIENTES
+             Sección 1: Referencia musical (Audio / YouTube)
+             Sección 2: Foto de portada (opcional)
              ========================================== -->
         <div id="editorStep3" class="editor-step-pane">
-          <div class="mobile-step-title-block">
-            <h3 class="mobile-step-title">Referencia musical</h3>
-            <p class="mobile-step-desc">Agrega un audio o un enlace de YouTube.</p>
-          </div>
+          
+          <!-- SECCIÓN 1: REFERENCIA MUSICAL -->
+          <div class="distinct-section-block">
+            <div class="distinct-section-header">
+              <h3 class="distinct-section-title">
+                <i data-lucide="music-2" class="field-label-icon"></i>
+                <span>Referencia musical</span>
+              </h3>
+              <p class="distinct-section-desc">Audio grabado o enlace de YouTube para aprender o ensayar el canto.</p>
+            </div>
 
-          <div class="modern-editor-section">
-            <div class="modern-section-heading-row" style="margin-bottom: 12px;">
-              <div class="modern-media-nav" style="width: 100%; display: flex; gap: 8px;">
-                <button type="button" id="btnMediaOptionAudio" class="modern-media-tab-btn active" style="flex: 1;">
-                  <i data-lucide="music-2"></i>
-                  <span>Audio</span>
-                </button>
-                <button type="button" id="btnMediaOptionYoutube" class="modern-media-tab-btn" style="flex: 1;">
-                  <i data-lucide="youtube"></i>
-                  <span>YouTube</span>
-                </button>
-              </div>
+            <div class="modern-media-nav">
+              <button type="button" id="btnMediaOptionAudio" class="modern-media-tab-btn active">
+                <i data-lucide="music-2"></i>
+                <span>Audio</span>
+              </button>
+              <button type="button" id="btnMediaOptionYoutube" class="modern-media-tab-btn">
+                <i data-lucide="youtube"></i>
+                <span>YouTube</span>
+              </button>
             </div>
 
             <div class="modern-media-content">
@@ -1449,18 +1622,18 @@
                 <input type="file" id="songAudioFileInput" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg" style="display: none;">
                 <input type="hidden" id="editorSongAudio" value="">
 
-                <!-- Barra de Audio Compacta, estilizada y equilibrada -->
-                <div id="audioEmptyState" class="modern-audio-compact-bar" role="button" tabindex="0" title="Haz clic o arrastra un archivo de audio">
-                  <div class="compact-upload-left">
-                    <div class="compact-upload-icon-box">
+                <!-- Tarjeta sólida de audio sin líneas punteadas -->
+                <div id="audioEmptyState" class="solid-upload-card" role="button" tabindex="0" title="Haz clic para seleccionar archivo de audio">
+                  <div class="solid-upload-left">
+                    <div class="solid-upload-icon-box">
                       <i data-lucide="upload-cloud"></i>
                     </div>
-                    <div class="compact-upload-text">
-                      <span class="compact-upload-main"><strong>Subir archivo de audio</strong></span>
-                      <span class="compact-upload-sub">(MP3, WAV, M4A &bull; Máx. 10 MB)</span>
+                    <div class="solid-upload-text">
+                      <span class="solid-upload-main">Subir archivo de audio</span>
+                      <span class="solid-upload-sub">MP3, WAV, M4A &bull; Máx. 10 MB</span>
                     </div>
                   </div>
-                  <span class="compact-upload-badge">Seleccionar archivo</span>
+                  <span class="solid-upload-btn">Seleccionar archivo</span>
                 </div>
 
                 <!-- Subiendo audio -->
@@ -1497,49 +1670,54 @@
                 </div>
               </div>
             </div>
+          </div>
 
-            <!-- Foto de Portada de la Canción (Paso 3) -->
-            <div class="modern-cover-upload-section" style="margin-top: 18px;">
-              <div class="cover-section-header" style="margin-bottom: 8px;">
-                <label class="modern-form-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                  <i data-lucide="image" class="field-label-icon"></i>
-                  <span>Foto de portada</span> <span class="text-optional">(opcional)</span>
-                </label>
-                <p class="cover-section-desc" style="font-size: 0.82rem; color: #94a3b8; margin: 0;">Sube una imagen ilustrativa o déjala vacía para usar el icono musical automático.</p>
-              </div>
+          <!-- SEPARADOR VISUAL LIMPIO Y CLARO ENTRE AMBAS SECCIONES -->
+          <div class="distinct-sections-divider"></div>
 
-              <input type="file" id="songCoverFileInput" accept="image/*,.jpg,.jpeg,.png,.webp" style="display: none;">
-              <input type="hidden" id="editorSongCover" value="">
+          <!-- SECCIÓN 2: FOTO DE PORTADA (TOTALMENTE INDEPENDIENTE) -->
+          <div class="distinct-section-block">
+            <div class="distinct-section-header">
+              <h3 class="distinct-section-title">
+                <i data-lucide="image" class="field-label-icon"></i>
+                <span>Foto de portada</span>
+                <span class="text-optional">(opcional)</span>
+              </h3>
+              <p class="distinct-section-desc">Imagen ilustrativa para el repertorio. Si no subes una, se usa el icono musical automático.</p>
+            </div>
 
-              <!-- Estado vacío para seleccionar portada -->
-              <div id="coverEmptyState" class="modern-audio-compact-bar modern-cover-compact-bar" role="button" tabindex="0" title="Seleccionar foto de portada">
-                <div class="compact-upload-left">
-                  <div class="compact-upload-icon-box cover-icon-box">
-                    <i data-lucide="image-plus"></i>
-                  </div>
-                  <div class="compact-upload-text">
-                    <span class="compact-upload-main"><strong>Subir foto de portada</strong></span>
-                    <span class="compact-upload-sub">(JPG, PNG, WebP &bull; Máx. 5 MB)</span>
-                  </div>
+            <input type="file" id="songCoverFileInput" accept="image/*,.jpg,.jpeg,.png,.webp" style="display: none;">
+            <input type="hidden" id="editorSongCover" value="">
+
+            <!-- Tarjeta sólida de portada sin líneas punteadas -->
+            <div id="coverEmptyState" class="solid-upload-card" role="button" tabindex="0" title="Seleccionar foto de portada">
+              <div class="solid-upload-left">
+                <div class="solid-upload-icon-box cover-box">
+                  <i data-lucide="image"></i>
                 </div>
-                <span class="compact-upload-badge">Seleccionar archivo</span>
-              </div>
-
-              <!-- Estado con portada seleccionada -->
-              <div id="coverReadyState" class="modern-cover-ready-card" style="display: none;">
-                <div class="cover-ready-left">
-                  <img id="editorCoverPreviewImg" src="" alt="Portada" class="editor-cover-thumbnail">
-                  <div class="cover-ready-info">
-                    <span class="cover-ready-title">Portada lista</span>
-                    <span id="editorCoverFileName" class="cover-ready-filename">imagen.jpg</span>
-                  </div>
+                <div class="solid-upload-text">
+                  <span class="solid-upload-main">Subir foto de portada</span>
+                  <span class="solid-upload-sub">JPG, PNG, WebP &bull; Máx. 5 MB</span>
                 </div>
-                <button type="button" id="btnRemoveCoverFile" class="btn-remove-audio" title="Quitar portada">
-                  <i data-lucide="trash-2"></i>
-                </button>
               </div>
+              <span class="solid-upload-btn">Seleccionar archivo</span>
+            </div>
+
+            <!-- Estado con portada seleccionada -->
+            <div id="coverReadyState" class="modern-cover-ready-card" style="display: none;">
+              <div class="cover-ready-left">
+                <img id="editorCoverPreviewImg" src="" alt="Portada" class="editor-cover-thumbnail">
+                <div class="cover-ready-info">
+                  <span class="cover-ready-title">Portada lista</span>
+                  <span id="editorCoverFileName" class="cover-ready-filename">imagen.jpg</span>
+                </div>
+              </div>
+              <button type="button" id="btnRemoveCoverFile" class="btn-remove-audio" title="Quitar portada">
+                <i data-lucide="trash-2"></i>
+              </button>
             </div>
           </div>
+
         </div>
 
         <!-- ==========================================
@@ -1658,7 +1836,7 @@
           </button>
           <button type="button" id="btnDeleteCurrentCloudSong" class="btn-modern-danger" style="display: none;" title="Eliminar canción de la nube" aria-label="Eliminar canción">
             <i data-lucide="trash-2"></i>
-            <span>Eliminar</span>
+            <span>Eliminar canción</span>
           </button>
         </div>
         <div class="footer-right">
@@ -1676,7 +1854,7 @@
   </div>
 
   <!-- =========================================================
-       BOTTOM SHEET PARA MÓVIL: "AGREGAR NUEVA CANCIÓN"
+       8.5. MENÚ INFERIOR MÓVIL: ACCIONES DE CANCIÓN (NUEVA CANCIÓN / EDITAR)
   ========================================================== -->
   <div id="newSongBottomSheet" class="modal-overlay new-song-sheet-overlay">
     <div class="new-song-sheet-card">
@@ -1719,7 +1897,7 @@
   </div>
 
   <!-- =========================================================
-       MODAL EMERGENTE: AGREGAR CANCIONES AL REPERTORIO GUARDADO
+       8.6. MODAL PARA AGREGAR CANCIONES AL REPERTORIO GUARDADO
   ========================================================== -->
   <div id="popupAddSongsSavedModal" class="modal-overlay" style="display: none;">
     <div class="modal-content add-songs-saved-card">
@@ -1760,7 +1938,7 @@
   </div>
 
   <!-- =========================================================
-       MODAL DE SELECCIÓN: "CORREGIR O EDITAR CANCIÓN"
+       8.7. MODAL SELECTOR PARA ELEGIR CANCIÓN A MODIFICAR
   ========================================================== -->
   <div id="editSongSelectModal" class="modal-overlay edit-song-select-overlay">
     <div class="modal-content edit-song-select-card">
@@ -1782,7 +1960,7 @@
       <!-- Buscador rápido en vivo -->
       <div class="edit-song-search-wrap">
         <i data-lucide="search" class="edit-search-icon"></i>
-        <input type="text" id="inputFilterEditSong" class="modern-input" placeholder="Buscar canción por título, autor o categoría..." autocomplete="off">
+        <input type="text" id="inputFilterEditSong" class="modern-input" placeholder="Buscar por título, autor o letra..." autocomplete="off">
       </div>
 
       <!-- Lista dinámica de canciones -->
@@ -1793,10 +1971,10 @@
   </div>
 
   <!-- =========================================================
-       MODAL EMERGENTE DE AUTENTICACIÓN (LOGIN / SIGN UP POPUP)
+       8.8. MODAL DE AUTENTICACIÓN (INICIO DE SESIÓN / REGISTRO)
   ========================================================== -->
   <div id="authModal" class="modal-overlay auth-modal-overlay">
-    <div class="modal-content auth-split-card">
+    <div class="auth-split-card">
       <button id="closeAuthModal" class="close-modal auth-modal-close" aria-label="Cerrar">&times;</button>
       
       <!-- HERO PANEL IZQUIERDO (Visible en PC/Laptop/Tablet) -->
@@ -1945,7 +2123,9 @@
     </div>
   </div>
 
-  <!-- Modal de Feedback -->
+  <!-- =========================================================
+       8.9. MODAL DE MENSAJES Y SUGERENCIAS AL CORO
+  ========================================================== -->
   <div id="feedbackModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -1987,7 +2167,9 @@
     </div>
   </div>
 
-  <!-- Modal de Compartir Repertorio -->
+  <!-- =========================================================
+       8.10. MODAL PARA COMPARTIR REPERTORIO POR ENLACE O CÓDIGO
+  ========================================================== -->
   <div id="shareModal" class="modal-overlay share-modal-overlay">
     <div class="modal-content share-modal-content" style="max-width: 440px;">
       <div class="modal-header share-modal-header">
@@ -2089,7 +2271,12 @@
   </div>
 
   <!-- =========================================================
-       BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES (BOTTOM NAV)
+       9. BARRA DE NAVEGACIÓN INFERIOR PARA TELÉFONOS MÓVILES
+       - Desglose de botones:
+         * Botón Inicio (Catálogo principal)
+         * Botón Índice (Ritos y abecedario)
+         * Botón Repertorio (Cantos activos y guardados)
+         * Botón Ajustes (Configuración y perfil)
   ========================================================== -->
   <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Navegación inferior">
     <button type="button" id="btnBottomNavInicio" class="bottom-nav-item active" title="Inicio" aria-label="Inicio">
@@ -2110,7 +2297,7 @@
     </button>
   </nav>
 
-  <!-- Modal Guía de Instalación en iOS (iPhone / iPad) -->
+  <!-- 8.11. Modal de Guía de Instalación en iOS (iPhone / iPad) -->
   <div id="iosInstallGuideModal" class="popup-overlay" style="display: none;">
     <div class="popup-content ios-install-card">
       <button type="button" id="btnCloseIosGuide" class="popup-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
@@ -2129,15 +2316,116 @@
     </div>
   </div>
 
-  <!-- Indicador de Modo Sin Conexión (Offline Toast) -->
+  <!-- Indicador flotante de modo sin conexión a internet (Offline Toast) -->
   <div id="offlineIndicatorBadge" class="offline-toast-indicator" style="display: none;">
     <span class="offline-pulse-dot"></span>
     <span class="offline-toast-text">Modo sin internet — Canciones y tonos disponibles offline</span>
   </div>
 
-  <!-- Lucide Icons CDN -->
+  <!-- Input oculto para subir fotos de portada -->
+  <input type="file" id="inputHeaderCoverFile" accept="image/*" style="display: none;">
+
+  <!-- =========================================================
+       8.12. MODAL PARA PERSONALIZAR PORTADAS HERO Y LEMAS LITÚRGICOS
+  ========================================================== -->
+  <div id="modalHeaderCustomizer" class="modal-overlay cover-customizer-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="headerCustomizerTitle">
+    <div class="cover-customizer-card">
+      
+      <!-- Cabecera limpia -->
+      <div class="cover-modal-header">
+        <div class="cover-modal-header-info">
+          <h2 id="headerCustomizerTitle" class="cover-modal-title">Editar Portada de Inicio</h2>
+          <p id="coverModalSubtitle" class="cover-modal-sub">Ajusta la foto y el lema litúrgico de la pantalla principal</p>
+        </div>
+        <button type="button" id="btnCloseHeaderCustomizer" class="cover-modal-close" aria-label="Cerrar">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Selector de simulación PC vs Móvil -->
+      <div class="cover-preview-toolbar">
+        <span class="cover-preview-label">Simular visualización:</span>
+        <div class="cover-view-pills">
+          <button type="button" id="btnPreviewModePC" class="cover-pill-btn active">
+            <i data-lucide="monitor"></i>
+            <span>Computadora (PC)</span>
+          </button>
+          <button type="button" id="btnPreviewModeMobile" class="cover-pill-btn">
+            <i data-lucide="smartphone"></i>
+            <span>Celular</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Marco de previsualización réplica exacta y proporcional (sin marcos ni cajas anidadas) -->
+      <div class="cover-preview-viewport mode-pc" id="coverPreviewViewport">
+        <div class="cover-preview-hero" id="coverPreviewHero">
+          <img id="customizerCoverPreviewImg" class="cover-preview-img" src="Principal/Santuario.png" alt="Vista previa de portada">
+          <div class="cover-preview-content">
+            <div class="cover-preview-branding">
+              <div class="cover-preview-title" id="replicaHeroTitle">CANCIONERO <span class="highlight-red">DIGITAL</span></div>
+              <div class="cover-preview-subtitle" id="replicaHeroSubtitle">Coro Juvenil Salesiano Vox Dei</div>
+              <div class="cover-preview-line"></div>
+            </div>
+            <div class="cover-preview-quote-box">
+              <p class="cover-preview-quote" id="replicaHeroQuote">“La música también<br>es una forma de orar”</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Control de encuadre vertical (deslizador directo sin cajas alrededor) -->
+      <div class="cover-framing-row">
+        <div class="cover-framing-meta">
+          <label for="coverPositionSlider" class="cover-framing-label">
+            <i data-lucide="move-vertical"></i>
+            <span>Encuadre vertical en PC</span>
+          </label>
+          <span id="framingPercentLabel" class="cover-framing-val">Centro (50%)</span>
+        </div>
+        <input type="range" id="coverPositionSlider" min="0" max="100" value="50" step="1" class="cover-framing-slider" aria-label="Encuadre vertical de portada">
+      </div>
+
+      <!-- Botones directos de subir foto y restablecer -->
+      <div class="cover-image-actions">
+        <button type="button" id="btnCustomizerUploadFile" class="btn-cover-upload">
+          <i data-lucide="upload"></i>
+          <span>Subir nueva foto</span>
+        </button>
+        <button type="button" id="btnCustomizerResetCover" class="btn-cover-reset">
+          <i data-lucide="rotate-ccw"></i>
+          <span>Restablecer original</span>
+        </button>
+      </div>
+
+      <!-- Campo de Frase o Lema litúrgico (edición directa con actualización en vivo) -->
+      <div class="cover-quote-group">
+        <label for="inputWizardCurrentQuote" class="cover-field-label">
+          Frase o lema litúrgico <span class="cover-field-hint">(puedes usar Enter para dividir en 2 líneas)</span>
+        </label>
+        <textarea id="inputWizardCurrentQuote" class="cover-quote-input" rows="2" placeholder="Escribe la frase litúrgica aquí..."></textarea>
+      </div>
+
+      <!-- Pie del modal: Guardar y Cancelar -->
+      <div class="cover-modal-footer">
+        <button type="button" id="btnCancelHeaderCustomizer" class="btn-cover-cancel">Cancelar</button>
+        <button type="button" id="btnSaveHeaderCustomizer" class="btn-cover-save">
+          <i data-lucide="check"></i>
+          <span>Guardar cambios</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================
+       10. SCRIPTS Y MÓDULOS DE LA APLICACIÓN
+       - Lucide Icons (Iconografía SVG)
+       - Principal.js (Motor de la aplicación pública)
+       - admin.js (Módulo CMS y administración)
+  ========================================================== -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script type="module" src="Principal.js?v=4.0"></script>
+  <script type="module" src="Principal.js?v=5.7"></script>
+  <script type="module" src="admin.js?v=5.7"></script>
 </body>
 </html>
-
