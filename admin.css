@@ -2912,20 +2912,13 @@ body.light-mode .modern-lyrics-textarea[contenteditable="true"]:empty:before {
    donde se gestiona el rol de editor, alternancia de modo edición y lista de co-directores.
    ========================================================================== */
 
-.profile-admin-panel {
-  margin-top: 20px;
-  padding: 20px 22px;
-  border-radius: 16px;
-  background: rgba(220, 38, 38, 0.05);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.profile-command-bar {
+  /* Estilos centralizados en Principal.css */
 }
 
 .admin-panel-top-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
@@ -2937,71 +2930,114 @@ body.light-mode .modern-lyrics-textarea[contenteditable="true"]:empty:before {
   gap: 4px;
 }
 
+.admin-role-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .admin-crown-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(165, 30, 23, 0.25);
-  color: #f87171;
-  border: 1px solid rgba(165, 30, 23, 0.45);
+  gap: 8px;
+  background: rgba(165, 30, 23, 0.12);
+  color: #fda4af;
+  border: 1px solid rgba(165, 30, 23, 0.3);
   padding: 6px 14px;
-  border-radius: 50px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
+}
+
+body.light-mode .admin-crown-badge {
+  background: #fef2f2;
+  color: #a51e17;
+  border-color: #fecaca;
 }
 
 .admin-crown-badge i,
 .admin-crown-badge svg {
   width: 16px;
   height: 16px;
-  color: #fbbf24;
+  color: #f87171;
 }
 
-.admin-panel-description {
-  margin: 4px 0 0 0;
-  font-size: 0.84rem;
+body.light-mode .admin-crown-badge i,
+body.light-mode .admin-crown-badge svg {
+  color: #a51e17;
+}
+
+.admin-role-subtitle {
+  font-size: 0.86rem;
   color: #94a3b8;
+  font-weight: 500;
+}
+
+body.light-mode .admin-role-subtitle {
+  color: #64748b;
 }
 
 .admin-mode-toggle-box {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .admin-mode-label {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: #94a3b8;
   font-weight: 500;
+}
+
+body.light-mode .admin-mode-label {
+  color: #64748b;
 }
 
 .btn-toggle-editor-mode {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border-radius: 10px;
+  padding: 9px 18px;
+  border-radius: 12px;
   font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-toggle-editor-mode.mode-editor-on {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.14);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .btn-toggle-editor-mode.mode-editor-on:hover {
-  background: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.24);
+  transform: translateY(-1px);
+}
+
+body.light-mode .btn-toggle-editor-mode.mode-editor-on {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+body.light-mode .btn-toggle-editor-mode.mode-editor-on:hover {
+  background: #d1fae5;
 }
 
 .btn-toggle-editor-mode.mode-singer-on {
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(59, 130, 246, 0.14);
   color: #60a5fa;
   border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+body.light-mode .btn-toggle-editor-mode.mode-singer-on {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
 }
 
 .btn-toggle-editor-mode i,
@@ -3013,49 +3049,81 @@ body.light-mode .modern-lyrics-textarea[contenteditable="true"]:empty:before {
 .admin-actions-bar-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
 .btn-admin-cta-primary {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #a51e17, #881337);
+  gap: 9px;
+  background: #a51e17;
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  padding: 10px 18px;
-  font-size: 0.88rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(165, 30, 23, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(165, 30, 23, 0.35);
 }
 
 .btn-admin-cta-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(165, 30, 23, 0.5);
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(165, 30, 23, 0.5);
+}
+
+.btn-admin-cta-primary i,
+.btn-admin-cta-primary svg {
+  width: 18px;
+  height: 18px;
 }
 
 .btn-admin-cta-secondary {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  gap: 9px;
+  background: rgba(255, 255, 255, 0.05);
   color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 0.88rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-admin-cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.btn-admin-cta-secondary i,
+.btn-admin-cta-secondary svg {
+  width: 18px;
+  height: 18px;
+  color: #fda4af;
+}
+
+body.light-mode .btn-admin-cta-secondary {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .btn-admin-cta-secondary:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  transform: translateY(-2px);
+}
+
+body.light-mode .btn-admin-cta-secondary i,
+body.light-mode .btn-admin-cta-secondary svg {
+  color: #a51e17;
 }
 
 .admin-only-setting-item {
@@ -4086,10 +4154,6 @@ body.light-mode .btn-cover-cancel:hover {
   color: #0f172a;
 }
 
-body.light-mode .profile-admin-panel {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
 
 body.light-mode .drawer-header h4 {
   color: #0f172a;
