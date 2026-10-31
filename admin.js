@@ -173,7 +173,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.c
     const btnFloatingAddSong = document.getElementById("btnFloatingAddSong");
 
     if (profileAdminPanel) {
-      profileAdminPanel.style.display = isEditor ? "block" : "none";
+      profileAdminPanel.style.display = isEditor ? "flex" : "none";
     }
 
     const showEditorTools = isEditor && (currentMode === "editor");
@@ -213,14 +213,17 @@ import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.c
     if (btnAdminCustomHeaders) btnAdminCustomHeaders.style.display = isEditor ? "inline-flex" : "none";
 
     if (btnToggleEditorMode) {
+      const textEditorModeMobile = document.getElementById("textEditorModeMobile");
       if (currentMode === "editor") {
-        btnToggleEditorMode.className = "btn-toggle-editor-mode mode-editor-on";
+        btnToggleEditorMode.className = "btn-spotify-toggle btn-toggle-editor-mode mode-editor-on";
         if (iconEditorMode) iconEditorMode.setAttribute("data-lucide", "pen-tool");
         if (textEditorMode) textEditorMode.textContent = "Modo Editor (Activo)";
+        if (textEditorModeMobile) textEditorModeMobile.textContent = "Modo Editor";
       } else {
-        btnToggleEditorMode.className = "btn-toggle-editor-mode mode-singer-on";
+        btnToggleEditorMode.className = "btn-spotify-toggle btn-toggle-editor-mode mode-singer-on";
         if (iconEditorMode) iconEditorMode.setAttribute("data-lucide", "eye");
         if (textEditorMode) textEditorMode.textContent = "Modo Cantante (Activo)";
+        if (textEditorModeMobile) textEditorModeMobile.textContent = "Modo Cantante";
       }
     }
 
