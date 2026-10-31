@@ -25,8 +25,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&family=Poppins:wght@400;600&family=Raleway:wght@700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="Principal.css?v=5.3">
-  <link rel="stylesheet" href="admin.css?v=5.3">
+  <link rel="stylesheet" href="Principal.css?v=25.0">
+  <link rel="stylesheet" href="admin.css?v=25.0">
   <!-- Librería para convertir HTML a Imagen -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
   <!-- Librería para Arrastrar y Soltar (SortableJS) -->
@@ -611,227 +611,162 @@
          * 5.2. Panel de administración y control de editores (Exclusivo Administrador)
          * 5.3. Ajustes de la cuenta y opciones de cierre de sesión
   ========================================================== -->
-  <div id="view-profile" class="page-view" style="display:none;">
+  <div id="view-profile" class="page-view spotify-profile-view" style="display:none;">
     
-    <!-- ESTADO LOGGED IN: HERO Y DASHBOARD DE MÚSICO -->
-    <div id="authLoggedInContent" style="display: none;" class="profile-dashboard-wrapper">
-      
-      <!-- Hero Banner del Perfil -->
-      <section class="profile-hero-card">
-        <div class="profile-hero-bg-waves"></div>
-        <div class="profile-hero-inner">
-          <div class="profile-hero-left">
-            <div id="profileAvatarCircle" class="profile-avatar-main" style="position: relative;">
-              <img id="profileAvatarImg" src="" class="profile-avatar-img" style="display: none;" alt="Foto de perfil">
-              <span id="profileAvatarInitials">U</span>
-              <button type="button" id="btnQuickChangePhoto" class="profile-avatar-edit-badge" title="Cambiar foto de perfil">
-                <i data-lucide="camera"></i>
+    <!-- ESTADO LOGGED IN: SPOTIFY ARTIST STAGE (UNA SOLA COLUMNA) -->
+    <div id="authLoggedInContent" style="display: none;" class="spotify-container">
+      <main class="content spotify-main-content">
+
+        <!-- VISTA PRINCIPAL (UNA SOLA COLUMNA) -->
+        <div id="profileCardOverview" class="spotify-stack">
+
+          <!-- ================= 1. CABECERA DE ESCENARIO (HERO) ================= -->
+          <div class="spotify-hero">
+            <div class="spotify-hero-body">
+              
+              <!-- Avatar del Músico con botón de Lápiz exclusivo para móvil -->
+              <div class="spotify-avatar-wrap">
+                <div id="profileAvatarCircle" class="spotify-avatar">
+                  <img id="profileAvatarImg" src="" style="display: none;" alt="Foto de perfil">
+                  <span id="profileAvatarInitials">U</span>
+                </div>
+                <button type="button" id="btnEditProfileMobile" class="spotify-avatar-badge" title="Editar Perfil" aria-label="Editar Perfil">
+                  <i data-lucide="pencil"></i>
+                </button>
+              </div>
+
+              <!-- Información Principal del Músico -->
+              <div class="spotify-hero-info">
+                <div id="profileRoleLine" class="spotify-role-line">
+                  <span id="profileRoleBadge">Director / Administrador Maestro</span>
+                  <span id="profileVerifiedBadge" class="verified-badge" title="Verificado Oficial">
+                    <i data-lucide="badge-check"></i>
+                  </span>
+                </div>
+
+                <h1 id="profileGreeting" class="spotify-name">¡HOLA!</h1>
+
+                <div class="spotify-meta-line">
+                  <span id="profileSubRoleGroup">Coro Juvenil Salesiano Vox Dei</span>
+                  <span class="spotify-sep">•</span>
+                  <span id="profileUserEmail">jhonbastidas2805@gmail.com</span>
+                </div>
+
+                <!-- Métricas de actividad -->
+                <div class="spotify-stats-line">
+                  <span><strong id="profileActiveRepSongsCount">0</strong> cantos en repertorio activo</span>
+                  <span class="spotify-sep">•</span>
+                  <span><strong id="profileSavedRepsCount">0</strong> repertorios guardados</span>
+                </div>
+              </div>
+
+              <!-- Botón Editar Perfil en PC (a la derecha de la franja) -->
+              <div class="spotify-hero-action">
+                <button type="button" id="btnEditProfile" class="btn-spotify-outline btn-edit-profile-hero" title="Editar información personal" aria-label="Editar información personal">
+                  <i data-lucide="pencil"></i>
+                  <span>Editar Perfil</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ================= 2. BARRA DE ACCIONES (SIN FONDO, SEPARADA) ================= -->
+          <div class="spotify-actions-standalone">
+            <div id="profileAdminPanel" class="spotify-actions-bar">
+              <button type="button" id="btnAdminCreateSong" class="btn-spotify-solid" title="Crear Canción" aria-label="Crear Canción">
+                <i data-lucide="plus"></i>
+                <span class="btn-text-full">Crear Nueva Canción</span>
+                <span class="btn-text-mobile">Crear canción</span>
+              </button>
+              <button type="button" id="btnAdminCustomHeaders" class="btn-spotify-outline" title="Personalizar Portadas" aria-label="Personalizar Portadas">
+                <i data-lucide="palette"></i>
+                <span class="btn-text-full">Portadas y Frases</span>
+                <span class="btn-text-mobile">Portadas</span>
+              </button>
+              <button type="button" id="btnToggleEditorMode" class="btn-spotify-toggle btn-toggle-editor-mode mode-editor-on" title="Cambiar modo de pantalla" aria-label="Cambiar modo de pantalla">
+                <i data-lucide="pen-tool" id="iconEditorMode"></i>
+                <span id="textEditorMode" class="btn-text-full">Modo Editor (Activo)</span>
+                <span id="textEditorModeMobile" class="btn-text-mobile">Modo Editor</span>
               </button>
             </div>
-            <div class="profile-hero-info">
-              <h1 id="profileGreeting" class="profile-greeting-title">¡Hola! 👋</h1>
-              <p id="profileSubRoleGroup" class="profile-sub-role">Músico del coro</p>
-              <div class="profile-email-row">
-                <i data-lucide="mail"></i>
-                <span id="profileUserEmail">Cargando...</span>
-              </div>
-              <div class="profile-badges-row">
-                <span class="profile-badge-pill role-pill"><i data-lucide="music" style="width: 14px; height: 14px;"></i> <span id="profileRoleBadge">Músico</span></span>
-                <span class="profile-badge-pill sync-pill"><i data-lucide="cloud" style="width: 14px; height: 14px;"></i> <span id="profileSyncBadge">Sincronizado en la nube</span></span>
-              </div>
-            </div>
           </div>
-          <div class="profile-hero-right">
-            <button id="btnEditProfile" type="button" class="btn-edit-profile-action">
-              <i data-lucide="edit-3"></i>
-              <span>Editar Perfil</span>
-            </button>
-          </div>
-        </div>
-      </section>
 
-      <main class="content profile-content-container">
-        
-        <!-- VISTA DE DETALLES DEL PERFIL -->
-        <div id="profileCardOverview">
-          
-          <!-- Fila de Estadísticas Dinámicas (3 métricas reales) -->
-          <div class="profile-stats-grid-3">
-            <div class="profile-stat-card">
-              <div class="stat-icon-wrapper red-icon"><i data-lucide="music-4"></i></div>
-              <div class="stat-meta">
-                <span id="profileActiveRepSongsCount" class="stat-val">0</span>
-                <span class="stat-tit">Canciones en Repertorio Activo</span>
-              </div>
-            </div>
+          <!-- ================= 2. FICHA / CREDENCIAL DEL MÚSICO ================= -->
+          <section class="spotify-section">
+            <h2 class="spotify-section-heading">Información del Músico</h2>
             
-            <div class="profile-stat-card">
-              <div class="stat-icon-wrapper red-icon"><i data-lucide="folder"></i></div>
-              <div class="stat-meta">
-                <span id="profileSavedRepsCount" class="stat-val">0</span>
-                <span class="stat-tit">Repertorios Guardados</span>
+            <div class="spotify-data-list">
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="church"></i> Parroquia</span>
+                <span id="profileParishVal" class="spotify-data-value">San Juan Bosco</span>
+              </div>
+
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="users"></i> Ministerio / Coro</span>
+                <span id="profileGroupVal" class="spotify-data-value">Coro Juvenil Vox Dei</span>
+              </div>
+
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="phone"></i> Teléfono / Celular</span>
+                <span id="profilePhoneVal" class="spotify-data-value">+51 999 123 456</span>
+              </div>
+
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="map-pin"></i> Ciudad / Ubicación</span>
+                <span id="profileCityVal" class="spotify-data-value">Lima, Perú</span>
+              </div>
+
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="calendar"></i> Fecha de Nacimiento</span>
+                <span id="profileDobVal" class="spotify-data-value">28 de mayo 2003</span>
+              </div>
+
+              <div class="spotify-data-row">
+                <span class="spotify-data-label"><i data-lucide="mail"></i> Correo Registrado</span>
+                <span id="profileEmailVal" class="spotify-data-value">jhonbastidas2805@gmail.com</span>
               </div>
             </div>
+          </section>
 
-            <div class="profile-stat-card sync-status-card">
-              <div class="stat-icon-wrapper green-icon"><i data-lucide="cloud"></i></div>
-              <div class="stat-meta">
-                <span id="profileSyncStatusVal" class="stat-val sync-text">Sincronizado</span>
-                <span class="stat-tit">En la nube</span>
-              </div>
-            </div>
-          </div>
+          <!-- ================= 3. AJUSTES Y CUENTA ================= -->
+          <section class="spotify-section">
+            <h2 class="spotify-section-heading">Cuenta y Preferencias</h2>
 
-          <!-- PANEL DE ADMINISTRADOR / EDITOR (Visible para el Editor / Administrador) -->
-          <div id="profileAdminPanel" class="profile-admin-panel" style="display: none;">
-            <div class="admin-panel-top-row">
-              <div class="admin-badge-col">
-                <span class="admin-crown-badge"><i data-lucide="shield-check"></i> Rol: Editor / Administrador Maestro</span>
-                <p class="admin-panel-description">Tienes permisos para crear, corregir y publicar cantos en la nube para todo el coro.</p>
-              </div>
-              <div class="admin-mode-toggle-box">
-                <span class="admin-mode-label">Modo de pantalla:</span>
-                <button type="button" id="btnToggleEditorMode" class="btn-toggle-editor-mode mode-editor-on">
-                  <i data-lucide="pen-tool" id="iconEditorMode"></i>
-                  <span id="textEditorMode">Modo Editor (Activo)</span>
-                </button>
-              </div>
-            </div>
-
-            <div class="admin-actions-bar-row">
-              <button type="button" id="btnAdminCreateSong" class="btn-admin-cta-primary">
-                <i data-lucide="plus-circle"></i>
-                <span>+ Crear y Publicar Nueva Canción</span>
+            <div class="spotify-menu-list">
+              <button type="button" id="btnProfileEditCovers" class="spotify-menu-item admin-only-setting-item">
+                <div class="spotify-menu-left">
+                  <i data-lucide="palette"></i>
+                  <span>Personalizar Portadas y Frases Litúrgicas</span>
+                </div>
+                <i data-lucide="chevron-right" class="spotify-chevron"></i>
               </button>
-              <button type="button" id="btnAdminCustomHeaders" class="btn-admin-cta-secondary">
-                <i data-lucide="image"></i>
-                <span>Personalizar Portadas y Frases</span>
+
+              <button type="button" id="btnProfileChangePass" class="spotify-menu-item">
+                <div class="spotify-menu-left">
+                  <i data-lucide="key"></i>
+                  <span>Cambiar Contraseña</span>
+                </div>
+                <i data-lucide="chevron-right" class="spotify-chevron"></i>
               </button>
-              <button type="button" id="btnToggleManageEditors" class="btn-admin-cta-secondary" style="display: none;">
-                <i data-lucide="user-plus"></i>
-                <span>Gestionar Editores</span>
+
+              <button type="button" id="btnProfileTheme" class="spotify-menu-item">
+                <div class="spotify-menu-left">
+                  <i data-lucide="sun-moon"></i>
+                  <span>Tema (Claro / Oscuro)</span>
+                </div>
+                <i data-lucide="chevron-right" class="spotify-chevron"></i>
+              </button>
+
+              <button type="button" id="btnLogout" class="spotify-menu-item spotify-menu-danger">
+                <div class="spotify-menu-left">
+                  <i data-lucide="log-out"></i>
+                  <span>Cerrar Sesión</span>
+                </div>
+                <i data-lucide="chevron-right" class="spotify-chevron"></i>
               </button>
             </div>
-
-            <!-- Desplegable para Gestionar Editores de Coro (Permite ceder el rol a otro encargado) -->
-            <div id="adminEditorsDrawer" class="admin-editors-drawer" style="display: none;">
-              <div class="drawer-header">
-                <h4><i data-lucide="users"></i> Editores Autorizados para Administrar el Cancionero</h4>
-                <p>Si dejas el coro o tienes un co-director, ingresa su correo para que también pueda crear y corregir canciones desde su celular.</p>
-              </div>
-              <div class="add-editor-form-row">
-                <input type="email" id="inputNewEditorEmail" class="input-editor-email" placeholder="ejemplo.nuevo.encargado@gmail.com">
-                <button type="button" id="btnAddEditorEmail" class="btn-submit-add-editor">
-                  <i data-lucide="check"></i> <span>Autorizar Editor</span>
-                </button>
-              </div>
-              <div id="editorsListContainer" class="editors-list-chips">
-                <!-- Se llena dinámicamente con los correos de los editores autorizados -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Estructura de Dos Columnas: Información Personal y Configuración -->
-          <div class="profile-two-columns">
-            
-            <!-- Columna Izquierda: Información personal -->
-            <div class="profile-info-section">
-              <div class="section-title-bar">
-                <h3 class="section-title"><i data-lucide="user"></i> Información personal</h3>
-              </div>
-
-              <div class="profile-details-cards-grid">
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="church"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">PARROQUIA</span>
-                    <strong id="profileParishVal" class="info-card-value">Sin especificar</strong>
-                  </div>
-                </div>
-
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="users"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">MINISTERIO / CORO</span>
-                    <strong id="profileGroupVal" class="info-card-value">Coro</strong>
-                  </div>
-                </div>
-
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="phone"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">TELÉFONO / CELULAR</span>
-                    <strong id="profilePhoneVal" class="info-card-value">Sin especificar</strong>
-                  </div>
-                </div>
-
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="map-pin"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">CIUDAD / UBICACIÓN</span>
-                    <strong id="profileCityVal" class="info-card-value">Sin especificar</strong>
-                  </div>
-                </div>
-
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="calendar"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">FECHA DE NACIMIENTO</span>
-                    <strong id="profileDobVal" class="info-card-value">Sin especificar</strong>
-                  </div>
-                </div>
-
-                <div class="info-card-item">
-                  <div class="info-card-icon"><i data-lucide="mail"></i></div>
-                  <div class="info-card-body">
-                    <span class="info-card-label">CORREO ELECTRÓNICO</span>
-                    <strong id="profileEmailVal" class="info-card-value">Sin correo</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Columna Derecha: Configuración -->
-            <div class="profile-settings-section">
-              <div class="section-title-bar">
-                <h3 class="section-title"><i data-lucide="settings"></i> Configuración</h3>
-              </div>
-
-              <div class="profile-settings-list">
-                <!-- Opción de Configuración: Editar portadas y frases -->
-                <button type="button" id="btnProfileEditCovers" class="settings-option-item admin-only-setting-item">
-                  <div class="settings-option-left">
-                    <i data-lucide="image"></i>
-                    <span>Editar portadas y frases</span>
-                  </div>
-                  <i data-lucide="chevron-right" class="settings-chevron"></i>
-                </button>
-                <button type="button" id="btnProfileChangePass" class="settings-option-item">
-                  <div class="settings-option-left">
-                    <i data-lucide="lock"></i>
-                    <span>Cambiar contraseña</span>
-                  </div>
-                  <i data-lucide="chevron-right" class="settings-chevron"></i>
-                </button>
-
-                <button type="button" id="btnProfileTheme" class="settings-option-item">
-                  <div class="settings-option-left">
-                    <i data-lucide="palette"></i>
-                    <span>Tema (Claro / Oscuro)</span>
-                  </div>
-                  <i data-lucide="chevron-right" class="settings-chevron"></i>
-                </button>
-
-                <button type="button" id="btnLogout" class="settings-option-item logout-option">
-                  <div class="settings-option-left">
-                    <i data-lucide="log-out"></i>
-                    <span class="logout-text">Cerrar sesión</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-          </div>
+          </section>
 
         </div>
 
@@ -888,15 +823,19 @@
               <div class="auth-field-group">
                 <label for="editProfileRole" class="auth-field-label">Rol / Voz Principal</label>
                 <select id="editProfileRole" class="auth-field-input auth-select">
-                  <option value="Músico">Músico</option>
-                  <option value="Director / Músico">Director / Músico</option>
+                  <option value="Director de Coro">Director de Coro</option>
+                  <option value="Coordinador de Coro">Coordinador de Coro</option>
+                  <option value="Corista">Corista</option>
                   <option value="Cantante / Solista">Cantante / Solista</option>
+                  <option value="Guitarrista">Guitarrista</option>
+                  <option value="Baterista / Percusionista">Baterista / Percusionista</option>
+                  <option value="Tecladista / Pianista">Tecladista / Pianista</option>
+                  <option value="Bajista">Bajista</option>
                   <option value="Soprano">Soprano</option>
                   <option value="Alto">Alto</option>
                   <option value="Tenor">Tenor</option>
-                  <option value="Bajo">Bajo</option>
-                  <option value="Guitarrista / Instrumentista">Guitarrista / Instrumentista</option>
-                  <option value="Corista">Corista</option>
+                  <option value="Bajo (Voz)">Bajo (Voz)</option>
+                  <option value="Músico">Músico</option>
                 </select>
               </div>
 
@@ -1181,10 +1120,10 @@
             </div>
             <!-- Opción Cuaderno de Ensayo y Notas (dentro del menú de herramientas) -->
             <div id="popupNotesWrapper" class="menu-item-container">
-              <button class="menu-fab" id="btnNotesFab" title="Cuaderno de Ensayo y Notas" aria-label="Cuaderno de Ensayo y Notas">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              <button class="menu-fab" id="btnNotesFab" title="Notas y Cuaderno de Ensayo" aria-label="Notas y Cuaderno de Ensayo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                  <path d="m15 5 4 4"/>
                 </svg>
                 <span id="notesBadgeDot" class="notes-badge-dot" style="display:none;" title="Anotaciones guardadas"></span>
               </button>
@@ -2425,7 +2364,7 @@
        - admin.js (Módulo CMS y administración)
   ========================================================== -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script type="module" src="Principal.js?v=5.7"></script>
-  <script type="module" src="admin.js?v=5.7"></script>
+  <script type="module" src="Principal.js?v=25.0"></script>
+  <script type="module" src="admin.js?v=25.0"></script>
 </body>
 </html>
