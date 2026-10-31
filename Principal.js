@@ -1863,13 +1863,13 @@ function filterByCategory(category) {
       const songCat = clean(song.dataset.category);
       return songCat === cleanTargetCat;
     });
-    // En categorías litúrgicas específicas ordenar por orden alfabético inteligente multinivel (Título -> Autor -> ID)
-    const currentSort = document.getElementById("sortSongsSelect")?.value || "recent";
-    if (currentSort === "recent") {
-      filteredSongs.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
-    } else if (typeof window.sortSongsByCurrentCriteria === "function") {
+
+    if (typeof window.sortSongsByCurrentCriteria === "function") {
       window.sortSongsByCurrentCriteria(filteredSongs);
+    } else {
+      filteredSongs.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
     }
+
     if (container) {
       filteredSongs.forEach(song => container.appendChild(song));
     }
@@ -5579,24 +5579,26 @@ onDomReady(() => {
     const activeRepSongsCountEl = document.getElementById("profileActiveRepSongsCount");
     const savedRepsCountEl = document.getElementById("profileSavedRepsCount");
 
-    const fullName = profile && profile.fullName ? profile.fullName.trim() : "";
+    const rawFullName = profile && profile.fullName ? profile.fullName.trim() : (user.displayName ? user.displayName.trim() : "");
     let firstName = "";
-    let displayGreeting = "¡Hola! 👋";
+    let displayGreeting = "¡HOLA!";
     let initials = "U";
 
-    if (fullName) {
-      const nameParts = fullName.split(" ").filter(Boolean);
+    if (rawFullName) {
+      const nameParts = rawFullName.split(" ").filter(Boolean);
       firstName = nameParts[0] || "";
-      displayGreeting = firstName ? `¡Hola, ${firstName}! 👋` : "¡Hola! 👋";
+      displayGreeting = firstName ? `¡HOLA, ${firstName.toUpperCase()}!` : "¡HOLA!";
       if (nameParts.length >= 2) {
         initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
       } else if (nameParts.length === 1) {
         initials = nameParts[0][0].toUpperCase();
       }
     } else if (user.email) {
-      const emailName = user.email.split("@")[0];
-      firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-      displayGreeting = `¡Hola, ${firstName}! 👋`;
+      const emailPrefix = user.email.split("@")[0];
+      // Eliminar números o símbolos al final para extraer el nombre limpio (ej. alexis98 -> Alexis, jhon2805 -> Jhon)
+      const cleanName = emailPrefix.replace(/[0-9._-]+.*$/, "") || emailPrefix;
+      firstName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+      displayGreeting = `¡HOLA, ${firstName.toUpperCase()}!`;
       initials = user.email.charAt(0).toUpperCase();
     }
 
@@ -5605,18 +5607,29 @@ onDomReady(() => {
 
     let userRole = (profile && profile.role) || "Músico";
     if (isMaster) {
-      userRole = "Editor / Administrador Maestro";
-      displayGreeting = `¡Hola, Jhon! 👋 (Director)`;
-    } else if (isEditor) {
+      userRole = "Director / Administrador Maestro";
+      displayGreeting = firstName ? `¡HOLA, ${firstName.toUpperCase()}!` : "¡HOLA!";
+    } else if (isEditor && !profile?.role) {
       userRole = "Editor Autorizado";
     }
 
-    const userGroup = (profile && profile.group) || "coro";
+    const userGroup = (profile && profile.group) || "Coro Juvenil Salesiano Vox Dei";
 
     if (greetingEl) greetingEl.textContent = displayGreeting;
-    if (subRoleEl) subRoleEl.textContent = isMaster ? "Director / Administrador Maestro" : (userGroup ? `${userRole} del ${userGroup}` : userRole);
+    if (subRoleEl) subRoleEl.textContent = userGroup;
     if (emailEl) emailEl.textContent = user.email || "Sin correo";
     if (roleBadgeEl) roleBadgeEl.textContent = userRole;
+
+    // Badge verificado estilo Instagram / TikTok solo para Directores, Administradores y Coordinadores
+    const verifiedBadgeEl = document.getElementById("profileVerifiedBadge");
+    const isVerifiedLeader = isMaster || isEditor || (userRole && (
+      userRole.toLowerCase().includes("director") ||
+      userRole.toLowerCase().includes("coordinador") ||
+      userRole.toLowerCase().includes("administrador")
+    ));
+    if (verifiedBadgeEl) {
+      verifiedBadgeEl.style.display = isVerifiedLeader ? "inline-flex" : "none";
+    }
 
     updateEditorModeUI(user);
 
@@ -5635,12 +5648,30 @@ onDomReady(() => {
       if (initialsEl) initialsEl.style.display = "none";
     }
 
-    if (parishValEl) parishValEl.textContent = (profile && profile.parish) || "Sin especificar";
-    if (groupValEl) groupValEl.textContent = (profile && profile.group) || "Coro";
-    if (phoneValEl) phoneValEl.textContent = (profile && profile.phone) || "Sin especificar";
-    if (cityValEl) cityValEl.textContent = (profile && profile.city) || "Sin especificar";
-    if (dobValEl) dobValEl.textContent = (profile && profile.dob) || "Sin especificar";
-    if (emailValEl) emailValEl.textContent = user.email || "Sin correo";
+    if (parishValEl) {
+      parishValEl.textContent = (profile && profile.parish) || "Sin especificar";
+      parishValEl.title = parishValEl.textContent;
+    }
+    if (groupValEl) {
+      groupValEl.textContent = (profile && profile.group) || "Coro";
+      groupValEl.title = groupValEl.textContent;
+    }
+    if (phoneValEl) {
+      phoneValEl.textContent = (profile && profile.phone) || "Sin especificar";
+      phoneValEl.title = phoneValEl.textContent;
+    }
+    if (cityValEl) {
+      cityValEl.textContent = (profile && profile.city) || "Sin especificar";
+      cityValEl.title = cityValEl.textContent;
+    }
+    if (dobValEl) {
+      dobValEl.textContent = (profile && profile.dob) || "Sin especificar";
+      dobValEl.title = dobValEl.textContent;
+    }
+    if (emailValEl) {
+      emailValEl.textContent = user.email || "Sin correo";
+      emailValEl.title = emailValEl.textContent;
+    }
 
     // Conteos Reales
     try {
@@ -5686,13 +5717,13 @@ onDomReady(() => {
     }
   };
 
-  // Botón rápido de cámara en el avatar
-  document.getElementById("btnQuickChangePhoto")?.addEventListener("click", () => {
-    const btnEdit = document.getElementById("btnEditProfile");
-    if (btnEdit) btnEdit.click();
-    setTimeout(() => {
-      document.getElementById("editProfilePhotoFile")?.click();
-    }, 150);
+  // Clic en el avatar o botón de lápiz móvil para editar perfil
+  document.getElementById("profileAvatarCircle")?.addEventListener("click", () => {
+    document.getElementById("btnEditProfile")?.click();
+  });
+  document.getElementById("btnEditProfileMobile")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.getElementById("btnEditProfile")?.click();
   });
 
   // Listener para selección de archivo de foto
@@ -5759,7 +5790,7 @@ onDomReady(() => {
 
   btnCancelEditProfile?.addEventListener("click", () => {
     if (profileCardEditor) profileCardEditor.style.display = "none";
-    if (profileCardOverview) profileCardOverview.style.display = "block";
+    if (profileCardOverview) profileCardOverview.style.display = "";
   });
 
   const handleSaveProfile = () => {
@@ -5789,7 +5820,7 @@ onDomReady(() => {
     renderUserProfile(user);
 
     if (profileCardEditor) profileCardEditor.style.display = "none";
-    if (profileCardOverview) profileCardOverview.style.display = "block";
+    if (profileCardOverview) profileCardOverview.style.display = "";
 
     if (typeof showToast === "function") showToast("¡Perfil actualizado exitosamente!", "success");
     if (window.lucide) window.lucide.createIcons();
@@ -6137,7 +6168,7 @@ onDomReady(() => {
     
     // Resetear formulario editor a vista principal
     if (profileCardEditor) profileCardEditor.style.display = "none";
-    if (profileCardOverview) profileCardOverview.style.display = "block";
+    if (profileCardOverview) profileCardOverview.style.display = "";
 
     if (window.lucide) window.lucide.createIcons();
     updateCommunityStats();
@@ -6305,39 +6336,67 @@ window.getSongTimestampScore = function(item) {
     return 9999999999999;
   }
 
-  const getRawVal = (obj) => {
-    if (!obj) return null;
-    return obj.createdAt || obj.timestamp || obj.updatedAt || null;
+  const parseVal = (raw) => {
+    if (!raw) return 0;
+    if (typeof raw === "number") return raw;
+    if (typeof raw === "object") {
+      if (typeof raw.toMillis === "function") return raw.toMillis();
+      if (typeof raw.toDate === "function") return raw.toDate().getTime();
+      if (typeof raw.seconds === "number") return raw.seconds * 1000;
+      if (typeof raw._seconds === "number") return raw._seconds * 1000;
+    }
+    if (typeof raw === "string") {
+      const num = Number(raw);
+      if (!isNaN(num) && num > 1000000000) return num;
+      const parsed = Date.parse(raw);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return 0;
   };
 
-  let raw = null;
-  if (item._songData) raw = getRawVal(item._songData);
-  if (!raw && item.dataset) raw = item.dataset.createdAt || item.dataset.updatedAt;
-  if (!raw) raw = getRawVal(item);
+  let score = 0;
+  if (item._songData) {
+    score = parseVal(item._songData.createdAt) || parseVal(item._songData.timestamp) || parseVal(item._songData.updatedAt);
+  }
+  if (!score && item.dataset) {
+    score = parseVal(item.dataset.createdAt) || parseVal(item.dataset.timestamp) || parseVal(item.dataset.updatedAt);
+  }
+  if (!score) {
+    score = parseVal(item.createdAt) || parseVal(item.timestamp) || parseVal(item.updatedAt);
+  }
 
-  if (!raw && Array.isArray(window.rawCatalogSongs)) {
+  if (!score && Array.isArray(window.rawCatalogSongs)) {
     const sId = item.dataset?.id || item.id;
     const match = window.rawCatalogSongs.find(s => (s.id && s.id === sId) || ((s.title || "").toLowerCase().trim() === title));
-    if (match) raw = getRawVal(match);
+    if (match) {
+      score = parseVal(match.createdAt) || parseVal(match.timestamp) || parseVal(match.updatedAt);
+    }
   }
 
-  if (raw) {
-    if (typeof raw === "object" && typeof raw.toMillis === "function") return raw.toMillis();
-    if (typeof raw === "object" && typeof raw.seconds === "number") return raw.seconds * 1000;
-    if (typeof raw === "number") return raw;
-    const parsed = Date.parse(raw);
-    if (!isNaN(parsed)) return parsed;
-  }
+  if (score > 0) return score;
 
-  if (typeof item._catalogIndex === "number") return item._catalogIndex;
-  if (item.dataset?.catalogIndex) return parseInt(item.dataset.catalogIndex);
+  if (typeof item._catalogIndex === "number" && item._catalogIndex > 0) return item._catalogIndex;
+  if (item.dataset?.catalogIndex) {
+    const cIdx = parseInt(item.dataset.catalogIndex);
+    if (!isNaN(cIdx) && cIdx > 0) return cIdx;
+  }
   return 0;
 };
 
 window.sortSongsByCurrentCriteria = function(list) {
   if (!Array.isArray(list) || list.length === 0) return;
   const select = document.getElementById("sortSongsSelect");
-  const val = select ? select.value : "recent";
+  let val = select ? select.value : "recent";
+  try {
+    const saved = localStorage.getItem("voxdei_song_sort_order");
+    if (saved) {
+      val = select ? select.value : saved;
+      if (select && select.value !== saved && !select.dataset.userChanged) {
+        select.value = saved;
+        val = saved;
+      }
+    }
+  } catch(e) {}
 
   const sortFn = (a, b) => {
     if (val === "recent") {
@@ -6779,9 +6838,22 @@ function createSongElement(song) {
   section.dataset.audio = song.audio || "";
   section.dataset.youtube = song.youtube || "";
   section.dataset.tags = song.tags || "";
-  section.dataset.cover = song.cover || song.coverUrl || "";
-  section.dataset.createdAt = song.createdAt || song.timestamp || song.updatedAt || "";
-  section.dataset.updatedAt = song.updatedAt || song.createdAt || "";
+  let ts = 0;
+  const rawTs = song.createdAt || song.timestamp || song.updatedAt;
+  if (rawTs) {
+    if (typeof rawTs === "number") ts = rawTs;
+    else if (typeof rawTs === "object") {
+      if (typeof rawTs.toMillis === "function") ts = rawTs.toMillis();
+      else if (typeof rawTs.toDate === "function") ts = rawTs.toDate().getTime();
+      else if (typeof rawTs.seconds === "number") ts = rawTs.seconds * 1000;
+    } else if (typeof rawTs === "string") {
+      const p = Date.parse(rawTs);
+      if (!isNaN(p)) ts = p;
+    }
+  }
+  section.dataset.createdAt = ts ? String(ts) : "";
+  section.dataset.timestamp = ts ? String(ts) : "";
+  section.dataset.updatedAt = song.updatedAt ? String(song.updatedAt) : "";
   section._songData = song;
 
   section.innerHTML = window.createSongRowHtml({
@@ -7137,21 +7209,36 @@ onDomReady(() => {
   });
 
   // Selector "Ordenar por" (Más recientes, A-Z, Z-A, Autor)
-  document.getElementById("sortSongsSelect")?.addEventListener("change", function() {
-    if (typeof window.sortSongsByCurrentCriteria === "function") {
-      window.sortSongsByCurrentCriteria(allSongs);
-      if (filteredSongs.length > 0) {
-        window.sortSongsByCurrentCriteria(filteredSongs);
+  const sortSelectEl = document.getElementById("sortSongsSelect");
+  if (sortSelectEl) {
+    try {
+      const savedSort = localStorage.getItem("voxdei_song_sort_order");
+      if (savedSort) {
+        sortSelectEl.value = savedSort;
       }
-    }
+    } catch(e) {}
 
-    const container = document.getElementById("songsContainer");
-    if (container) {
-      const activeList = filteredSongs.length > 0 ? filteredSongs : allSongs;
-      activeList.forEach(song => container.appendChild(song));
-    }
-    showPage(1);
-  });
+    sortSelectEl.addEventListener("change", function() {
+      this.dataset.userChanged = "true";
+      try {
+        localStorage.setItem("voxdei_song_sort_order", this.value);
+      } catch(e) {}
+
+      if (typeof window.sortSongsByCurrentCriteria === "function") {
+        window.sortSongsByCurrentCriteria(allSongs);
+        if (filteredSongs.length > 0) {
+          window.sortSongsByCurrentCriteria(filteredSongs);
+        }
+      }
+
+      const container = document.getElementById("songsContainer");
+      if (container) {
+        const activeList = filteredSongs.length > 0 ? filteredSongs : allSongs;
+        activeList.forEach(song => container.appendChild(song));
+      }
+      showPage(1);
+    });
+  }
 });
 
 /* ===============================
@@ -7737,7 +7824,7 @@ onDomReady(() => {
   };
 
   window.cerrarLetra = () => {
-    document.getElementById("popupLetra").classList.remove("active");
+    document.getElementById("popupLetra")?.classList.remove("active");
     clearTimeout(hideTimer);
     
     // Detener audio al cerrar el popup
@@ -7935,7 +8022,8 @@ onDomReady(() => {
         // Decidir si usar 2 columnas de forma inteligente y automática:
         // - Si está activado manualmente en pantalla.
         // - Si el volumen vertical es grande (> 28 líneas) para que quepa todo de forma compacta y elegante.
-        const isUserMultiColumn = document.getElementById("popupTexto").classList.contains("multi-column");
+        const popupTextoElem = document.getElementById("popupTexto");
+        const isUserMultiColumn = popupTextoElem?.classList?.contains("multi-column") || false;
         let use2Columns = isUserMultiColumn || (rawLinesCount > 28);
 
         const leftRightPadding = 120; // 60px izquierdo/derecho
@@ -7991,7 +8079,7 @@ onDomReady(() => {
             }
         }
 
-        const isSinAcordes = document.getElementById("popupTexto").classList.contains("sin-acordes");
+        const isSinAcordes = popupTextoElem?.classList?.contains("sin-acordes") || false;
 
         // Crear una envoltura invisible de tamaño cero con overflow: hidden para alojar la tarjeta de captura.
         // Esto resuelve de raíz los problemas donde las coordenadas negativas extremas o fuera de pantalla
@@ -8090,9 +8178,9 @@ onDomReady(() => {
   popupLetraEl?.addEventListener("touchstart", resetHideTimer, { passive: true });
 
   document.addEventListener("click", (e) => {
-    if (settingsMenu?.classList.contains("active") && !settingsWrapper.contains(e.target)) {
-      settingsMenu.classList.remove("active");
-      settingsBtn.classList.remove("active");
+    if (settingsMenu?.classList.contains("active") && !settingsWrapper?.contains(e.target)) {
+      settingsMenu?.classList.remove("active");
+      settingsBtn?.classList.remove("active");
       deactivateAllPanels();
       resetHideTimer();
     }
@@ -8157,7 +8245,19 @@ onDomReady(() => {
 
     setReadOnlyMode(false);
     hideAllPopovers();
-    popupSongNotesModal?.classList.add("active");
+
+    // Colapsar el menú de herramientas flotante
+    const settingsMenu = document.getElementById("popupSettingsMenu");
+    const settingsBtn = document.getElementById("popupSettingsBtn");
+    settingsMenu?.classList.remove("active");
+    settingsBtn?.classList.remove("active");
+
+    // Asegurar apertura al frente (por encima de la letra)
+    if (popupSongNotesModal) {
+      popupSongNotesModal.style.zIndex = "100000";
+      popupSongNotesModal.style.display = "flex";
+      popupSongNotesModal.classList.add("active");
+    }
     if (window.lucide) window.lucide.createIcons();
     setTimeout(() => {
       notesRichEditor?.focus();
@@ -8258,7 +8358,10 @@ onDomReady(() => {
   };
 
   const closeNotesModal = () => {
-    popupSongNotesModal?.classList.remove("active");
+    if (popupSongNotesModal) {
+      popupSongNotesModal.classList.remove("active");
+      popupSongNotesModal.style.display = "none";
+    }
     resetNotesMobileKeyboardLayout();
     hideAllPopovers();
     resetHideTimer();
@@ -9609,8 +9712,8 @@ onDomReady(() => {
   };
 
   document.addEventListener("click", e => {
-    const isCerrarBtn = e.target.matches(".popup-cerrar") || e.target.closest(".popup-cerrar");
-    const isOverlayBg = e.target.classList.contains("popup-overlay");
+    const isCerrarBtn = e.target?.matches?.(".popup-cerrar") || e.target?.closest?.(".popup-cerrar");
+    const isOverlayBg = e.target?.classList?.contains?.("popup-overlay");
     
     if (isCerrarBtn || isOverlayBg) {
       const closestOverlay = e.target.closest(".popup-overlay");
@@ -9650,19 +9753,23 @@ onDomReady(() => {
 
   function startFeedbackTimer() {
     clearTimeout(feedbackTimer);
+    if (!feedbackContainer) return;
     feedbackTimer = setTimeout(() => {
-      if (!feedbackContainer.classList.contains("collapsed")) {
+      if (feedbackContainer && !feedbackContainer.classList.contains("collapsed")) {
         feedbackContainer.classList.add("collapsed");
-        feedbackToggle.innerHTML = `<i data-lucide="chevron-left"></i>`;
+        if (feedbackToggle) feedbackToggle.innerHTML = `<i data-lucide="chevron-left"></i>`;
         if (window.lucide) window.lucide.createIcons();
       }
     }, 10000); // 10 segundos
   }
 
-  // Iniciar temporizador al cargar
-  startFeedbackTimer();
+  // Iniciar temporizador al cargar solo si el contenedor existe
+  if (feedbackContainer) {
+    startFeedbackTimer();
+  }
 
   feedbackToggle?.addEventListener("click", () => {
+    if (!feedbackContainer) return;
     const isCollapsed = feedbackContainer.classList.toggle("collapsed");
     feedbackToggle.innerHTML = isCollapsed ? 
       `<i data-lucide="chevron-left"></i>` : 
@@ -9683,13 +9790,13 @@ onDomReady(() => {
     const isPopupVisible = document.getElementById("popupLetra")?.classList.contains("active");
     
     if (isPopupVisible && currentSongTitle) {
-      fbType.value = "Corrección";
-      fbSongGroup.style.display = "block";
-      fbSongInput.value = currentSongTitle;
+      if (fbType) fbType.value = "Corrección";
+      if (fbSongGroup) fbSongGroup.style.display = "block";
+      if (fbSongInput) fbSongInput.value = currentSongTitle;
     } else {
-      fbType.value = "Sugerencia";
-      fbSongGroup.style.display = "none";
-      fbSongInput.value = "";
+      if (fbType) fbType.value = "Sugerencia";
+      if (fbSongGroup) fbSongGroup.style.display = "none";
+      if (fbSongInput) fbSongInput.value = "";
     }
   });
 
@@ -9699,12 +9806,12 @@ onDomReady(() => {
 
   feedbackModal?.addEventListener("click", (e) => {
     if (e.target === feedbackModal) {
-      feedbackModal.classList.remove("active");
+      feedbackModal?.classList.remove("active");
     }
   });
 
   fbType?.addEventListener("change", () => {
-    fbSongGroup.style.display = fbType.value === "Corrección" ? "block" : "none";
+    if (fbSongGroup && fbType) fbSongGroup.style.display = fbType.value === "Corrección" ? "block" : "none";
   });
 
   // El formulario ahora se envía de forma natural a Formspree
