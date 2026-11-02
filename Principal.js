@@ -745,6 +745,9 @@ function switchView(view) {
     navRepertorio?.classList.remove("active");
     navIndiceBtn?.classList.remove("active");
     navAuth?.classList.remove("active");
+    if (typeof window.updateAllRepertoireButtons === "function") {
+      window.updateAllRepertoireButtons();
+    }
   } else if (view === "repertorio") {
     if (viewHome) viewHome.style.display = "none";
     if (viewRepertorio) viewRepertorio.style.display = "block";
@@ -1819,6 +1822,9 @@ function showPage(page) {
 
   container.style.opacity = "1";
   if (window.lucide) window.lucide.createIcons();
+  if (typeof window.updateAllRepertoireButtons === "function") {
+    window.updateAllRepertoireButtons();
+  }
 }
 
 function filterByCategory(category) {
@@ -2681,6 +2687,10 @@ function renderizarRepertorio(lista, esBusqueda = false) {
         }
       });
     }
+
+    if (typeof window.updateAllRepertoireButtons === "function") {
+      window.updateAllRepertoireButtons();
+    }
 }
 
 window.borrarCancion = async function(title, author = "", songIndex = null) {
@@ -2714,6 +2724,9 @@ window.borrarCancion = async function(title, author = "", songIndex = null) {
     renderizarRepertorio(rep, false);
   }
   initSongButtons();
+  if (typeof window.updateAllRepertoireButtons === "function") {
+    window.updateAllRepertoireButtons();
+  }
   showToast(`"${title}" eliminada del repertorio`, "info");
 };
 
@@ -2733,6 +2746,9 @@ window.limpiarRepertorio = async function() {
     window.touchRepertorioModified("Repertorio actual", false);
     renderizarRepertorio([]);
     initSongButtons();
+    if (typeof window.updateAllRepertoireButtons === "function") {
+      window.updateAllRepertoireButtons();
+    }
     showToast("Repertorio vaciado con éxito", "info");
   }
 };
@@ -7055,6 +7071,72 @@ function initOfflineSongsSystem() {
 }
 window.initOfflineSongsSystem = initOfflineSongsSystem;
 
+window.updateAllRepertoireButtons = function() {
+  let currentRep = [];
+  try {
+    currentRep = JSON.parse(localStorage.getItem("repertorio") || "[]");
+  } catch (e) {
+    currentRep = [];
+  }
+
+  document.querySelectorAll(".song").forEach(songSection => {
+    const addRepBtn = songSection.querySelector(".btn-song-add-rep");
+    if (!addRepBtn) return;
+
+    const info = (typeof window.getSongInfo === "function") ? window.getSongInfo(songSection) : {};
+    const title = (info.title || songSection.querySelector(".song-row-title")?.textContent || "").trim();
+    const author = (info.author || songSection.dataset.author || "").trim();
+    const songId = info.id || songSection.dataset.id || (typeof window.generateStableSongId === "function" ? window.generateStableSongId(title, author) : "");
+
+    const normT = title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const normA = author.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+    const isInRep = currentRep.some(s => {
+      if (s.id && songId && s.id === songId) return true;
+      const sT = (s.title || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const sA = (s.author || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      return sT === normT && (sA === normA || !normA || !sA);
+    });
+
+    if (isInRep) {
+      addRepBtn.classList.add("added");
+      addRepBtn.setAttribute("title", "En mi repertorio (clic para quitar)");
+      addRepBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      `;
+    } else {
+      addRepBtn.classList.remove("added");
+      addRepBtn.setAttribute("title", "Añadir a mi repertorio");
+      addRepBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      `;
+    }
+  });
+
+  const btnPopupAddRep = document.getElementById("btnPopupAddRep");
+  if (btnPopupAddRep) {
+    const curTitle = (document.getElementById("popupTitulo")?.textContent || "").trim().toLowerCase();
+    const inRep = currentRep.some(s => (s.title || "").trim().toLowerCase() === curTitle);
+    const repText = btnPopupAddRep.querySelector(".rep-text");
+    if (inRep) {
+      btnPopupAddRep.classList.add("in-rep");
+      if (repText) repText.textContent = "En Repertorio";
+    } else {
+      btnPopupAddRep.classList.remove("in-rep");
+      if (repText) repText.textContent = "Repertorio";
+    }
+  }
+
+  if (typeof window.actualizarContador === "function") {
+    window.actualizarContador();
+  }
+};
+
 function initSongButtons() {
   document.querySelectorAll(".song").forEach(songSection => {
     songSection.classList.add("song-row");
@@ -7091,33 +7173,12 @@ function initSongButtons() {
         const type = songSection.dataset.type || "";
         currentRep.push({ id: songId, title, author, lyrics, type, audio, tags, category });
         localStorage.setItem("repertorio", JSON.stringify(currentRep));
-        
-        if (addRepBtn) {
-          addRepBtn.classList.add("added");
-          addRepBtn.setAttribute("title", "En mi repertorio (clic para quitar)");
-          addRepBtn.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          `;
-        }
       } else {
         currentRep.splice(index, 1);
         localStorage.setItem("repertorio", JSON.stringify(currentRep));
-
-        if (addRepBtn) {
-          addRepBtn.classList.remove("added");
-          addRepBtn.setAttribute("title", "Añadir a mi repertorio");
-          addRepBtn.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-          `;
-        }
       }
 
-      if (typeof window.actualizarContador === "function") window.actualizarContador();
+      window.updateAllRepertoireButtons();
       if (typeof window.renderRepertorioList === "function") window.renderRepertorioList();
     };
 
@@ -7125,6 +7186,8 @@ function initSongButtons() {
       addRepBtn.onclick = toggleRepertorioState;
     }
   });
+
+  window.updateAllRepertoireButtons();
 }
 
 // Cerrar menús desplegables al hacer clic afuera
