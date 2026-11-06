@@ -2716,6 +2716,114 @@ body.light-mode .popup-download-btn {
   color: rgba(0, 0, 0, 0.6);
 }
 
+/* Botón 3 Puntitos (Más Opciones) y Menú Desplegable */
+.popup-more-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.popup-more-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.05);
+}
+body.light-mode .popup-more-btn {
+  color: #64748b;
+}
+body.light-mode .popup-more-btn:hover {
+  color: #0f172a;
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(1.05);
+}
+
+.popup-more-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 196px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  z-index: 1000;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  animation: popupMenuFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popupMenuFadeIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+body.light-mode .popup-more-dropdown {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.14), 0 6px 12px -3px rgba(0, 0, 0, 0.08);
+}
+
+.popup-more-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.popup-more-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.popup-more-dropdown-item svg,
+.popup-more-dropdown-item i {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke-width: 2.2px;
+}
+
+body.light-mode .popup-more-dropdown-item {
+  color: #334155;
+}
+
+body.light-mode .popup-more-dropdown-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.popup-more-dropdown-item.in-rep {
+  color: #10b981;
+}
+body.light-mode .popup-more-dropdown-item.in-rep {
+  color: #059669;
+}
+
+
 .popup-cerrar:hover { 
   background: transparent !important;
   border: none !important;
@@ -4360,10 +4468,28 @@ body.light-mode .song-notes-footer {
   animation: pulse-audio-fab 1.5s infinite;
 }
 
-/* Estilos para el Botón de YouTube */
+/* Estilos para el Botón de YouTube (Fondo rojo coherente con todas las herramientas) */
+.menu-fab.youtube-fab {
+  background: #ef4444 !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
 .menu-fab.youtube-fab svg {
-  fill: #ffffff;
-  stroke: none;
+  display: block;
+  width: 24px;
+  height: 17px;
+}
+.menu-fab.youtube-fab svg path {
+  fill: #ffffff !important;
+}
+.menu-fab.youtube-fab svg polygon {
+  fill: #dc2626 !important;
+}
+.menu-fab.youtube-fab:hover {
+  background: #dc2626 !important;
+  transform: scale(1.1);
 }
 
 @keyframes pulse-audio-fab {
