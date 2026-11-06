@@ -1229,10 +1229,64 @@ import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.c
     if (modalBody) modalBody.scrollTop = prevModalScroll;
   };
 
+  const wrapSelectionWithBars = () => {
+    const el = ensureLyricsEditor() || document.getElementById("editorSongLyrics");
+    if (!el) return;
+
+    const prevScroll = el.scrollTop;
+    const modalBody = el.closest(".modern-editor-body") || document.querySelector(".modern-editor-body");
+    const prevModalScroll = modalBody ? modalBody.scrollTop : 0;
+
+    if (el.getAttribute("contenteditable") === "true") {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && el.contains(sel.anchorNode)) {
+        const range = sel.getRangeAt(0);
+        const selectedText = range.toString();
+        if (selectedText.startsWith("||") && (selectedText.endsWith(":||") || selectedText.endsWith("||"))) {
+          const inner = selectedText.replace(/^\|\|\s?/, "").replace(/\s?:?\|\|$/, "");
+          const textNode = document.createTextNode(inner);
+          range.deleteContents();
+          range.insertNode(textNode);
+        } else {
+          const insert = selectedText ? `|| ${selectedText} :||` : "||  :||";
+          const textNode = document.createTextNode(insert);
+          range.deleteContents();
+          range.insertNode(textNode);
+        }
+      } else {
+        el.focus({ preventScroll: true });
+        document.execCommand("insertText", false, "||  :||");
+      }
+    } else {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const text = el.value;
+      const selected = text.substring(start, end);
+      if (!selected) {
+        el.value = text.substring(0, start) + "||  :||" + text.substring(end);
+        el.focus({ preventScroll: true });
+        el.setSelectionRange(start + 3, start + 3);
+      } else {
+        const isWrapped = selected.startsWith("||") && (selected.endsWith(":||") || selected.endsWith("||"));
+        const replacement = isWrapped
+          ? selected.replace(/^\|\|\s?/, "").replace(/\s?:?\|\|$/, "")
+          : `|| ${selected} :||`;
+        el.value = text.substring(0, start) + replacement + text.substring(end);
+        el.focus({ preventScroll: true });
+        el.setSelectionRange(start, start + replacement.length);
+      }
+      el.dispatchEvent(new Event("input"));
+    }
+
+    el.scrollTop = prevScroll;
+    if (modalBody) modalBody.scrollTop = prevModalScroll;
+  };
+
   document.getElementById("btnWordBold")?.addEventListener("click", () => formatSelection("bold", "<b>", "</b>"));
   document.getElementById("btnWordItalic")?.addEventListener("click", () => formatSelection("italic", "<i>", "</i>"));
   document.getElementById("btnWordUnderline")?.addEventListener("click", () => formatSelection("underline", "<u>", "</u>"));
   document.getElementById("btnWordChordsWrap")?.addEventListener("click", () => wrapSelectionWithBrackets());
+  document.getElementById("btnWordBarsWrap")?.addEventListener("click", () => wrapSelectionWithBars());
 
   // Atajo de teclado universal Ctrl+B / Cmd+B para poner en negrita el coro
   document.getElementById("editorSongLyrics")?.addEventListener("keydown", (e) => {
