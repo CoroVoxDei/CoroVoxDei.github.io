@@ -25,8 +25,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&family=Poppins:wght@400;600&family=Raleway:wght@700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="Principal.css?v=26.0">
-  <link rel="stylesheet" href="admin.css?v=26.0">
+  <link rel="stylesheet" href="Principal.css?v=31.0">
+  <link rel="stylesheet" href="admin.css?v=31.0">
   <!-- Librería para convertir HTML a Imagen -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
   <!-- Librería para Arrastrar y Soltar (SortableJS) -->
@@ -70,12 +70,14 @@
     (function() {
       try {
         if ('caches' in window) {
-          caches.delete('voxdei-static-cache').catch(() => {});
+          caches.keys().then(function(keys) {
+            keys.forEach(function(k) { caches.delete(k); });
+          }).catch(function() {});
         }
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(function(regs) {
             for (var r of regs) {
-              r.update().catch(function() {});
+              r.unregister().catch(function() {});
             }
           }).catch(function() {});
         }
@@ -303,8 +305,8 @@
       <div class="songs-header-right">
         <span class="sort-by-label">Ordenar por:</span>
         <div class="sort-select-wrapper">
-          <select id="sortSongsSelect" class="sort-select" title="Ordenar canciones">
-            <option value="recent">Más recientes</option>
+          <select id="sortSongsSelect" class="sort-select" title="Ordenar canciones" autocomplete="off">
+            <option value="recent" selected>Más recientes</option>
             <option value="alpha-asc">A-Z</option>
             <option value="alpha-desc">Z-A</option>
             <option value="author">Autor</option>
@@ -1027,116 +1029,131 @@
 
       <div id="captureArea" class="popup-body">
         <div class="doc-header">
-           <!-- Botones de Acción Superiores (Izquierda) -->
-           <div class="popup-left-actions-group">
-             <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen">
-               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-             </button>
-             <button type="button" id="btnPopupAddRep" class="popup-rep-btn" style="display: none;">
-               <i data-lucide="plus" class="rep-icon"></i>
-               <span class="rep-text">Repertorio</span>
-             </button>
-           </div>
-           <!-- Título y Autor (Centro) -->
-           <div class="header-text">
-             <h2 id="popupTitulo" class="popup-title"></h2>
-             <p id="popupAutor" class="popup-autor"></p>
-             <div id="popupTagContainer" style="margin-top: 8px;"></div>
-             <p id="popupTranspInfo" class="popup-transp-info"></p>
-             <span id="popupCategoryDisplay" style="display:none;"></span>
-           </div>
-           <!-- Botón Cerrar (Derecha) -->
-           <button onclick="cerrarLetra()" class="popup-cerrar popup-action-btn" title="Cerrar"><i data-lucide="x"></i></button>
-        </div>
-        
-        <pre id="popupTexto" class="popup-letra"></pre>
-      </div>
+            <!-- Botones de Acción Superiores (Izquierda: 3 Puntitos de Opciones) -->
+            <div class="popup-left-actions-group">
+              <button type="button" id="btnPopupMoreOptions" class="popup-more-btn popup-action-btn" title="Más opciones" aria-label="Más opciones" aria-haspopup="true" aria-expanded="false">
+                <i data-lucide="more-vertical"></i>
+              </button>
+              <!-- Menú Desplegable Flotante de Más Opciones -->
+              <div id="popupMoreDropdown" class="popup-more-dropdown" style="display: none;">
+                <button type="button" id="btnPopupOptionDownload" class="popup-more-dropdown-item">
+                  <i data-lucide="download"></i>
+                  <span>Descargar</span>
+                </button>
+                <button type="button" id="btnPopupOptionRepertoire" class="popup-more-dropdown-item">
+                  <i data-lucide="plus" id="popupOptionRepIcon"></i>
+                  <span id="popupOptionRepText">Añadir al repertorio</span>
+                </button>
+                <button type="button" id="btnPopupOptionEdit" class="popup-more-dropdown-item admin-only" style="display: none;">
+                  <i data-lucide="pencil"></i>
+                  <span>Editar canción</span>
+                </button>
+              </div>
+              <!-- Botón de descarga original conservado en background para el motor htmlToImage -->
+              <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen" style="display: none;"></button>
+              <button type="button" id="btnPopupAddRep" class="popup-rep-btn" style="display: none;"></button>
+            </div>
+            <!-- Título y Autor (Centro) -->
+            <div class="header-text">
+              <h2 id="popupTitulo" class="popup-title"></h2>
+              <p id="popupAutor" class="popup-autor"></p>
+              <div id="popupTagContainer" style="margin-top: 8px;"></div>
+              <p id="popupTranspInfo" class="popup-transp-info"></p>
+              <span id="popupCategoryDisplay" style="display:none;"></span>
+            </div>
+            <!-- Botón Cerrar (Derecha) -->
+            <button onclick="cerrarLetra()" class="popup-cerrar popup-action-btn" title="Cerrar"><i data-lucide="x"></i></button>
+         </div>
+         
+         <pre id="popupTexto" class="popup-letra"></pre>
+       </div>
 
-      <!-- SISTEMA DE AJUSTES MULTI-BOTÓN -->
-      <div id="popupSettingsWrapper" class="popup-settings-wrapper">
-          <!-- Menú de Herramientas (aparece al abrir engranaje) -->
-          <div id="settingsMenu" class="settings-menu">
-            <!-- Opción Tamaño -->
-            <div class="menu-item-container">
-              <div id="panelSize" class="tool-panel">
-                <span class="tool-label">Tamaño</span>
-                <input type="range" id="fontSizeSlider" min="8" max="24" step="1" value="16">
-              </div>
-              <button class="menu-fab" id="btnToolSize" title="Tamaño de letra">
-                <span class="tool-icon-text">T</span>
-              </button>
-            </div>
-            <!-- Opción Espaciado -->
-            <div class="menu-item-container">
-              <div id="panelSpacing" class="tool-panel">
-                <span class="tool-label">Espaciado</span>
-                <input type="range" id="lineSpacingSlider" min="1" max="2.5" step="0.1" value="1.6">
-              </div>
-              <button class="menu-fab" id="btnToolSpacing" title="Espaciado de línea">
-                <div class="tool-icon-spacing">
-                  <span>T</span>
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 7l5-5 5 5M7 17l5 5 5-5"/></svg>
-                </div>
-              </button>
-            </div>
-            <!-- Opción Transposición (NUEVA) -->
-            <div class="menu-item-container">
-              <div id="panelTranspose" class="tool-panel">
-                <span class="tool-label">Tono</span>
-                <div class="transpose-controls">
-                  <button id="btnTransposeDown" class="trans-btn">-</button>
-                  <span id="transposeValue">0</span>
-                  <button id="btnTransposeUp" class="trans-btn">+</button>
-                </div>
-              </div>
-              <button class="menu-fab" id="btnToolTranspose" title="Transponer">
-                <span class="tool-icon-text">#</span>
-              </button>
-            </div>
-            <!-- Opción Notación -->
-            <div class="menu-item-container">
-              <button class="menu-fab" id="btnToolNotation" title="Cambiar Notación (C / Do)">
-                <span class="tool-icon-text">C</span>
-              </button>
-            </div>
-            <!-- Opción Columnas (Solo PC/Tablet) -->
-            <div class="menu-item-container multi-column-only">
-              <button class="menu-fab" id="btnToolColumns" title="Alternar 2 Columnas">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
-                  <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
-                  <path d="M7 7h3M7 11h3M7 15h3M14 7h3M14 11h3M14 15h3"/>
-                </svg>
-              </button>
-            </div>
-            <!-- Opción Audio -->
-            <div id="menuItemAudio" class="menu-item-container" style="display:none;">
-              <div id="panelAudio" class="tool-panel">
-                <span id="audioTime" class="tool-label" style="min-width: 40px; font-size: 10px;">0:00</span>
-                <input type="range" id="audioProgress" min="0" max="100" value="0" style="width: 100px;">
-              </div>
-              <button class="menu-fab" id="btnToolAudio" title="Escuchar audio">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display: block;"><path d="M8 5v14l11-7z"/></svg>
-              </button>
-            </div>
-            <!-- Opción Cuaderno de Ensayo y Notas (dentro del menú de herramientas) -->
-            <div id="popupNotesWrapper" class="menu-item-container">
-              <button class="menu-fab" id="btnNotesFab" title="Notas y Cuaderno de Ensayo" aria-label="Notas y Cuaderno de Ensayo">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                  <path d="m15 5 4 4"/>
-                </svg>
-                <span id="notesBadgeDot" class="notes-badge-dot" style="display:none;" title="Anotaciones guardadas"></span>
-              </button>
-            </div>
-            <!-- Opción YouTube -->
-            <div id="menuItemYoutube" class="menu-item-container" style="display:none;">
-              <button class="menu-fab youtube-fab" id="btnToolYoutube" title="Ver / Escuchar en YouTube" aria-label="Ver / Escuchar en YouTube">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="display: block;">
-                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+       <!-- SISTEMA DE AJUSTES MULTI-BOTÓN -->
+       <div id="popupSettingsWrapper" class="popup-settings-wrapper">
+           <!-- Menú de Herramientas (aparece al abrir engranaje) -->
+           <div id="settingsMenu" class="settings-menu">
+             <!-- Opción Tamaño -->
+             <div class="menu-item-container">
+               <div id="panelSize" class="tool-panel">
+                 <span class="tool-label">Tamaño</span>
+                 <input type="range" id="fontSizeSlider" min="8" max="24" step="1" value="16">
+               </div>
+               <button class="menu-fab" id="btnToolSize" title="Tamaño de letra">
+                 <span class="tool-icon-text">T</span>
+               </button>
+             </div>
+             <!-- Opción Espaciado -->
+             <div class="menu-item-container">
+               <div id="panelSpacing" class="tool-panel">
+                 <span class="tool-label">Espaciado</span>
+                 <input type="range" id="lineSpacingSlider" min="1" max="2.5" step="0.1" value="1.6">
+               </div>
+               <button class="menu-fab" id="btnToolSpacing" title="Espaciado de línea">
+                 <div class="tool-icon-spacing">
+                   <span>T</span>
+                   <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 7l5-5 5 5M7 17l5 5 5-5"/></svg>
+                 </div>
+               </button>
+             </div>
+             <!-- Opción Transposición (NUEVA) -->
+             <div class="menu-item-container">
+               <div id="panelTranspose" class="tool-panel">
+                 <span class="tool-label">Tono</span>
+                 <div class="transpose-controls">
+                   <button id="btnTransposeDown" class="trans-btn">-</button>
+                   <span id="transposeValue">0</span>
+                   <button id="btnTransposeUp" class="trans-btn">+</button>
+                 </div>
+               </div>
+               <button class="menu-fab" id="btnToolTranspose" title="Transponer">
+                 <span class="tool-icon-text">#</span>
+               </button>
+             </div>
+             <!-- Opción Notación -->
+             <div class="menu-item-container">
+               <button class="menu-fab" id="btnToolNotation" title="Cambiar Notación (C / Do)">
+                 <span class="tool-icon-text">C</span>
+               </button>
+             </div>
+             <!-- Opción Columnas (Solo PC/Tablet) -->
+             <div class="menu-item-container multi-column-only">
+               <button class="menu-fab" id="btnToolColumns" title="Alternar 2 Columnas">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                   <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+                   <path d="M7 7h3M7 11h3M7 15h3M14 7h3M14 11h3M14 15h3"/>
+                 </svg>
+               </button>
+             </div>
+             <!-- Opción Audio -->
+             <div id="menuItemAudio" class="menu-item-container" style="display:none;">
+               <div id="panelAudio" class="tool-panel">
+                 <span id="audioTime" class="tool-label" style="min-width: 40px; font-size: 10px;">0:00</span>
+                 <input type="range" id="audioProgress" min="0" max="100" value="0" style="width: 100px;">
+               </div>
+               <button class="menu-fab" id="btnToolAudio" title="Escuchar audio">
+                 <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display: block;"><path d="M8 5v14l11-7z"/></svg>
+               </button>
+             </div>
+             <!-- Opción YouTube (Agrupado con Audio antes de las Notas) -->
+             <div id="menuItemYoutube" class="menu-item-container" style="display:none;">
+               <button class="menu-fab youtube-fab" id="btnToolYoutube" title="Ver / Escuchar en YouTube" aria-label="Ver / Escuchar en YouTube">
+                 <svg viewBox="0 0 28 20" width="26" height="19" style="display: block;">
+                   <path fill="#FF0000" d="M27.4 3.1A3.5 3.5 0 0 0 24.9.6C22.7 0 14 0 14 0S5.3 0 3.1.6A3.5 3.5 0 0 0 .6 3.1 36.6 36.6 0 0 0 0 10a36.6 36.6 0 0 0 .6 6.9 3.5 3.5 0 0 0 2.5 2.5C5.3 20 14 20 14 20s8.7 0 10.9-.6a3.5 3.5 0 0 0 2.5-2.5 36.6 36.6 0 0 0 .6-6.9 36.6 36.6 0 0 0-.6-6.9z"/>
+                   <polygon fill="#FFFFFF" points="11.2,14.3 18.5,10 11.2,5.7"/>
+                 </svg>
+               </button>
+             </div>
+             <!-- Opción Cuaderno de Ensayo y Notas (Lápiz, siempre justo encima del engranaje) -->
+             <div id="popupNotesWrapper" class="menu-item-container">
+               <button class="menu-fab" id="btnNotesFab" title="Notas y Cuaderno de Ensayo" aria-label="Notas y Cuaderno de Ensayo">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                   <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                   <path d="m15 5 4 4"/>
+                 </svg>
+                 <span id="notesBadgeDot" class="notes-badge-dot" style="display:none;" title="Anotaciones guardadas"></span>
+               </button>
+             </div>
+           </div>
           <!-- Botón Principal (Engranaje) -->
           <button id="popupSettingsBtn" class="settings-fab main-gear" title="Ajustes" aria-label="Ajustes">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1471,6 +1488,9 @@
                   <button type="button" id="btnWordChordsWrap" class="toolbar-btn" title="Envolver en corchetes [Acorde]">
                     <span class="chords-bracket-label">[&thinsp;]</span>
                   </button>
+                  <button type="button" id="btnWordBarsWrap" class="toolbar-btn" title="Compás / Repetición (|| :||)">
+                    <span class="bars-repeat-label">||</span>
+                  </button>
 
                   <span class="toolbar-divider"></span>
 
@@ -1795,7 +1815,7 @@
   <!-- =========================================================
        8.5. MENÚ INFERIOR MÓVIL: ACCIONES DE CANCIÓN (NUEVA CANCIÓN / EDITAR)
   ========================================================== -->
-  <div id="newSongBottomSheet" class="modal-overlay new-song-sheet-overlay">
+  <div id="newSongBottomSheet" class="new-song-sheet-overlay">
     <div class="new-song-sheet-card">
       <div class="sheet-drag-handle"></div>
       
@@ -2364,7 +2384,7 @@
        - admin.js (Módulo CMS y administración)
   ========================================================== -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script type="module" src="Principal.js?v=26.0"></script>
-  <script type="module" src="admin.js?v=26.0"></script>
+  <script type="module" src="Principal.js?v=31.0"></script>
+  <script type="module" src="admin.js?v=31.0"></script>
 </body>
 </html>
