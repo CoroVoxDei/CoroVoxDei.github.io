@@ -1639,6 +1639,18 @@ let currentPage = 1;
 let allSongs = [];
 let filteredSongs = [];
 let currentCategory = "todos";
+window.userManualSortActive = false;
+
+window.shuffleSongs = function(array) {
+  if (!Array.isArray(array)) return array;
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+};
 
 function renderPagination() {
   const paginationContainer = document.getElementById("pagination");
@@ -1845,10 +1857,13 @@ function filterByCategory(category) {
   if (!cleanTargetCat || cleanTargetCat === "todos") {
     currentCategory = "todos";
     filteredSongs = [];
-    if (typeof window.sortSongsByCurrentCriteria === "function") {
+    if (window.userManualSortActive && typeof window.sortSongsByCurrentCriteria === "function") {
       window.sortSongsByCurrentCriteria(allSongs);
     } else {
-      allSongs.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
+      // Por defecto: En la sección "Todos", mostrar de manera aleatoria cada vez que se refresca o entra a Todos
+      if (typeof window.shuffleSongs === "function") {
+        window.shuffleSongs(allSongs);
+      }
     }
     if (container) {
       container.classList.remove("category-filtered");
@@ -1870,9 +1885,11 @@ function filterByCategory(category) {
       return songCat === cleanTargetCat;
     });
 
-    if (typeof window.sortSongsByCurrentCriteria === "function") {
+    if (window.userManualSortActive && typeof window.sortSongsByCurrentCriteria === "function") {
       window.sortSongsByCurrentCriteria(filteredSongs);
     } else {
+      // En Entrada, Penitencial, Gloria y las demás categorías: orden alfabético de la A a la Z
+      // Multi-nivel: Título letra a letra -> si coincide, Autor letra a letra -> ID
       filteredSongs.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
     }
 
@@ -1984,8 +2001,8 @@ const isChordTokenStrict = (token) => {
 const isPureChordLine = (rawLine) => {
     const line = rawLine.replace(/<[^>]+>/g, '').trim();
     if (!line) return false;
-    if (/^\[\s*(coro|estrofa|puente|intro|verso|final|coda|pre-coro)[^\]]*\]$/i.test(line)) return false;
-    if (/\b(el|la|los|las|un|una|unos|unas|de|del|que|en|y|por|para|con|sin|sobre|su|sus|mi|mis|tu|tus|dios|señor|cristo|jesus|paz|cielo|tierra|gloria|santo|padre|hijo|espiritu|amor|vida|fe|gracia|canten|alabamos|bendecimos|adoramos|glorificamos|gracias|piedad|nosotros|mundo|pecado|cordero|virgen|maria|auxiliadora|al|hoy|te|nos|danos|aleluya|hombres|ama|inmensa|celestial|poderoso|unico|jesucristo|hizo|hagan|vengan|oigan|noche|dia|sol|luz|cruz)\b/i.test(line)) {
+    if (/^\[\s*(coro|estrofa|puente|intro|verso|final|coda|pre-coro|estribillo)[^\]]*\]$/i.test(line)) return false;
+    if (/\b(el|la|los|las|un|una|unos|unas|de|del|que|en|y|por|para|con|sin|sobre|su|sus|mi|mis|tu|tus|dios|señor|cristo|jesus|paz|cielo|tierra|gloria|santo|padre|hijo|espiritu|amor|vida|fe|gracia|canten|alabamos|bendecimos|adoramos|glorificamos|gracias|piedad|nosotros|mundo|pecado|cordero|virgen|maria|auxiliadora|al|hoy|te|nos|danos|aleluya|hombres|ama|inmensa|celestial|poderoso|unico|jesucristo|hizo|hagan|vengan|oigan|noche|dia|luz|cruz)\b/i.test(line)) {
         return false;
     }
     const tokens = line.split(/\s+/).filter(t => t.length > 0);
@@ -2018,65 +2035,86 @@ window.formatLyricsWithChords = function(rawLyrics) {
     const lines = content.split(/\r?\n/);
     const formattedLines = [];
 
+    const chordBracketRegex = /\[\s*([A-G][#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][#b]?)?|Do|Re|Mi|Fa|Sol|La|Si[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?)\s*\]/gi;
+    const chordPattern = /\b([A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][b#]?)?|Do|Re|Mi|Fa|Sol|La|Si[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?)\b/g;
+
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const trimmed = line.trim();
+        const cleanText = trimmed.replace(/<[^>]+>/g, "").trim();
 
         if (!trimmed) {
             formattedLines.push("");
             continue;
         }
 
-        // Marcadores tipo [CORO], [ESTROFA], etc.
-        if (/^\s*\[\s*(coro|estrofa|puente|intro|final)[^\]]*\]\s*$/i.test(trimmed)) {
+        // Marcadores de sección tipo [CORO], [ESTROFA], [PUENTE], [INTRO], [FINAL]
+        if (/^\[\s*(coro|estrofa|puente|intro|final|verso|coda|pre-coro|estribillo)[^\]]*\]$/i.test(cleanText)) {
             formattedLines.push(`<b>${trimmed}</b>`);
             continue;
         }
 
+        // 1. Línea pura de acordes
         if (isPureChordLine(line)) {
-            // Envolver la línea completa preservando sangría y espaciado exacto
-            formattedLines.push(`<span class="chord">${line}</span>`);
+            // Reemplazar [Acorde] por Acorde compensando espacios para no desalinear con la letra inferior
+            let cleanChordLine = line.replace(/\[\s*([^\]]+?)\s*\]/g, (match, chordInside) => {
+                if (isChordTokenStrict(chordInside)) {
+                    const diff = match.length - chordInside.length;
+                    return chordInside + (diff > 0 ? " ".repeat(diff) : "");
+                }
+                return match;
+            });
+            formattedLines.push(`<span class="chord">${cleanChordLine}</span>`);
         } else {
-            // Verificar si tiene acordes entre corchetes tipo [Am] o [Do] y colocarlos ARRIBA de la letra
-            const chordBracketRegex = /\[([A-G][#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][#b]?)?|Do|Re|Mi|Fa|Sol|La|Si[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?)\]/gi;
-            if (chordBracketRegex.test(line)) {
-                chordBracketRegex.lastIndex = 0;
-                let textLine = "";
-                let chordEntries = [];
-                let lastIndex = 0;
-                let match;
-                while ((match = chordBracketRegex.exec(line)) !== null) {
-                    textLine += line.substring(lastIndex, match.index);
-                    chordEntries.push({ pos: textLine.length, chord: match[1] });
-                    lastIndex = match.index + match[0].length;
-                }
-                textLine += line.substring(lastIndex);
+            // 2. Línea instrumental / Intro (ej. Intro: || Bm, G7 :|| o <b>Intro:</b> G C D)
+            // Se valida contra cleanText para que funcione sin importar si 'Intro' está en negrita <b>, cursiva <i> o subrayado <u>
+            const isInstrumental = /^(?:intro|instrumental|zampoña|quena|guitarra|solo|interludio|final|coda|bis)\b/i.test(cleanText);
 
-                let chordLine = "";
-                chordEntries.forEach(entry => {
-                    if (chordLine.length < entry.pos) {
-                        chordLine = chordLine.padEnd(entry.pos, " ");
-                    } else if (chordLine.length > 0) {
-                        chordLine += " ";
-                    }
-                    chordLine += entry.chord;
+            if (isInstrumental) {
+                // Eliminar corchetes en acordes si los hubiera en la línea instrumental: [Sol] -> Sol
+                let processedLine = line.replace(/\[\s*([A-Za-z0-9#b/+\-]+)\s*\]/g, (m, c) => {
+                    return isChordTokenStrict(c) ? c : m;
                 });
-
-                if (chordLine.trim()) {
-                    formattedLines.push(`<span class="chord">${chordLine}</span>`);
-                }
-                if (textLine.trim()) {
-                    formattedLines.push(textLine);
-                }
-            } else if (/^(?:intro|instrumental|zampoña|quena|guitarra|solo|interludio|final|coda|bis)\b/i.test(trimmed)) {
-                // Línea instrumental con acordes (ej. Zampoña ||: F G C bis / C E Am :|| (x2))
-                const processedInstrumental = line.replace(/\b([A-G][b#]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2}|-[0-9]|[+])*(?:\/[A-G][b#]?)?|Do|Re|Mi|Fa|Sol|La|Si[#b]?(?:m|maj|min|dim|aug|sus[24]?|add[29]?|[0-9]{1,2}|M[0-9]{1,2})*(?:\/(?:Do|Re|Mi|Fa|Sol|La|Si)[#b]?)?)\b/g, (match) => {
+                // Pintar los acordes preservando barras ||, comas, repeticiones y tags HTML
+                const processedInstrumental = processedLine.replace(chordPattern, (match) => {
                     return `<span class="chord">${match}</span>`;
                 });
                 formattedLines.push(processedInstrumental);
             } else {
-                const processedLine = line.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
-                formattedLines.push(processedLine);
+                // 3. Letra con acordes incrustados entre corchetes (estándar ChordPro, ej. tiem[Sol]po o Al[C]zad la ca[G]beza)
+                if (chordBracketRegex.test(line)) {
+                    chordBracketRegex.lastIndex = 0;
+                    let textLine = "";
+                    let chordEntries = [];
+                    let lastIndex = 0;
+                    let match;
+                    while ((match = chordBracketRegex.exec(line)) !== null) {
+                        textLine += line.substring(lastIndex, match.index);
+                        chordEntries.push({ pos: textLine.length, chord: match[1].trim() });
+                        lastIndex = match.index + match[0].length;
+                    }
+                    textLine += line.substring(lastIndex);
+
+                    let chordLine = "";
+                    chordEntries.forEach(entry => {
+                        if (chordLine.length < entry.pos) {
+                            chordLine = chordLine.padEnd(entry.pos, " ");
+                        } else if (chordLine.length > 0) {
+                            chordLine += " ";
+                        }
+                        chordLine += entry.chord;
+                    });
+
+                    if (chordLine.trim()) {
+                        formattedLines.push(`<span class="chord">${chordLine}</span>`);
+                    }
+                    if (textLine.trim()) {
+                        formattedLines.push(textLine);
+                    }
+                } else {
+                    const processedLine = line.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+                    formattedLines.push(processedLine);
+                }
             }
         }
     }
@@ -6044,10 +6082,16 @@ onDomReady(() => {
         const container = document.getElementById("songsContainer");
         if (container) {
           const newElements = cleanList.map(createSongElement);
-          if (typeof window.sortSongsByCurrentCriteria === "function") {
+          if (window.userManualSortActive && typeof window.sortSongsByCurrentCriteria === "function") {
             window.sortSongsByCurrentCriteria(newElements);
           } else {
-            newElements.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
+            if (currentCategory === "todos") {
+              if (typeof window.shuffleSongs === "function") {
+                window.shuffleSongs(newElements);
+              }
+            } else {
+              newElements.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
+            }
           }
           allSongs = newElements;
           window.allSongs = newElements;
@@ -6268,6 +6312,7 @@ window.getSongInfo = function(songSection) {
   return { title: "", author: "", id: "", cover: "" };
 };
 
+
 /* =========================================================
    SISTEMA DE ORDENACIÓN ALFABÉTICA INTELIGENTE MULTI-NIVEL
    1º Nivel: Título alfabético letra por letra (insensible a acentos/mayúsculas)
@@ -6402,17 +6447,7 @@ window.getSongTimestampScore = function(item) {
 window.sortSongsByCurrentCriteria = function(list) {
   if (!Array.isArray(list) || list.length === 0) return;
   const select = document.getElementById("sortSongsSelect");
-  let val = select ? select.value : "recent";
-  try {
-    const saved = localStorage.getItem("voxdei_song_sort_order");
-    if (saved) {
-      val = select ? select.value : saved;
-      if (select && select.value !== saved && !select.dataset.userChanged) {
-        select.value = saved;
-        val = saved;
-      }
-    }
-  } catch(e) {}
+  const val = select ? select.value : "recent";
 
   const sortFn = (a, b) => {
     if (val === "recent") {
@@ -6946,12 +6981,16 @@ async function loadSongs(files) {
   // Guardar catálogo limpio en memoria
   window.rawCatalogSongs = uniqueSongsData;
 
-  // 3. Crear elementos del DOM y ordenar según el criterio activo (más recientes por defecto)
+  // 3. Crear elementos del DOM y ordenar según la regla inicial
   const songElements = uniqueSongsData.map(createSongElement);
-  if (typeof window.sortSongsByCurrentCriteria === "function") {
+  if (window.userManualSortActive && typeof window.sortSongsByCurrentCriteria === "function") {
     window.sortSongsByCurrentCriteria(songElements);
   } else {
-    songElements.sort((a, b) => (typeof window.compareSongsSmart === "function" ? window.compareSongsSmart(a, b) : 0));
+    // Por defecto al cargar/refrescar la página:
+    // Categoría "Todos" en orden aleatorio
+    if (typeof window.shuffleSongs === "function") {
+      window.shuffleSongs(songElements);
+    }
   }
 
   allSongs = songElements;
@@ -7119,9 +7158,10 @@ window.updateAllRepertoireButtons = function() {
   });
 
   const btnPopupAddRep = document.getElementById("btnPopupAddRep");
+  const curTitle = (document.getElementById("popupTitulo")?.textContent || "").trim().toLowerCase();
+  const inRep = currentRep.some(s => (s.title || "").trim().toLowerCase() === curTitle);
+
   if (btnPopupAddRep) {
-    const curTitle = (document.getElementById("popupTitulo")?.textContent || "").trim().toLowerCase();
-    const inRep = currentRep.some(s => (s.title || "").trim().toLowerCase() === curTitle);
     const repText = btnPopupAddRep.querySelector(".rep-text");
     if (inRep) {
       btnPopupAddRep.classList.add("in-rep");
@@ -7130,6 +7170,22 @@ window.updateAllRepertoireButtons = function() {
       btnPopupAddRep.classList.remove("in-rep");
       if (repText) repText.textContent = "Repertorio";
     }
+  }
+
+  const popupOptionRep = document.getElementById("btnPopupOptionRepertoire");
+  const popupOptionRepText = document.getElementById("popupOptionRepText");
+  const popupOptionRepIcon = document.getElementById("popupOptionRepIcon");
+  if (popupOptionRep) {
+    if (inRep) {
+      popupOptionRep.classList.add("in-rep");
+      if (popupOptionRepText) popupOptionRepText.textContent = "Quitar del repertorio";
+      if (popupOptionRepIcon) popupOptionRepIcon.setAttribute("data-lucide", "check");
+    } else {
+      popupOptionRep.classList.remove("in-rep");
+      if (popupOptionRepText) popupOptionRepText.textContent = "Añadir al repertorio";
+      if (popupOptionRepIcon) popupOptionRepIcon.setAttribute("data-lucide", "plus");
+    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
   if (typeof window.actualizarContador === "function") {
@@ -7272,20 +7328,20 @@ onDomReady(() => {
   });
 
   // Selector "Ordenar por" (Más recientes, A-Z, Z-A, Autor)
+  // Por defecto se muestra visualmente en "Más recientes", pero permanece inactivo
+  // hasta que el usuario lo manipula explícitamente.
   const sortSelectEl = document.getElementById("sortSongsSelect");
   if (sortSelectEl) {
+    sortSelectEl.selectedIndex = 0;
+    sortSelectEl.value = "recent";
+    window.userManualSortActive = false;
     try {
-      const savedSort = localStorage.getItem("voxdei_song_sort_order");
-      if (savedSort) {
-        sortSelectEl.value = savedSort;
-      }
+      localStorage.removeItem("voxdei_song_sort_order");
     } catch(e) {}
 
     sortSelectEl.addEventListener("change", function() {
+      window.userManualSortActive = true;
       this.dataset.userChanged = "true";
-      try {
-        localStorage.setItem("voxdei_song_sort_order", this.value);
-      } catch(e) {}
 
       if (typeof window.sortSongsByCurrentCriteria === "function") {
         window.sortSongsByCurrentCriteria(allSongs);
@@ -7795,12 +7851,38 @@ onDomReady(() => {
       categoryDisplay.textContent = catDisplayName ? `· ${catDisplayName}` : "";
     }
 
-    // Botón Repertorio en el Lector
+    // Menú Más Opciones (3 puntitos) en el Lector
+    const popupMoreDropdown = document.getElementById("popupMoreDropdown");
+    if (popupMoreDropdown) popupMoreDropdown.style.display = "none";
+    const btnPopupMoreOptions = document.getElementById("btnPopupMoreOptions");
+    if (btnPopupMoreOptions) btnPopupMoreOptions.setAttribute("aria-expanded", "false");
+
+    let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
+    const isInRep = rep.some(s => (s.title || "").toLowerCase().trim() === (titulo || "").toLowerCase().trim());
+    const popupOptionRep = document.getElementById("btnPopupOptionRepertoire");
+    const popupOptionRepText = document.getElementById("popupOptionRepText");
+    const popupOptionRepIcon = document.getElementById("popupOptionRepIcon");
+    if (popupOptionRep) {
+      if (isInRep) {
+        popupOptionRep.classList.add("in-rep");
+        if (popupOptionRepText) popupOptionRepText.textContent = "Quitar del repertorio";
+        if (popupOptionRepIcon) popupOptionRepIcon.setAttribute("data-lucide", "check");
+      } else {
+        popupOptionRep.classList.remove("in-rep");
+        if (popupOptionRepText) popupOptionRepText.textContent = "Añadir al repertorio";
+        if (popupOptionRepIcon) popupOptionRepIcon.setAttribute("data-lucide", "plus");
+      }
+    }
+
+    const btnPopupOptionEdit = document.getElementById("btnPopupOptionEdit");
+    if (btnPopupOptionEdit) {
+      const isEditor = typeof window.isCurrentUserEditor === "function" && window.isCurrentUserEditor();
+      btnPopupOptionEdit.style.display = isEditor ? "flex" : "none";
+    }
+
+    // Botón Repertorio en el Lector (compatibilidad)
     const btnPopupAddRep = document.getElementById("btnPopupAddRep");
     if (btnPopupAddRep) {
-      let rep = JSON.parse(localStorage.getItem("repertorio")) || [];
-      const isInRep = rep.some(s => s.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim());
-      const repIcon = btnPopupAddRep.querySelector("i, svg, .rep-icon");
       const repText = btnPopupAddRep.querySelector(".rep-text");
       if (isInRep) {
         btnPopupAddRep.classList.add("in-rep");
@@ -7813,19 +7895,16 @@ onDomReady(() => {
       btnPopupAddRep.onclick = (e) => {
         e.stopPropagation();
         let curRep = JSON.parse(localStorage.getItem("repertorio")) || [];
-        const idx = curRep.findIndex(s => s.title.toLowerCase().trim() === (titulo || "").toLowerCase().trim());
+        const idx = curRep.findIndex(s => (s.title || "").toLowerCase().trim() === (titulo || "").toLowerCase().trim());
         if (idx === -1) {
           curRep.push({ title: titulo, author: autor, lyrics: letraHtml, type: tipo, audio: effectiveAudio, youtube: effectiveYoutube, category: category });
           localStorage.setItem("repertorio", JSON.stringify(curRep));
-          btnPopupAddRep.classList.add("in-rep");
-          if (repText) repText.textContent = "En Repertorio";
         } else {
           curRep.splice(idx, 1);
           localStorage.setItem("repertorio", JSON.stringify(curRep));
-          btnPopupAddRep.classList.remove("in-rep");
-          if (repText) repText.textContent = "Repertorio";
         }
-        if (typeof initSongButtons === "function") initSongButtons();
+        if (typeof window.updateAllRepertoireButtons === "function") window.updateAllRepertoireButtons();
+        else if (typeof initSongButtons === "function") initSongButtons();
         if (window.lucide) window.lucide.createIcons();
       };
     }
@@ -7888,6 +7967,10 @@ onDomReady(() => {
 
   window.cerrarLetra = () => {
     document.getElementById("popupLetra")?.classList.remove("active");
+    const popupMoreDropdown = document.getElementById("popupMoreDropdown");
+    if (popupMoreDropdown) popupMoreDropdown.style.display = "none";
+    const btnPopupMoreOptions = document.getElementById("btnPopupMoreOptions");
+    if (btnPopupMoreOptions) btnPopupMoreOptions.setAttribute("aria-expanded", "false");
     clearTimeout(hideTimer);
     
     // Detener audio al cerrar el popup
@@ -8233,6 +8316,101 @@ onDomReady(() => {
     } finally {
         btnDownloadImage.innerHTML = originalContent;
         btnDownloadImage.style.pointerEvents = "auto";
+    }
+  });
+
+  /* =========================================================
+     MENÚ DE MÁS OPCIONES EN LECTOR (3 PUNTITOS)
+     - Descargar canción en imagen de alta fidelidad
+     - Añadir / Quitar del repertorio con sincronización global
+     - Editar canción (Exclusivo para administradores/editores)
+  ========================================================== */
+  const btnPopupMoreOptions = document.getElementById("btnPopupMoreOptions");
+  const popupMoreDropdown = document.getElementById("popupMoreDropdown");
+  const btnPopupOptionDownload = document.getElementById("btnPopupOptionDownload");
+  const btnPopupOptionRepertoire = document.getElementById("btnPopupOptionRepertoire");
+  const btnPopupOptionEdit = document.getElementById("btnPopupOptionEdit");
+
+  if (btnPopupMoreOptions && popupMoreDropdown) {
+    btnPopupMoreOptions.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isVisible = popupMoreDropdown.style.display === "flex";
+      popupMoreDropdown.style.display = isVisible ? "none" : "flex";
+      btnPopupMoreOptions.setAttribute("aria-expanded", !isVisible);
+      if (window.lucide) window.lucide.createIcons();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (popupMoreDropdown.style.display === "flex" && !popupMoreDropdown.contains(e.target) && !btnPopupMoreOptions.contains(e.target)) {
+        popupMoreDropdown.style.display = "none";
+        btnPopupMoreOptions.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  btnPopupOptionDownload?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (popupMoreDropdown) popupMoreDropdown.style.display = "none";
+    document.getElementById("btnDownloadImage")?.click();
+  });
+
+  btnPopupOptionRepertoire?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (popupMoreDropdown) popupMoreDropdown.style.display = "none";
+
+    const titulo = (document.getElementById("popupTitulo")?.textContent || "").trim();
+    const autor = (document.getElementById("popupAutor")?.textContent || "").replace(/[()]/g, "").trim();
+    if (!titulo) return;
+
+    let curRep = JSON.parse(localStorage.getItem("repertorio")) || [];
+    const idx = curRep.findIndex(s => (s.title || "").toLowerCase().trim() === titulo.toLowerCase().trim());
+    if (idx === -1) {
+      curRep.push({
+        title: titulo,
+        author: autor,
+        lyrics: window.originalPopupLyrics || document.getElementById("popupTexto")?.innerText || "",
+        type: window.currentOpenedSongData?.type || "",
+        audio: window.currentOpenedSongData?.audio || "",
+        youtube: window.currentOpenedSongData?.youtube || "",
+        category: window.currentOpenedSongData?.category || ""
+      });
+      localStorage.setItem("repertorio", JSON.stringify(curRep));
+      if (typeof showToast === "function") showToast(`"${titulo}" añadida a tu repertorio.`, "success");
+    } else {
+      curRep.splice(idx, 1);
+      localStorage.setItem("repertorio", JSON.stringify(curRep));
+      if (typeof showToast === "function") showToast(`"${titulo}" quitada de tu repertorio.`, "info");
+    }
+
+    if (typeof window.updateAllRepertoireButtons === "function") {
+      window.updateAllRepertoireButtons();
+    } else if (typeof initSongButtons === "function") {
+      initSongButtons();
+    }
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  btnPopupOptionEdit?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (popupMoreDropdown) popupMoreDropdown.style.display = "none";
+
+    if (typeof window.isCurrentUserEditor === "function" && !window.isCurrentUserEditor()) {
+      if (typeof showToast === "function") showToast("Acceso exclusivo para el administrador.", "warning");
+      return;
+    }
+
+    const songDataToEdit = window.currentOpenedSongData || {
+      title: document.getElementById("popupTitulo")?.textContent?.trim() || "",
+      author: document.getElementById("popupAutor")?.textContent?.replace(/[()]/g, "")?.trim() || "",
+      lyrics: window.originalPopupLyrics || document.getElementById("popupTexto")?.innerText || "",
+      category: document.getElementById("popupCategoryDisplay")?.textContent?.replace(/^[·\s]+/, "") || ""
+    };
+
+    if (typeof window.cerrarLetra === "function") {
+      window.cerrarLetra();
+    }
+    if (typeof window.openSongEditorModal === "function") {
+      window.openSongEditorModal(songDataToEdit);
     }
   });
 
