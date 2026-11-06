@@ -4468,27 +4468,27 @@ body.light-mode .song-notes-footer {
   animation: pulse-audio-fab 1.5s infinite;
 }
 
-/* Estilos para el Botón de YouTube (Fondo rojo coherente con todas las herramientas) */
+/* Estilos para el Botón de YouTube */
 .menu-fab.youtube-fab {
-  background: #ef4444 !important;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 .menu-fab.youtube-fab svg {
   display: block;
-  width: 24px;
-  height: 17px;
+  width: 26px;
+  height: 19px;
 }
 .menu-fab.youtube-fab svg path {
-  fill: #ffffff !important;
+  fill: #FF0000 !important;
 }
 .menu-fab.youtube-fab svg polygon {
-  fill: #dc2626 !important;
+  fill: #ffffff !important;
 }
 .menu-fab.youtube-fab:hover {
-  background: #dc2626 !important;
+  background: #f8fafc !important;
   transform: scale(1.1);
 }
 
