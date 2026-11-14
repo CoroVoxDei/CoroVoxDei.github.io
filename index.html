@@ -16,17 +16,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Vox Dei">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <!-- Preconnect para carga rápida de fuentes -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="64x64" href="data:image/png;base64,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">
+    <link rel="apple-touch-icon" href="data:image/png;base64,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">
+        <!-- Preconnect para carga rápida de fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&family=Poppins:wght@400;600&family=Raleway:wght@700&family=Roboto+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="Principal.css?v=31.0">
-  <link rel="stylesheet" href="admin.css?v=31.0">
+  <link rel="stylesheet" href="Principal.css?v=31.3">
+  <link rel="stylesheet" href="admin.css?v=31.3">
   <!-- Librería para convertir HTML a Imagen -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
   <!-- Librería para Arrastrar y Soltar (SortableJS) -->
@@ -69,17 +67,23 @@
 
     (function() {
       try {
-        if ('caches' in window) {
-          caches.keys().then(function(keys) {
-            keys.forEach(function(k) { caches.delete(k); });
-          }).catch(function() {});
-        }
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            for (var r of regs) {
-              r.unregister().catch(function() {});
-            }
-          }).catch(function() {});
+        // Limpieza de cachés antiguas: SOLO una vez por versión (antes se ejecutaba en cada carga
+        // y destruía el modo offline). Para forzar otra limpieza, cambia CACHE_RESET_VERSION.
+        var CACHE_RESET_VERSION = "31.0";
+        if (localStorage.getItem("voxdei_cache_reset") !== CACHE_RESET_VERSION) {
+          localStorage.setItem("voxdei_cache_reset", CACHE_RESET_VERSION);
+          if ('caches' in window) {
+            caches.keys().then(function(keys) {
+              keys.forEach(function(k) { caches.delete(k); });
+            }).catch(function() {});
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              for (var r of regs) {
+                r.unregister().catch(function() {});
+              }
+            }).catch(function() {});
+          }
         }
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme === "light") {
@@ -109,7 +113,7 @@
   <header class="topbar">
     <div class="top-left">
       <!-- Botón de menú lateral y logotipo principal -->
-      <button id="menuBtn" class="icon-btn menu-btn" aria-label="Abrir menú" title="Menú">☰</button>
+      <button type="button" id="menuBtn" class="icon-btn menu-btn" aria-label="Abrir menú" title="Menú">☰</button>
       <div class="logo-left logo-header" id="headerBrandLogo" title="Inicio Cancionero Vox Dei">
         <img src="Principal/LogocompletoBlanco.png" alt="Vox Dei" class="logo header-main-logo" data-light="Principal/Logocompleto.png" data-dark="Principal/LogocompletoBlanco.png">
       </div>
@@ -117,26 +121,26 @@
 
     <div class="top-right">
       <!-- 1. Botón Inicio -->
-      <button id="headerHomeBtn" class="header-repertorio-btn" aria-label="Inicio" title="Inicio">
+      <button type="button" id="headerHomeBtn" class="header-repertorio-btn" aria-label="Inicio" title="Inicio">
         <i data-lucide="home" class="header-rep-icon"></i>
         <span class="header-rep-text">Inicio</span>
       </button>
 
       <!-- 2. Botón Mi Repertorio -->
-      <button id="headerRepertorioBtn" class="header-repertorio-btn" aria-label="Mi repertorio" title="Mi repertorio">
+      <button type="button" id="headerRepertorioBtn" class="header-repertorio-btn" aria-label="Mi repertorio" title="Mi repertorio">
         <i data-lucide="list-music" class="header-rep-icon"></i>
         <span class="header-rep-text">Mi repertorio</span>
       </button>
 
       <!-- 3. Botón Índice General de Cantos -->
-      <button id="headerIndiceBtn" class="header-repertorio-btn" aria-label="Índice de cantos" title="Índice de cantos">
+      <button type="button" id="headerIndiceBtn" class="header-repertorio-btn" aria-label="Índice de cantos" title="Índice de cantos">
         <i data-lucide="book-open" class="header-rep-icon"></i>
         <span class="header-rep-text">Índice</span>
       </button>
 
       <!-- 4. Botón de Perfil de Usuario con foto y menú desplegable -->
       <div class="profile-dropdown-wrapper">
-        <button id="topbarAuthBtn" class="topbar-profile-trigger" aria-label="Mi Perfil y Configuración" title="Mi Perfil / Configuración" aria-expanded="false" aria-haspopup="true">
+        <button type="button" id="topbarAuthBtn" class="topbar-profile-trigger" aria-label="Mi Perfil y Configuración" title="Mi Perfil / Configuración" aria-expanded="false" aria-haspopup="true">
           <div class="profile-avatar-circle">
             <div id="topbarUserLoggedOut" class="topbar-user-logged-out">
               <img src="Principal/usuario.png" alt="Usuario" class="topbar-user-default-img">
@@ -254,15 +258,15 @@
     <div class="search-filters-container">
       <span class="search-filters-label">Buscar por:</span>
       <div class="search-filters-group">
-        <button class="search-filter-btn active" data-filter="title">
+        <button type="button" class="search-filter-btn active" data-filter="title">
           <i data-lucide="music" class="btn-icon"></i>
           Título
         </button>
-        <button class="search-filter-btn" data-filter="author">
+        <button type="button" class="search-filter-btn" data-filter="author">
           <i data-lucide="user" class="btn-icon"></i>
           Autor
         </button>
-        <button class="search-filter-btn" data-filter="lyrics">
+        <button type="button" class="search-filter-btn" data-filter="lyrics">
           <i data-lucide="file-text" class="btn-icon"></i>
           Letra
         </button>
@@ -270,32 +274,32 @@
     </div>
 
     <div class="categories-wrapper">
-      <button class="cat-arrow left" id="catLeftBtn" title="Anterior categoría" aria-label="Anterior categoría">
+      <button type="button" class="cat-arrow left" id="catLeftBtn" title="Anterior categoría" aria-label="Anterior categoría">
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
       </button>
       <section class="search-categories" id="catScroll">
-        <button class="category-btn active" data-category="todos">Todos</button>
-        <button class="category-btn" data-category="Entrada">Entrada</button>
-        <button class="category-btn" data-category="Penitencial">Penitencial</button>
-        <button class="category-btn" data-category="Gloria">Gloria</button>
-        <button class="category-btn" data-category="Aclamacion">Aclamación</button>
-        <button class="category-btn" data-category="Ofertorio">Ofertorio</button>
-        <button class="category-btn" data-category="Santo">Santo</button>
-        <button class="category-btn" data-category="PadreNuestro">Padre Nuestro</button>
-        <button class="category-btn" data-category="Cordero">Cordero</button>
-        <button class="category-btn" data-category="Comunión">Comunión</button>
-        <button class="category-btn" data-category="AdoracionMeditacion">Meditación y Adoración</button>
-        <button class="category-btn" data-category="EnvioSalida">Salida y Envío</button>
-        <button class="category-btn" data-category="Marianos">Marianos</button>
-        <button class="category-btn" data-category="Salesianos">Salesianos</button>
-        <button class="category-btn" data-category="Cuaresma">Cuaresma</button>
-        <button class="category-btn" data-category="Pascua">Pascua</button>
-        <button class="category-btn" data-category="EspirituSanto">Espíritu Santo</button>
-        <button class="category-btn" data-category="Adviento">Adviento y Navidad</button>
-        <button class="category-btn" data-category="HimnosSalmos">Himnos y Salmos</button>
-        <button class="category-btn" data-category="Contemporáneo">Contemporáneo</button>
+        <button type="button" class="category-btn active" data-category="todos">Todos</button>
+        <button type="button" class="category-btn" data-category="Entrada">Entrada</button>
+        <button type="button" class="category-btn" data-category="Penitencial">Penitencial</button>
+        <button type="button" class="category-btn" data-category="Gloria">Gloria</button>
+        <button type="button" class="category-btn" data-category="Aclamacion">Aclamación</button>
+        <button type="button" class="category-btn" data-category="Ofertorio">Ofertorio</button>
+        <button type="button" class="category-btn" data-category="Santo">Santo</button>
+        <button type="button" class="category-btn" data-category="PadreNuestro">Padre Nuestro</button>
+        <button type="button" class="category-btn" data-category="Cordero">Cordero</button>
+        <button type="button" class="category-btn" data-category="Comunión">Comunión</button>
+        <button type="button" class="category-btn" data-category="AdoracionMeditacion">Meditación y Adoración</button>
+        <button type="button" class="category-btn" data-category="EnvioSalida">Salida y Envío</button>
+        <button type="button" class="category-btn" data-category="Marianos">Marianos</button>
+        <button type="button" class="category-btn" data-category="Salesianos">Salesianos</button>
+        <button type="button" class="category-btn" data-category="Cuaresma">Cuaresma</button>
+        <button type="button" class="category-btn" data-category="Pascua">Pascua</button>
+        <button type="button" class="category-btn" data-category="EspirituSanto">Espíritu Santo</button>
+        <button type="button" class="category-btn" data-category="Adviento">Adviento y Navidad</button>
+        <button type="button" class="category-btn" data-category="HimnosSalmos">Himnos y Salmos</button>
+        <button type="button" class="category-btn" data-category="Contemporáneo">Contemporáneo</button>
       </section>
-      <button class="cat-arrow right" id="catRightBtn" title="Siguiente categoría" aria-label="Siguiente categoría">
+      <button type="button" class="cat-arrow right" id="catRightBtn" title="Siguiente categoría" aria-label="Siguiente categoría">
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
       </button>
     </div>
@@ -450,7 +454,7 @@
         <div id="saved-repertorio-detail" class="saved-repertorio-detail-section" style="display: none;">
           <div class="saved-repertorio-detail-header">
             <div class="saved-rep-detail-top-bar">
-              <button id="btnVolverRepertorios" class="btn-back-repertorio" title="Volver a mis repertorios">
+              <button type="button" id="btnVolverRepertorios" class="btn-back-repertorio" title="Volver a mis repertorios">
                 <i data-lucide="arrow-left"></i>
                 <span>Volver a mis repertorios</span>
               </button>
@@ -640,7 +644,7 @@
               <!-- Información Principal del Músico -->
               <div class="spotify-hero-info">
                 <div id="profileRoleLine" class="spotify-role-line">
-                  <span id="profileRoleBadge">Director / Administrador Maestro</span>
+                  <span id="profileRoleBadge">Músico</span>
                   <span id="profileVerifiedBadge" class="verified-badge" title="Verificado Oficial">
                     <i data-lucide="badge-check"></i>
                   </span>
@@ -651,7 +655,7 @@
                 <div class="spotify-meta-line">
                   <span id="profileSubRoleGroup">Coro Juvenil Salesiano Vox Dei</span>
                   <span class="spotify-sep">•</span>
-                  <span id="profileUserEmail">jhonbastidas2805@gmail.com</span>
+                  <span id="profileUserEmail">Sin correo</span>
                 </div>
 
                 <!-- Métricas de actividad -->
@@ -711,7 +715,7 @@
 
               <div class="spotify-data-row">
                 <span class="spotify-data-label"><i data-lucide="phone"></i> Teléfono / Celular</span>
-                <span id="profilePhoneVal" class="spotify-data-value">+51 999 123 456</span>
+                <span id="profilePhoneVal" class="spotify-data-value">Sin especificar</span>
               </div>
 
               <div class="spotify-data-row">
@@ -721,12 +725,12 @@
 
               <div class="spotify-data-row">
                 <span class="spotify-data-label"><i data-lucide="calendar"></i> Fecha de Nacimiento</span>
-                <span id="profileDobVal" class="spotify-data-value">28 de mayo 2003</span>
+                <span id="profileDobVal" class="spotify-data-value">Sin especificar</span>
               </div>
 
               <div class="spotify-data-row">
                 <span class="spotify-data-label"><i data-lucide="mail"></i> Correo Registrado</span>
-                <span id="profileEmailVal" class="spotify-data-value">jhonbastidas2805@gmail.com</span>
+                <span id="profileEmailVal" class="spotify-data-value">Sin correo</span>
               </div>
             </div>
           </section>
@@ -876,7 +880,7 @@
           </div>
           <h2 class="auth-panel-title">Bienvenido a Vox Dei Cloud</h2>
           <p class="auth-panel-sub" style="max-width: 440px; margin: 0 auto 24px;">Sincroniza tus cantos, esquemas de misa y tonos preferidos en la nube para acceder desde cualquier dispositivo.</p>
-          <button id="btnTriggerAuthModal" class="btn-primary-auth" style="max-width: 280px; margin: 0 auto;">
+          <button type="button" id="btnTriggerAuthModal" class="btn-primary-auth" style="max-width: 280px; margin: 0 auto;">
             <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
             <span>Iniciar Sesión / Crear Cuenta</span>
           </button>
@@ -903,7 +907,7 @@
       <div class="sidebar-brand-mini">
         <img src="Principal/VoxDeiBlanco.png" alt="Vox Dei" class="sidebar-logo-img" data-light="Principal/VoxDei.png" data-dark="Principal/VoxDeiBlanco.png">
       </div>
-      <button id="sidebarClose" class="sidebar-close" aria-label="Cerrar menú"><i data-lucide="x"></i></button>
+      <button type="button" id="sidebarClose" class="sidebar-close" aria-label="Cerrar menú"><i data-lucide="x"></i></button>
     </div>
     
     <nav class="sidebar-nav">
@@ -933,9 +937,9 @@
       </button>
 
       <!-- Botón PWA para Instalar App y usar sin internet -->
-      <button type="button" id="btnInstallPwa" class="sidebar-action-btn btn-sidebar-install-pwa" title="Instalar aplicación para usar sin internet" style="display: none;">
+      <button type="button" id="btnInstallPwa" class="sidebar-action-btn btn-sidebar-install-pwa" title="Instalar la app en tu dispositivo" style="display: none;">
         <i data-lucide="download"></i>
-        <span>Instalar App (Sin Internet)</span>
+        <span>Instalar App</span>
       </button>
     </div>
   </aside>
@@ -952,17 +956,17 @@
     <div class="footer-content">
       <div class="footer-section">
         <h3>Coro Juvenil Salesiano Vox Dei</h3>
-        <a href="https://www.instagram.com/coro_salesiano_voxdei/" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+        <a href="https://www.instagram.com/coro_salesiano_voxdei/" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon" alt="" aria-hidden="true"> Instagram</a>
       </div>
       <div class="footer-section">
         <h3>Movimiento Juvenil Salesiano</h3>
-        <a href="https://www.facebook.com/MJSChosica" target="_blank" rel="noopener noreferrer"><img src="Principal/facebook-new.png" class="icon"> Facebook</a>
-        <a href="https://www.instagram.com/mjschosica?igsh=MThyMzh0MmI0cjBiNg==" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon"> Instagram</a>
+        <a href="https://www.facebook.com/MJSChosica" target="_blank" rel="noopener noreferrer"><img src="Principal/facebook-new.png" class="icon" alt="" aria-hidden="true"> Facebook</a>
+        <a href="https://www.instagram.com/mjschosica?igsh=MThyMzh0MmI0cjBiNg==" target="_blank" rel="noopener noreferrer"><img src="Principal/instagram-new.png" class="icon" alt="" aria-hidden="true"> Instagram</a>
       </div>
       <div class="footer-section">
         <h3>Ubícanos</h3>
-        <a href="https://maps.app.goo.gl/9pRLaTpgSZsEbyni6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon"> Parroquia San Juan Bosco</a>
-        <a href="https://maps.app.goo.gl/uaJVAUvCpM1ivJog6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon"> Santuario María Auxiliadora</a>
+        <a href="https://maps.app.goo.gl/9pRLaTpgSZsEbyni6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon" alt="" aria-hidden="true"> Parroquia San Juan Bosco</a>
+        <a href="https://maps.app.goo.gl/uaJVAUvCpM1ivJog6" target="_blank" rel="noopener noreferrer"><img src="Principal/Ubicacion.png" class="icon" alt="" aria-hidden="true"> Santuario María Auxiliadora</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -989,7 +993,7 @@
   <!-- 8.1. Modal para Guardar Repertorio -->
   <div id="popupGuardarRepertorio" class="popup-overlay">
     <div class="popup-content save-repertorio-popup">
-      <button onclick="window.cerrarGuardarRepertorio()" class="popup-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
+      <button type="button" onclick="window.cerrarGuardarRepertorio()" class="popup-cerrar" title="Cerrar"><i data-lucide="x"></i></button>
       <div class="save-repertorio-header">
         <h2 class="save-repertorio-title">Guardar Repertorio</h2>
       </div>
@@ -1004,8 +1008,8 @@
           <input type="text" id="repertorioNameInput" placeholder="Ej. Domingo 24 - Pascua Joven..." maxlength="50" autocomplete="off">
         </div>
         <div class="popup-actions-buttons">
-          <button onclick="window.cerrarGuardarRepertorio()" class="btn-cancel">Cancelar</button>
-          <button id="btnConfirmarGuardarRepertorio" class="btn-confirm">Guardar</button>
+          <button type="button" onclick="window.cerrarGuardarRepertorio()" class="btn-cancel">Cancelar</button>
+          <button type="button" id="btnConfirmarGuardarRepertorio" class="btn-confirm">Guardar</button>
         </div>
       </div>
     </div>
@@ -1016,12 +1020,12 @@
     <div class="popup-content">
       
       <!-- Botones de Navegación Lateral (Estilo flechas limpias de galería, sin círculos) -->
-      <button id="btnPopupPrevSong" class="popup-nav-arrow prev" title="Anterior canción (←)" aria-label="Anterior canción">
+      <button type="button" id="btnPopupPrevSong" class="popup-nav-arrow prev" title="Anterior canción (←)" aria-label="Anterior canción">
         <svg class="popup-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"></polyline>
         </svg>
       </button>
-      <button id="btnPopupNextSong" class="popup-nav-arrow next" title="Siguiente canción (→)" aria-label="Siguiente canción">
+      <button type="button" id="btnPopupNextSong" class="popup-nav-arrow next" title="Siguiente canción (→)" aria-label="Siguiente canción">
         <svg class="popup-nav-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
@@ -1050,7 +1054,7 @@
                 </button>
               </div>
               <!-- Botón de descarga original conservado en background para el motor htmlToImage -->
-              <button id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen" style="display: none;"></button>
+              <button type="button" id="btnDownloadImage" class="popup-download-btn popup-action-btn" title="Descargar Imagen" style="display: none;"></button>
               <button type="button" id="btnPopupAddRep" class="popup-rep-btn" style="display: none;"></button>
             </div>
             <!-- Título y Autor (Centro) -->
@@ -1062,7 +1066,7 @@
               <span id="popupCategoryDisplay" style="display:none;"></span>
             </div>
             <!-- Botón Cerrar (Derecha) -->
-            <button onclick="cerrarLetra()" class="popup-cerrar popup-action-btn" title="Cerrar"><i data-lucide="x"></i></button>
+            <button type="button" onclick="cerrarLetra()" class="popup-cerrar popup-action-btn" title="Cerrar"><i data-lucide="x"></i></button>
          </div>
          
          <pre id="popupTexto" class="popup-letra"></pre>
@@ -1078,7 +1082,7 @@
                  <span class="tool-label">Tamaño</span>
                  <input type="range" id="fontSizeSlider" min="8" max="24" step="1" value="16">
                </div>
-               <button class="menu-fab" id="btnToolSize" title="Tamaño de letra">
+               <button type="button" class="menu-fab" id="btnToolSize" title="Tamaño de letra">
                  <span class="tool-icon-text">T</span>
                </button>
              </div>
@@ -1088,7 +1092,7 @@
                  <span class="tool-label">Espaciado</span>
                  <input type="range" id="lineSpacingSlider" min="1" max="2.5" step="0.1" value="1.6">
                </div>
-               <button class="menu-fab" id="btnToolSpacing" title="Espaciado de línea">
+               <button type="button" class="menu-fab" id="btnToolSpacing" title="Espaciado de línea">
                  <div class="tool-icon-spacing">
                    <span>T</span>
                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M7 7l5-5 5 5M7 17l5 5 5-5"/></svg>
@@ -1100,24 +1104,24 @@
                <div id="panelTranspose" class="tool-panel">
                  <span class="tool-label">Tono</span>
                  <div class="transpose-controls">
-                   <button id="btnTransposeDown" class="trans-btn">-</button>
+                   <button type="button" id="btnTransposeDown" class="trans-btn">-</button>
                    <span id="transposeValue">0</span>
-                   <button id="btnTransposeUp" class="trans-btn">+</button>
+                   <button type="button" id="btnTransposeUp" class="trans-btn">+</button>
                  </div>
                </div>
-               <button class="menu-fab" id="btnToolTranspose" title="Transponer">
+               <button type="button" class="menu-fab" id="btnToolTranspose" title="Transponer">
                  <span class="tool-icon-text">#</span>
                </button>
              </div>
              <!-- Opción Notación -->
              <div class="menu-item-container">
-               <button class="menu-fab" id="btnToolNotation" title="Cambiar Notación (C / Do)">
+               <button type="button" class="menu-fab" id="btnToolNotation" title="Cambiar Notación (C / Do)">
                  <span class="tool-icon-text">C</span>
                </button>
              </div>
              <!-- Opción Columnas (Solo PC/Tablet) -->
              <div class="menu-item-container multi-column-only">
-               <button class="menu-fab" id="btnToolColumns" title="Alternar 2 Columnas">
+               <button type="button" class="menu-fab" id="btnToolColumns" title="Alternar 2 Columnas">
                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
                    <path d="M4 3h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
                    <path d="M7 7h3M7 11h3M7 15h3M14 7h3M14 11h3M14 15h3"/>
@@ -1130,22 +1134,19 @@
                  <span id="audioTime" class="tool-label" style="min-width: 40px; font-size: 10px;">0:00</span>
                  <input type="range" id="audioProgress" min="0" max="100" value="0" style="width: 100px;">
                </div>
-               <button class="menu-fab" id="btnToolAudio" title="Escuchar audio">
+               <button type="button" class="menu-fab" id="btnToolAudio" title="Escuchar audio">
                  <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="display: block;"><path d="M8 5v14l11-7z"/></svg>
                </button>
              </div>
              <!-- Opción YouTube (Agrupado con Audio antes de las Notas) -->
              <div id="menuItemYoutube" class="menu-item-container" style="display:none;">
-               <button class="menu-fab youtube-fab" id="btnToolYoutube" title="Ver / Escuchar en YouTube" aria-label="Ver / Escuchar en YouTube">
-                 <svg viewBox="0 0 28 20" width="26" height="19" style="display: block;">
-                   <path fill="#FF0000" d="M27.4 3.1A3.5 3.5 0 0 0 24.9.6C22.7 0 14 0 14 0S5.3 0 3.1.6A3.5 3.5 0 0 0 .6 3.1 36.6 36.6 0 0 0 0 10a36.6 36.6 0 0 0 .6 6.9 3.5 3.5 0 0 0 2.5 2.5C5.3 20 14 20 14 20s8.7 0 10.9-.6a3.5 3.5 0 0 0 2.5-2.5 36.6 36.6 0 0 0 .6-6.9 36.6 36.6 0 0 0-.6-6.9z"/>
-                   <polygon fill="#FFFFFF" points="11.2,14.3 18.5,10 11.2,5.7"/>
-                 </svg>
+               <button type="button" class="menu-fab" id="btnToolYoutube" title="Ver / Escuchar en YouTube" aria-label="Ver / Escuchar en YouTube">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
                </button>
              </div>
              <!-- Opción Cuaderno de Ensayo y Notas (Lápiz, siempre justo encima del engranaje) -->
              <div id="popupNotesWrapper" class="menu-item-container">
-               <button class="menu-fab" id="btnNotesFab" title="Notas y Cuaderno de Ensayo" aria-label="Notas y Cuaderno de Ensayo">
+               <button type="button" class="menu-fab" id="btnNotesFab" title="Notas y Cuaderno de Ensayo" aria-label="Notas y Cuaderno de Ensayo">
                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                    <path d="m15 5 4 4"/>
@@ -1155,7 +1156,7 @@
              </div>
            </div>
           <!-- Botón Principal (Engranaje) -->
-          <button id="popupSettingsBtn" class="settings-fab main-gear" title="Ajustes" aria-label="Ajustes">
+          <button type="button" id="popupSettingsBtn" class="settings-fab main-gear" title="Ajustes" aria-label="Ajustes">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
         </div>
@@ -1570,7 +1571,7 @@
                 <span>Audio</span>
               </button>
               <button type="button" id="btnMediaOptionYoutube" class="modern-media-tab-btn">
-                <i data-lucide="youtube"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
                 <span>YouTube</span>
               </button>
             </div>
@@ -1934,7 +1935,7 @@
   ========================================================== -->
   <div id="authModal" class="modal-overlay auth-modal-overlay">
     <div class="auth-split-card">
-      <button id="closeAuthModal" class="close-modal auth-modal-close" aria-label="Cerrar">&times;</button>
+      <button type="button" id="closeAuthModal" class="close-modal auth-modal-close" aria-label="Cerrar">&times;</button>
       
       <!-- HERO PANEL IZQUIERDO (Visible en PC/Laptop/Tablet) -->
       <div class="auth-hero-panel">
@@ -2006,8 +2007,8 @@
 
         <!-- Pestañas ocultas/compatibilidad JS -->
         <div class="auth-tabs-segmented" style="display: none;">
-          <button id="authTabLogin" class="auth-tab-btn active">Iniciar Sesión</button>
-          <button id="authTabRegister" class="auth-tab-btn">Crear Cuenta</button>
+          <button type="button" id="authTabLogin" class="auth-tab-btn active">Iniciar Sesión</button>
+          <button type="button" id="authTabRegister" class="auth-tab-btn">Crear Cuenta</button>
         </div>
 
         <!-- Formulario con Iconos Internos y Ojo para Contraseña -->
@@ -2062,7 +2063,7 @@
 
         <!-- Botón Social Google -->
         <div id="authSocialGroup" class="social-login-wrapper">
-          <button id="btnGoogleAuth" class="btn-social-google">
+          <button type="button" id="btnGoogleAuth" class="btn-social-google">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 18px; height: 18px; display: block; flex-shrink: 0;">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -2089,7 +2090,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Sugerencias o Correcciones</h3>
-        <button id="closeFeedback" class="close-modal">&times;</button>
+        <button type="button" id="closeFeedback" class="close-modal">&times;</button>
       </div>
       <div class="modal-body">
         <p class="modal-intro">¿Encontraste un error o tienes una idea? Cuéntanos para seguir mejorando.</p>
@@ -2133,13 +2134,13 @@
     <div class="modal-content share-modal-content" style="max-width: 440px;">
       <div class="modal-header share-modal-header">
         <h3 id="shareModalTitle" class="share-modal-title">Compartir</h3>
-        <button id="closeShareModal" class="share-close-modal">&times;</button>
+        <button type="button" id="closeShareModal" class="share-close-modal">&times;</button>
       </div>
       <div class="modal-body share-modal-body">
         
         <!-- Fila de Botones Circulares Estilo YouTube/Instagram con SVGs directos -->
         <div class="share-circles-wrapper">
-          <a id="shareWhatsApp" href="#" target="_blank" class="share-circle-item">
+          <a id="shareWhatsApp" href="#" target="_blank" rel="noopener noreferrer" class="share-circle-item">
             <div class="share-circle-btn whatsapp">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -2148,7 +2149,7 @@
             <span class="share-circle-label">WhatsApp</span>
           </a>
           
-          <a id="shareFacebook" href="#" target="_blank" class="share-circle-item">
+          <a id="shareFacebook" href="#" target="_blank" rel="noopener noreferrer" class="share-circle-item">
             <div class="share-circle-btn facebook">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
@@ -2157,7 +2158,7 @@
             <span class="share-circle-label">Facebook</span>
           </a>
           
-          <a id="shareTelegram" href="#" target="_blank" class="share-circle-item">
+          <a id="shareTelegram" href="#" target="_blank" rel="noopener noreferrer" class="share-circle-item">
             <div class="share-circle-btn telegram">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -2167,7 +2168,7 @@
             <span class="share-circle-label">Telegram</span>
           </a>
           
-          <a id="shareEmail" href="#" target="_blank" class="share-circle-item">
+          <a id="shareEmail" href="#" target="_blank" rel="noopener noreferrer" class="share-circle-item">
             <div class="share-circle-btn email">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -2211,7 +2212,7 @@
               <i data-lucide="link" class="share-link-icon"></i>
               <input type="text" id="shareUrlInput" readonly onclick="this.select();" placeholder="Generando enlace...">
             </div>
-            <button id="btnCopyShareUrl" class="share-pill-copy-btn">
+            <button type="button" id="btnCopyShareUrl" class="share-pill-copy-btn">
               <span>Copiar</span>
             </button>
           </div>
@@ -2219,7 +2220,7 @@
 
         <!-- Botón de compartir nativo si está disponible -->
         <div id="nativeShareWrapper" style="display: none; margin-top: 16px;">
-          <button id="btnNativeShare" class="share-system-btn">
+          <button type="button" id="btnNativeShare" class="share-system-btn">
             <i data-lucide="share-2" style="width: 16px; height: 16px;"></i>
             <span>Compartir usando el sistema</span>
           </button>
@@ -2383,8 +2384,8 @@
        - Principal.js (Motor de la aplicación pública)
        - admin.js (Módulo CMS y administración)
   ========================================================== -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script type="module" src="Principal.js?v=31.0"></script>
-  <script type="module" src="admin.js?v=31.0"></script>
+  <script src="https://unpkg.com/lucide@1.70.0/dist/umd/lucide.min.js" integrity="sha384-64z4N640tVzhAicQVGzxE/48VNN9yS53U5kv9UH8ca7xGU4KSJ9zz8nD4C2BEerP" crossorigin="anonymous" defer></script>
+  <script type="module" src="Principal.js?v=31.3"></script>
+  <script type="module" src="admin.js?v=31.3"></script>
 </body>
 </html>
