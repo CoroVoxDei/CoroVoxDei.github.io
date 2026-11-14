@@ -4,7 +4,7 @@
    Módulo desacoplado de Principal.js para máxima ligereza y rendimiento.
    ========================================================================== */
 
-import { doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 (function initAdminLayer() {
@@ -35,10 +35,6 @@ import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.c
     onAuthStateChanged: (cb) => window.AuthEngine?.onAuthStateChanged?.(cb)
   };
 
-  const isCurrentUserEditor = () => {
-    const user = getActiveUser();
-    return isUserAdmin(user);
-  };
   const isFirebaseReal = () => typeof window.isFirebaseReal !== "undefined" ? window.isFirebaseReal : true;
   const getCategoryCollectionName = (cat) => typeof window.getCategoryCollectionName === "function" ? window.getCategoryCollectionName(cat) : (cat || "Entrada");
 
@@ -2063,7 +2059,6 @@ import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.c
 
   let currentHeaderConfig = { ...DEFAULT_HEADER_CONFIG };
   let currentCustomizerSection = "home"; // home | repertorio | indice
-  let currentWizardStep = 1; // 1: Foto | 2: Frase
   let currentPreviewMode = "pc"; // pc | mobile
 
   function loadLocalHeaderConfig() {
