@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 /* ========================
    CONFIGURACIÓN DE FIREBASE (NUBE REAL EN PRODUCCIÓN)
@@ -61,6 +61,31 @@ function onDomReady(fn) {
   }
 }
 
+// Escapa texto no confiable antes de insertarlo en plantillas innerHTML (previene XSS)
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+window.escapeHtml = escapeHtml;
+
+// Una sola descarga compartida de songs-catalog.json (antes se pedía 4 veces)
+let _catalogFetchPromise = null;
+function fetchCatalogOnce() {
+  if (!_catalogFetchPromise) {
+    _catalogFetchPromise = fetch("songs-catalog.json")
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .catch(function (err) {
+        _catalogFetchPromise = null; // permite reintentar si falló
+        throw err;
+      });
+  }
+  return _catalogFetchPromise;
+}
+
 // Precarga inmediata del catálogo de canciones y depuración de canciones mock
 (function preloadCatalog() {
   try {
@@ -109,7 +134,7 @@ function showToast(message, type = "info", duration = 3000) {
 
   toast.innerHTML = `
     <i data-lucide="${iconName}" class="toast-icon"></i>
-    <span class="toast-message">${message.replace(/\n/g, '<br>')}</span>
+    <span class="toast-message">${escapeHtml(message).replace(/\n/g, '<br>')}</span>
     <button class="toast-close" aria-label="Cerrar">&times;</button>
   `;
 
@@ -155,12 +180,12 @@ function showConfirmModal({
           <div class="custom-dialog-icon-badge ${danger ? 'danger' : 'info'}">
             <i data-lucide="${icon}"></i>
           </div>
-          <h3 class="custom-dialog-title">${title}</h3>
+          <h3 class="custom-dialog-title">${escapeHtml(title)}</h3>
         </div>
-        <p class="custom-dialog-message">${message.replace(/\n/g, '<br>')}</p>
+        <p class="custom-dialog-message">${escapeHtml(message).replace(/\n/g, '<br>')}</p>
         <div class="custom-dialog-actions">
-          <button type="button" class="custom-dialog-btn btn-cancel">${cancelText}</button>
-          <button type="button" class="custom-dialog-btn ${danger ? 'btn-danger' : 'btn-primary'}">${confirmText}</button>
+          <button type="button" class="custom-dialog-btn btn-cancel">${escapeHtml(cancelText)}</button>
+          <button type="button" class="custom-dialog-btn ${danger ? 'btn-danger' : 'btn-primary'}">${escapeHtml(confirmText)}</button>
         </div>
       </div>
     `;
@@ -212,15 +237,15 @@ function showPromptModal({
           <div class="custom-dialog-icon-badge info">
             <i data-lucide="edit-3"></i>
           </div>
-          <h3 class="custom-dialog-title">${title}</h3>
+          <h3 class="custom-dialog-title">${escapeHtml(title)}</h3>
         </div>
-        <p class="custom-dialog-message">${message.replace(/\n/g, '<br>')}</p>
+        <p class="custom-dialog-message">${escapeHtml(message).replace(/\n/g, '<br>')}</p>
         <div class="custom-dialog-input-group">
           <input type="${inputType}" class="custom-dialog-input" value="${defaultValue.replace(/"/g, '&quot;')}" placeholder="${placeholder.replace(/"/g, '&quot;')}" />
         </div>
         <div class="custom-dialog-actions">
-          <button type="button" class="custom-dialog-btn btn-cancel">${cancelText}</button>
-          <button type="button" class="custom-dialog-btn btn-primary">${confirmText}</button>
+          <button type="button" class="custom-dialog-btn btn-cancel">${escapeHtml(cancelText)}</button>
+          <button type="button" class="custom-dialog-btn btn-primary">${escapeHtml(confirmText)}</button>
         </div>
       </div>
     `;
@@ -278,7 +303,7 @@ const AuthEngine = {
       AuthEngine.currentUser = auth.currentUser;
       return auth.currentUser;
     }
-    const cached = localStorage.getItem("voxdei_last_logged_user") || localStorage.getItem("simulated_logged_user");
+    const cached = localStorage.getItem("voxdei_last_logged_user");
     if (cached) {
       try {
         const u = JSON.parse(cached);
@@ -301,55 +326,40 @@ const AuthEngine = {
         callback(user);
       });
     } else {
-      const checkAuth = () => {
-        const loggedUser = JSON.parse(localStorage.getItem("simulated_logged_user") || "null");
-        AuthEngine.currentUser = loggedUser;
-        callback(loggedUser);
-      };
-      checkAuth();
-      window.addEventListener("simulatedAuthChanged", checkAuth);
+      // Sin Firebase no se acepta ninguna sesión guardada localmente
+      AuthEngine.currentUser = null;
+      callback(null);
     }
+  },
+
+  // Suma 1 al contador público de la comunidad (solo funciona si el documento stats/community ya existe)
+  bumpCommunityCounter: async function() {
+    try {
+      await setDoc(doc(db, "stats", "community"), { registeredUsers: increment(1) }, { merge: true });
+    } catch (e) { /* sin documento contador: se ignora */ }
   },
 
   signInWithGoogle: async function() {
     if (isFirebaseReal) {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
+      let isNewUser = false;
+      try {
+        isNewUser = !(await getDoc(doc(db, "users", userCredential.user.uid))).exists();
+      } catch (e) {}
       try {
         await setDoc(doc(db, "users", userCredential.user.uid), {
           email: userCredential.user.email,
           createdAt: new Date().toISOString(),
           provider: "google"
         });
+        if (isNewUser) await AuthEngine.bumpCommunityCounter();
       } catch (e) {
         console.warn("No se pudo guardar la estadística en Firestore:", e);
       }
       return userCredential.user;
     } else {
-      const emailInput = await showPromptModal({
-        title: "Simulador de Google",
-        message: "Introduce tu correo de Google para ingresar:",
-        defaultValue: "jhonbastidas2805@gmail.com",
-        placeholder: "jhonbastidas2805@gmail.com",
-        confirmText: "Iniciar sesión"
-      });
-      if (!emailInput) {
-        throw new Error("Inicio de sesión de Google cancelado.");
-      }
-      const isMasterAdmin = emailInput.trim().toLowerCase() === "jhonbastidas2805@gmail.com";
-      const simulatedGoogleUser = {
-        uid: "sim_google_" + Math.random().toString(36).substr(2, 9),
-        email: emailInput.trim(),
-        displayName: isMasterAdmin ? "Jhon Bastidas (Director)" : "Músico Coro"
-      };
-      const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
-      if (!users.some(u => u.email === simulatedGoogleUser.email)) {
-        users.push({ ...simulatedGoogleUser, createdAt: new Date().toISOString() });
-        localStorage.setItem("simulated_users", JSON.stringify(users));
-      }
-      localStorage.setItem("simulated_logged_user", JSON.stringify(simulatedGoogleUser));
-      window.dispatchEvent(new Event("simulatedAuthChanged"));
-      return simulatedGoogleUser;
+      throw new Error("El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.");
     }
   },
 
@@ -363,21 +373,13 @@ const AuthEngine = {
           email: email,
           createdAt: new Date().toISOString()
         });
+        await AuthEngine.bumpCommunityCounter();
       } catch (e) {
         console.warn("No se pudo guardar la estadística en Firestore:", e);
       }
       return userCredential.user;
     } else {
-      const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
-      if (users.some(u => u.email === email)) {
-        throw new Error("Este correo electrónico ya está registrado.");
-      }
-      const newUser = { uid: "sim_" + Math.random().toString(36).substr(2, 9), email: email };
-      users.push({ ...newUser, password: password, createdAt: new Date().toISOString() });
-      localStorage.setItem("simulated_users", JSON.stringify(users));
-      localStorage.setItem("simulated_logged_user", JSON.stringify(newUser));
-      window.dispatchEvent(new Event("simulatedAuthChanged"));
-      return newUser;
+      throw new Error("El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.");
     }
   },
 
@@ -386,15 +388,7 @@ const AuthEngine = {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       return userCredential.user;
     } else {
-      const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
-      const matched = users.find(u => u.email === email && u.password === password);
-      if (!matched) {
-        throw new Error("El correo electrónico o la contraseña son incorrectos.");
-      }
-      const user = { uid: matched.uid, email: matched.email };
-      localStorage.setItem("simulated_logged_user", JSON.stringify(user));
-      window.dispatchEvent(new Event("simulatedAuthChanged"));
-      return user;
+      throw new Error("El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.");
     }
   },
 
@@ -402,8 +396,7 @@ const AuthEngine = {
     if (isFirebaseReal) {
       await signOut(auth);
     } else {
-      localStorage.removeItem("simulated_logged_user");
-      window.dispatchEvent(new Event("simulatedAuthChanged"));
+      AuthEngine.currentUser = null;
     }
   },
 
@@ -419,11 +412,7 @@ const AuthEngine = {
     if (isFirebaseReal) {
       await sendPasswordResetEmail(auth, email);
     } else {
-      const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
-      const exists = users.some(u => u.email === email);
-      if (!exists && email !== "musico.demo@gmail.com") {
-        throw new Error("No existe ninguna cuenta registrada con este correo electrónico.");
-      }
+      throw new Error("El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.");
     }
     return true;
   },
@@ -447,15 +436,7 @@ const AuthEngine = {
         }
       }
     } else {
-      const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
-      const userIndex = users.findIndex(u => u.email === user.email || u.uid === user.uid);
-      if (userIndex !== -1) {
-        users[userIndex].password = newPassword.trim();
-        localStorage.setItem("simulated_users", JSON.stringify(users));
-      } else {
-        users.push({ uid: user.uid || "sim_" + Date.now(), email: user.email || "demo@gmail.com", password: newPassword.trim(), createdAt: new Date().toISOString() });
-        localStorage.setItem("simulated_users", JSON.stringify(users));
-      }
+      throw new Error("El servicio de autenticación no está disponible. Recarga la página e inténtalo de nuevo.");
     }
     return true;
   },
@@ -463,13 +444,14 @@ const AuthEngine = {
   getRegisteredUsersCount: async function() {
     if (isFirebaseReal && auth && auth.currentUser) {
       try {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        if (querySnapshot && typeof querySnapshot.size === "number") {
-          return Math.max(1, querySnapshot.size);
+        // Un solo documento contador (stats/community) en vez de leer TODA la colección de usuarios
+        const statsSnap = await getDoc(doc(db, "stats", "community"));
+        const total = statsSnap.exists() ? statsSnap.data().registeredUsers : null;
+        if (typeof total === "number") {
+          return Math.max(1, total);
         }
       } catch (e) {
-        // En Firestore las reglas de privacidad frecuentemente restringen listar la colección completa de usuarios.
-        // Fallback elegante sin generar console.error
+        // Sin el documento contador se usa el valor de respaldo de abajo
       }
     }
     const users = JSON.parse(localStorage.getItem("simulated_users") || "[]");
@@ -519,7 +501,7 @@ window.getCurrentUser = () => {
   if (isFirebaseReal) {
     return auth?.currentUser || null;
   } else {
-    return JSON.parse(localStorage.getItem("simulated_logged_user") || "null");
+    return null;
   }
 };
 
@@ -655,7 +637,6 @@ window.toggleAudio = function(url, btn) {
     }
 };
 
-const homeBtn = document.getElementById("homeBtn");
 const menuBtn = document.getElementById("menuBtn");
 const sidebar = document.getElementById("sidebar");
 const sidebarClose = document.getElementById("sidebarClose");
@@ -730,11 +711,6 @@ function switchView(view) {
     songNotesModal.classList.remove("active");
     songNotesModal.style.display = "none";
   }
-
-  const alreadyInHome = (view === "home" && viewHome?.style.display !== "none");
-  const alreadyInRepertorio = (view === "repertorio" && viewRepertorio?.style.display !== "none");
-  const alreadyInProfile = (view === "profile" && viewProfile?.style.display !== "none");
-  const alreadyInIndice = (view === "indice" && viewIndice?.style.display !== "none");
 
   if (view === "home") {
     if (viewHome) viewHome.style.display = "block";
@@ -2273,8 +2249,6 @@ toggleChordsBtn?.addEventListener("click", e => {
 /* ========================
    8. REPERTORIO (DRAG & DROP + LÓGICA Y ESQUEMAS LITÚRGICOS)
 ======================== */
-let dragSrcEl = null;
-
 window.LITURGICAL_SCHEMAS = {
   ordinario: {
     id: "ordinario",
@@ -2621,7 +2595,7 @@ function renderizarRepertorio(lista, esBusqueda = false) {
       const catSlug = category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
 
       const coverHtml = cover ? `
-        <img src="${cover}" class="song-cover-thumb" alt="${title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'song-cover-fallback\\'><svg class=\\'music-icon\\' width=\\'18\\' height=\\'18\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M9 18V5l12-2v13\\'></path><circle cx=\\'6\\' cy=\\'18\\' r=\\'3\\'></circle><circle cx=\\'18\\' cy=\\'16\\' r=\\'3\\'></circle></svg></div>';">
+        <img src="${escapeHtml(cover)}" class="song-cover-thumb" alt="${escapeHtml(title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'song-cover-fallback\\'><svg class=\\'music-icon\\' width=\\'18\\' height=\\'18\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M9 18V5l12-2v13\\'></path><circle cx=\\'6\\' cy=\\'18\\' r=\\'3\\'></circle><circle cx=\\'18\\' cy=\\'16\\' r=\\'3\\'></circle></svg></div>';">
       ` : `
         <div class="song-cover-fallback">
           <svg class="music-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2667,16 +2641,16 @@ function renderizarRepertorio(lista, esBusqueda = false) {
               ${coverHtml}
             </div>
             <div class="song-main-info">
-              <h2 class="song-row-title">${title}</h2>
-              ${shouldShowAuthor ? `<p class="song-row-subtitle">${author.trim()}</p>` : ''}
+              <h2 class="song-row-title">${escapeHtml(title)}</h2>
+              ${shouldShowAuthor ? `<p class="song-row-subtitle">${escapeHtml(author.trim())}</p>` : ''}
               <span class="autor song-autor-hidden" aria-hidden="true" style="display:none !important; visibility:hidden !important; height:0 !important; width:0 !important; overflow:hidden !important; position:absolute !important; opacity:0 !important; pointer-events:none !important;">${author}</span>
             </div>
           </div>
           <div class="song-row-category-col">
-            <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
+            <span class="category-pill-tag cat-pill-${catSlug}" title="${escapeHtml(displayCategory)}">${escapeHtml(displayCategory)}</span>
           </div>
           <div class="song-row-actions" onclick="event.stopPropagation();">
-            <button type="button" class="song-action-btn btn-remove-repertorio-item" title="Quitar del repertorio" aria-label="Quitar del repertorio" onclick="borrarCancion('${title.replace(/'/g, "\\'")}', '${author.replace(/'/g, "\\'")}', ${index})">
+            <button type="button" class="song-action-btn btn-remove-repertorio-item" title="Quitar del repertorio" aria-label="Quitar del repertorio" onclick="borrarCancion('${escapeHtml(title.replace(/\\/g, "\\\\").replace(/'/g, "\\'"))}', '${escapeHtml(author.replace(/\\/g, "\\\\").replace(/'/g, "\\'"))}', ${index})">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -2871,8 +2845,6 @@ function getLiturgicalFolderPalette(rep, index) {
     }
   });
 
-  const fullText = (nameNorm + " " + songsText).trim();
-
   // Sistema de puntuación contextual
   const scores = {
     purple: 0, // Morado
@@ -3054,15 +3026,6 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
     return;
   }
 
-  const FOLDER_PALETTES = [
-    'palette-rose',
-    'palette-purple',
-    'palette-green',
-    'palette-blue',
-    'palette-amber',
-    'palette-coral'
-  ];
-
   displayList.forEach((rep, idx) => {
     const card = document.createElement("div");
     card.className = "saved-repertorio-card";
@@ -3087,7 +3050,7 @@ window.renderizarRepertoriosGuardados = function(searchQuery = null) {
     }
 
     const paletteClass = getLiturgicalFolderPalette(rep, idx);
-    const safeName = (rep.name || "Repertorio").replace(/"/g, '&quot;');
+    const safeName = escapeHtml(rep.name || "Repertorio");
 
     card.innerHTML = `
       <div class="saved-rep-card-top">
@@ -3201,8 +3164,7 @@ try {
 } catch (e) {}
 
 // Precarga y actualización automática del catálogo JSON (con respaldo local offline)
-fetch("songs-catalog.json")
-  .then(res => res.json())
+fetchCatalogOnce()
   .then(data => {
     if (Array.isArray(data) && data.length > 0) {
       window.rawCatalogSongs = data;
@@ -3418,8 +3380,8 @@ window.buscarCancionesParaRepertorioGuardado = function(query = "") {
     const info = document.createElement("div");
     info.className = "saved-rep-search-info";
     info.innerHTML = `
-      <span class="saved-rep-search-title">${song.title}</span>
-      <span class="saved-rep-search-meta">${song.author ? `${song.author}` : "Desconocido"}</span>
+      <span class="saved-rep-search-title">${escapeHtml(song.title)}</span>
+      <span class="saved-rep-search-meta">${song.author ? escapeHtml(song.author) : "Desconocido"}</span>
     `;
 
     const addBtn = document.createElement("button");
@@ -3598,13 +3560,13 @@ window.renderVerRepertorioDetalle = function() {
               <span class="song-cover-number">${idx + 1}</span>
             </div>
             <div class="song-main-info">
-              <h2 class="song-row-title">${resolvedSong.title}</h2>
-              ${cleanAuthor ? `<p class="song-row-subtitle">${cleanAuthor}</p>` : ''}
+              <h2 class="song-row-title">${escapeHtml(resolvedSong.title)}</h2>
+              ${cleanAuthor ? `<p class="song-row-subtitle">${escapeHtml(cleanAuthor)}</p>` : ''}
             </div>
           </div>
           <div class="song-row-right-cluster">
             <div class="song-row-category-col saved-rep-cat-col">
-              <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
+              <span class="category-pill-tag cat-pill-${catSlug}" title="${escapeHtml(displayCategory)}">${escapeHtml(displayCategory)}</span>
             </div>
             ${window.editSavedRepertorioMode ? `
               <div class="song-row-actions" onclick="event.stopPropagation();">
@@ -3727,12 +3689,9 @@ window.abrirModalAgregarCancionesGuardadas = async function() {
   // Precargar catálogo de canciones si aún no está disponible
   if (!window.rawCatalogSongs || window.rawCatalogSongs.length === 0) {
     try {
-      const res = await fetch("songs-catalog.json");
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          window.rawCatalogSongs = data;
-        }
+      const data = await fetchCatalogOnce();
+      if (Array.isArray(data) && data.length > 0) {
+        window.rawCatalogSongs = data;
       }
     } catch(e) {}
   }
@@ -3987,8 +3946,8 @@ window.renderAddSongsModalSongList = function(query = "") {
             </svg>
           </div>
           <div class="song-main-info">
-            <h2 class="song-row-title">${song.title}</h2>
-            ${cleanAuthor ? `<p class="song-row-subtitle">${cleanAuthor}</p>` : ''}
+            <h2 class="song-row-title">${escapeHtml(song.title)}</h2>
+            ${cleanAuthor ? `<p class="song-row-subtitle">${escapeHtml(cleanAuthor)}</p>` : ''}
           </div>
         </div>
         <div class="song-row-actions" onclick="event.stopPropagation();">
@@ -4081,7 +4040,7 @@ window.abrirVerRepertorio = function(id) {
   if (window.lucide) window.lucide.createIcons();
 };
 
-window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = null) {
+window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = null, songCount = null) {
   const modal = document.getElementById("shareModal");
   if (!modal) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -4109,9 +4068,7 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = 
   // Título dinámico con indicación de código si existe
   const titleEl = document.getElementById("shareModalTitle");
   if (titleEl) {
-    titleEl.textContent = shortCode 
-      ? `Compartir "${nombreRepertorio}"` 
-      : `Compartir "${nombreRepertorio}"`;
+    titleEl.textContent = `Compartir "${nombreRepertorio}"`;
   }
 
   // Asignar valor al input con auto-selección y copia al toque
@@ -4131,9 +4088,8 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = 
   }
 
   // Codificar el texto de compartir para redes sociales (mensaje más conciso con link corto)
-  const shareText = shortCode
-    ? `Te comparto mi repertorio de cantos "${nombreRepertorio}" de Vox Dei (Código: ${shortCode}):\n${shareUrl}`
-    : `Te comparto mi repertorio de cantos "${nombreRepertorio}" del Coro Juvenil Salesiano Vox Dei:\n${shareUrl}`;
+  const countText = songCount ? ` (${songCount} ${songCount === 1 ? "canto" : "cantos"})` : "";
+  const shareText = `Te comparto el repertorio «${nombreRepertorio}»${countText} del Cancionero Digital Vox Dei.\nÁbrelo aquí: ${shareUrl}`;
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(shareUrl);
 
@@ -4152,7 +4108,7 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = 
 
   const telegramEl = document.getElementById("shareTelegram");
   if (telegramEl) {
-    telegramEl.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`Repertorio: ${nombreRepertorio}`)}`;
+    telegramEl.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent(`Repertorio «${nombreRepertorio}» · Cancionero Digital Vox Dei`)}`;
     telegramEl.target = "_blank";
   }
 
@@ -4284,9 +4240,12 @@ window.mostrarModalCompartir = function(nombreRepertorio, shareUrl, shortCode = 
 // Generador de código único de 6 caracteres alfanuméricos legibles (Opción A)
 window.generarCodigoRepertorioCorto = function() {
   const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // Caracteres sin ambigüedad (sin 0, O, 1, I)
+  // crypto.getRandomValues: aleatoriedad criptográfica (256 es múltiplo de 32, así que no hay sesgo)
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
   let code = "";
   for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(bytes[i] % chars.length);
   }
   return code;
 };
@@ -4333,7 +4292,7 @@ window.compartirCancionesDirecto = async function(nombreRepertorio, songsArray) 
       const shortUrl = `${window.location.origin}${window.location.pathname}?r=${code}`;
       
       // Abrir el popup elegante de compartir con el link corto
-      window.mostrarModalCompartir(name, shortUrl, code);
+      window.mostrarModalCompartir(name, shortUrl, code, songList.length);
       return;
     } catch (cloudErr) {
       console.warn("Fallo al guardar enlace corto en Firestore, usando fallback local:", cloudErr);
@@ -4353,7 +4312,7 @@ window.compartirCancionesDirecto = async function(nombreRepertorio, songsArray) 
     }));
 
     const shareUrl = `${window.location.origin}${window.location.pathname}?import=${encodeURIComponent(base64)}`;
-    window.mostrarModalCompartir(name, shareUrl, null);
+    window.mostrarModalCompartir(name, shareUrl, null, songList.length);
     if (!navigator.onLine) {
       showToast("Modo sin internet: se generó enlace local", "info");
     }
@@ -5457,7 +5416,7 @@ onDomReady(() => {
       activeUser = AuthEngine.getCurrentUser();
     }
     if (!activeUser || !activeUser.email) {
-      const cached = localStorage.getItem("voxdei_last_logged_user") || localStorage.getItem("simulated_logged_user");
+      const cached = localStorage.getItem("voxdei_last_logged_user");
       if (cached) {
         try { activeUser = JSON.parse(cached); } catch (e) {}
       }
@@ -6130,8 +6089,8 @@ onDomReady(() => {
       
       let catalog = [];
       try {
-        const res = await fetch("songs-catalog.json");
-        if (res.ok) catalog = await res.json();
+        const data = await fetchCatalogOnce();
+        if (Array.isArray(data)) catalog = data.slice();
       } catch (e) {}
 
       if (catalog.length === 0 && Array.isArray(window.allSongs) && window.allSongs.length > 0) {
@@ -6518,9 +6477,7 @@ window.createSongRowHtml = function(songData) {
   const category = (songData.category || "Entrada").trim();
   const displayCategory = window.getCategoryDisplayName(category);
   const audio = songData.audio || "";
-  const youtube = songData.youtube || "";
   const lyrics = songData.lyrics || "";
-  const hasAudio = !!(audio && !window.isYouTubeUrl(audio));
 
   // 1. Sanitizar autor quitando paréntesis y espacios sobrantes
   if (typeof window.cleanAuthor === "function") {
@@ -6558,7 +6515,7 @@ window.createSongRowHtml = function(songData) {
   );
 
   const coverHtml = cover ? `
-    <img src="${cover}" class="song-cover-thumb" alt="${title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'song-cover-fallback\\'><svg class=\\'music-icon\\' width=\\'18\\' height=\\'18\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M9 18V5l12-2v13\\'></path><circle cx=\\'6\\' cy=\\'18\\' r=\\'3\\'></circle><circle cx=\\'18\\' cy=\\'16\\' r=\\'3\\'></circle></svg></div>';">
+    <img src="${escapeHtml(cover)}" class="song-cover-thumb" alt="${escapeHtml(title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'song-cover-fallback\\'><svg class=\\'music-icon\\' width=\\'18\\' height=\\'18\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'><path d=\\'M9 18V5l12-2v13\\'></path><circle cx=\\'6\\' cy=\\'18\\' r=\\'3\\'></circle><circle cx=\\'18\\' cy=\\'16\\' r=\\'3\\'></circle></svg></div>';">
   ` : `
     <div class="song-cover-fallback">
       <svg class="music-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -6578,14 +6535,14 @@ window.createSongRowHtml = function(songData) {
           ${coverHtml}
         </div>
         <div class="song-main-info">
-          <h2 class="song-row-title">${title}</h2>
-          ${shouldShowAuthor ? `<p class="song-row-subtitle">${author.trim()}</p>` : ''}
+          <h2 class="song-row-title">${escapeHtml(title)}</h2>
+          ${shouldShowAuthor ? `<p class="song-row-subtitle">${escapeHtml(author.trim())}</p>` : ''}
           <span class="autor song-autor-hidden" aria-hidden="true" style="display:none !important; visibility:hidden !important; height:0 !important; width:0 !important; overflow:hidden !important; position:absolute !important; opacity:0 !important; pointer-events:none !important;">${author}</span>
         </div>
       </div>
 
       <div class="song-row-category-col">
-        <span class="category-pill-tag cat-pill-${catSlug}" title="${displayCategory}">${displayCategory}</span>
+        <span class="category-pill-tag cat-pill-${catSlug}" title="${escapeHtml(displayCategory)}">${escapeHtml(displayCategory)}</span>
       </div>
 
       <div class="song-row-actions" onclick="event.stopPropagation();">
@@ -6775,14 +6732,6 @@ window.upsertSongInApp = function(songPayload) {
     }
   }
 };
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
 
 window.filterToCategory = function(catCode) {
   if (!catCode) return;
@@ -7075,7 +7024,8 @@ function initOfflineSongsSystem() {
       if (typeof window !== "undefined" && "caches" in window) {
         try {
           const cache = await caches.open("voxdei-offline-v1");
-          await cache.addAll([
+          // allSettled: si un archivo falta, los demás igual se guardan (addAll falla todo por uno solo)
+          await Promise.allSettled([
             "./",
             "index.html",
             "Principal.css",
@@ -7083,7 +7033,7 @@ function initOfflineSongsSystem() {
             "songs-catalog.json",
             "Principal/VoxDei.png",
             "Principal/VoxDeiBlanco.png"
-          ]).catch(() => {});
+          ].map((u) => cache.add(u)));
         } catch(e) {}
       }
     } catch (err) {
@@ -7818,7 +7768,7 @@ onDomReady(() => {
             btnToolYoutube.setAttribute("aria-label", "Ver / Escuchar en YouTube");
             btnToolYoutube.onclick = (e) => {
                 e.stopPropagation();
-                window.open(effectiveYoutube, "_blank");
+                window.open(effectiveYoutube, "_blank", "noopener,noreferrer");
             };
         } else {
             menuItemYoutube.style.display = "none";
@@ -9536,8 +9486,7 @@ onDomReady(() => {
           tags: s.tags || ""
         })).filter(s => !!s.title);
       } else {
-        fetch("songs-catalog.json")
-          .then(res => res.json())
+        fetchCatalogOnce()
           .then(cat => {
             if (Array.isArray(cat) && cat.length > 0) {
               window.rawCatalogSongs = cat;
