@@ -16810,3 +16810,33 @@ body.light-mode .edge-swipe-hint.is-ready {
     transition: none;
   }
 }
+
+
+/* ==========================================================================
+   AJUSTES DEL LECTOR DE CANCIONES (v31.3)
+   1) Los 3 puntitos y la X quedan FIJOS: ya no se mueven al hacer scroll.
+   2) El botón de engranaje (ajustes) ya no desaparece solo.
+   ========================================================================== */
+#captureArea .doc-header {
+  position: static; /* así los botones se posicionan respecto a la ventana, no al texto que se desplaza */
+}
+#captureArea .popup-left-actions-group {
+  position: absolute;
+  top: 24px;
+  left: 8px;
+  transform: none;
+}
+#captureArea .popup-cerrar {
+  position: absolute;
+  top: 26px;
+  right: 12px;
+  transform: none !important;
+}
+
+/* Engranaje siempre visible (antes se ocultaba tras 3 segundos sin tocar la pantalla) */
+.popup-settings-wrapper.hidden-fab {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
