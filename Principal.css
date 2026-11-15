@@ -16840,3 +16840,5 @@ body.light-mode .edge-swipe-hint.is-ready {
   transform: none !important;
   pointer-events: auto !important;
 }
+
+.offline-toast-indicator { display: none !important; }
